@@ -12,14 +12,11 @@ To (locally) reproduce this project, do the following:
    git-history and may need to be downloaded independently.
 1. Open a Julia console and do:
 
-   ```
-   using Pkg
+   ``` using Pkg
 
    Pkg.activate(pwd())
 
-   Pkg.instantiate()
-
-   ```
+   Pkg.instantiate() ```
 
 This will install all necessary packages for you to be able to run the scripts and
 everything should work out of the box.
