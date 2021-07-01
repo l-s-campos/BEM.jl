@@ -4,7 +4,7 @@ using TimerOutputs
 to = TimerOutput()
 using DrWatson
 @quickactivate "BEM"
-include(srcdir("includes.jl"))
+include(scriptsdir("includes.jl"))
 nelem = 100  #Numero de elementos
 NPX = 5 #pontos internos na direção x
 NPY = 5 #pontos internos na direção y

@@ -1,7 +1,7 @@
 ## Início da análise
 using DrWatson
 @quickactivate "BEM"
-include(srcdir("includes.jl"))
+include(scriptsdir("includes.jl"))
 nelem = 4  #Numero de elementos
 NPX = 2 #pontos internos na direção x
 NPY = 2 #pontos internos na direção y
