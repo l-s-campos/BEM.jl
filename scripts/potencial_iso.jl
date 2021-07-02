@@ -21,7 +21,7 @@ x = A\b
 println("4. Separando fluxo e temperatura")
 T,q = separa(dad,x) #importante
 println("6. Gerando mapa de cor")
-erro=norm([T-dad.NOS[:,1]])
+@show erro=norm([T-dad.NOS[:,1];Ti-dad.pontos_internos[:,1]])
 
 # geo=mostra_geometria(dad)
 # mapa=mostra_resultado(dad,[T;Ti])

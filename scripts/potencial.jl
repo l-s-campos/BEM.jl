@@ -30,7 +30,6 @@ println("5. Calculando nos pontos internos")
 Ti = calc_Ti(dad,T,q,npg);
 
 println("6. Gerando mapa de cor")
-erro=norm([T-dad.NOS[:,1];Ti-dad.pontos_internos[:,1]])
-
-geo=mostra_geometria(dad);
+@show erro=norm([T-dad.NOS[:,1];Ti-dad.pontos_internos[:,1]])
+# geo=mostra_geometria(dad);
 # mapa=mostra_resultado(dad,[T;Ti]);

@@ -125,7 +125,7 @@ function calc_HeG(dad::potencial,b1,b2,npg=8)
       pf = [dad.NOS;dad.pontos_internos][ind,:]   # Coordenada (x,y)  dos pontos fonte
       Δelem=x[end,:]-x[1,:]     # Δx e Δy entre o primeiro e ultimo nó geometrico
       eet=(elem_j.ξs[end] -elem_j.ξs[1])*dot(Δelem,pf.-x[1,:])/norm(Δelem)^2+elem_j.ξs[1]
-      N_geo=calc_fforma_gen(eet,elem_j.ξs)
+      N_geo,~=calc_fforma_gen(eet,elem_j.ξs)
       ps=N_geo'*x
       b=norm(ps'-pf)/norm(Δelem)
       eta,Jt=sinhtrans(qsi,eet,b)
@@ -169,7 +169,7 @@ function calc_HeG_interp(dad::potencial,b1,b2,npg=8,ninterp=3)
         pf = [xks[i1,1],xks[i2,2]]   # Coordenada (x,y)  dos pontos fonte
         Δelem=x[end,:]-x[1,:]     # Δx e Δy entre o primeiro e ultimo nó geometrico
         eet=(elem_j.ξs[end] -elem_j.ξs[1])*dot(Δelem,pf.-x[1,:])/norm(Δelem)^2+elem_j.ξs[1]
-        N_geo=calc_fforma_gen(eet,elem_j.ξs)
+        N_geo,~=calc_fforma_gen(eet,elem_j.ξs)
         ps=N_geo'*x
         b=norm(ps'-pf)/norm(Δelem)
         eta,Jt=sinhtrans(qsi,eet,b)
