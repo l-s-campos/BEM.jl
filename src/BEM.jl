@@ -1,4 +1,5 @@
 module BEM
+using ForwardDiff: length
 using LinearAlgebra,Statistics, FastGaussQuadrature, ForwardDiff,SparseArrays
 using TimerOutputs#, FFTW
 using GLMakie,Triangulate#, WriteVTK
@@ -10,6 +11,10 @@ export calc_HeG,format_dad,separa,aplicaCDC,calc_Ti,calc_Aeb,nc,ni
 export calc_HeG_interp,Hinterp,cluster,Ainterp,matvec,Akmeans,Akmeans2
 export Monta_M_RIMd,Finterp
 
+
+abstract type DadosBEM end
+abstract type escalar     <: DadosBEM end
+abstract type vetorial     <: DadosBEM end
 
 struct elemento
     indices ::Array{Int64,1}
@@ -31,26 +36,26 @@ struct bezier
     Wb :: Array{Float64,1}
     sing ::Array{Int64,1}
 end
-struct elastico
+struct elastico <: vetorial 
     NOS ::Array{Float64,2}
     pontos_internos ::Array{Float64,2}
     ELEM ::Array{elementov,1}
     Ev ::Array{Float64,1}
 end
-struct potencial
+struct potencial  <: escalar 
     NOS ::Array{Float64,2}
     pontos_internos ::Array{Float64,2}
     ELEM ::Array{elemento,1}
     k ::Float64    
 end
-struct helmholtz
+struct helmholtz  <: escalar 
     NOS ::Array{Float64,2}
     pontos_internos ::Array{Float64,2}
     ELEM ::Array{elemento,1}
     k ::Array{Float64,1}    
 end
 
-struct potencial_iso
+struct potencial_iso  <: escalar 
     NOS ::Array{Float64,2}
     pontos_controle ::Array{Float64,2}
     pontos_internos ::Array{Float64,2}
@@ -61,7 +66,7 @@ struct potencial_iso
     E ::SparseMatrixCSC{Float64,Int64} 
 end
 
-struct elastico_iso
+struct elastico_iso<: vetorial 
     NOS ::Array{Float64,2}
     pontos_controle ::Array{Float64,2}
     pontos_internos ::Array{Float64,2}
@@ -72,16 +77,8 @@ struct elastico_iso
     E ::SparseMatrixCSC{Float64,Int64} 
 end
 
-abstract type DadosBEM end
-abstract type escalar     <: DadosBEM end
-abstract type vetorial     <: DadosBEM end
 
- potencial_iso     <: escalar 
- potencial     <: escalar 
- helmholtz     <: escalar 
 
-elastico     <: vetorial 
-elastico_iso     <: vetorial 
 
 nc(dad::DadosBEM) = size(dad.NOS,1)
 ni(dad::DadosBEM) = size(dad.pontos_internos,1)
