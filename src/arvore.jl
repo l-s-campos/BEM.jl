@@ -347,7 +347,7 @@ function montaAcheia(hmat,block,Tree1,Tree2,dad::potencial;full=true)
         # @show i,block[i,3]
         cols=vcat([dad.ELEM[i].indices for i in b2]...)
         if block[i,3]==0
-            A[b1,cols]+=H[b1,cols]
+            A[b1,cols]+=hmat[i,1]
         elseif full
             A[b1,cols]+=(hmat[i,1]*hmat[i,2])
         end

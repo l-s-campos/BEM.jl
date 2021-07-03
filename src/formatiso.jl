@@ -209,18 +209,28 @@ function indices(crv,CCSeg)
 
     numcurva=zeros(Integer,z)
     collocPts=zeros(z)
-    tCDC=zeros(Int64,0)
     collocCoord=zeros(z,2)
     nnos=zeros(Integer,n)
     nbezier=zeros(Integer,n)
+
+    if size(CCSeg,2)==3
     vCDC=zeros(0,1)
+    tCDC=zeros(Int64,0)
+elseif size(CCSeg,2)==5
+    vCDC=zeros(0,2)
+    tCDC=zeros(Int64,0,2)
+    tCDC=zeros(Int64,0)
+elseif size(CCSeg,2)==7
+    vCDC=zeros(0,3)
+    tCDC=zeros(Int64,0,3)
+end
 
     for k=1:n
         p=crv[k].order-1;
         nnos[k]=crv[k].number;
         nbezier[k]=size(crv[k].conn,1)
-        valorCDC=CCSeg[k,3];
-        tipoCDC=round(Int,CCSeg[k,2]);
+        valorCDC=CCSeg[k,3:2:end];
+        tipoCDC=round(Int,CCSeg[k,2:2:end]);
         for i=1:crv[k].number
             vCDC= [vCDC;valorCDC];
             tCDC = [tCDC;tipoCDC];

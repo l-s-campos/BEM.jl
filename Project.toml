@@ -2,6 +2,7 @@ name = "BEM"
 authors = ["Lucas"]
 
 [deps]
+AbstractPlotting = "537997a7-5e4e-5d89-9595-2241ea00577e"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 Distances = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
 DrWatson = "634d3b9d-ee7a-5ddf-bec9-22491ea816e1"

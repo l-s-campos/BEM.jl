@@ -542,9 +542,10 @@ function separa(dad::potencial_iso, x)
   # q = vetor que contêm o fluxo nos nós
     nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
     n = size(dad.NOS, 1)
-    T = deepcopy(x)
+    T = deepcopy(x[1:length(troca)])
     q = deepcopy(dad.valorCDC)
+     @infiltrate
     T[troca] =  dad.valorCDC[troca]
-    q[troca] =  x[troca]
+    q[troca] =  x[1:length(troca)][troca]
     dad.E * T, dad.E * q
 end

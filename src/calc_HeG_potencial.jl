@@ -73,7 +73,34 @@ function calc_Ti(dad::potencial,T,q,npg=8)
   end
   Ti
 end
+function calc_Ti(dad::potencial_iso,T,q,npg=8)
+  nelem = size(dad.ELEM,1)    # Quantidade de elementos discretizados no contorno
+  n = size(dad.pontos_internos,1)
+  Ti=zeros(n)
+  qsi,w = gausslegendre(npg)    # Quadratura de gauss
+  
+  for i= 1:n
+    pf = dad.pontos_internos[i,:]   # Coordenada (x,y) dos pontos fonte
+    for elem_j in dad.ELEM  #Laço dos elementos
+      xf=elem_j.limites[:,2]
+      x0=elem_j.limites[:,1]     # Δx e Δy entre o primeiro e ultimo nó geometrico
+      Δelem=xf-x0     # Δx e Δy entre o primeiro e ultimo nó geometrico
+      eet=2*dot(Δelem,pf.-x0)/norm(Δelem)^2-1
+      pc=dad.pontos_controle[:,elem_j.indices]
+      # @infiltrate
+      cf=pc[1:2,:]./pc[4,:]'
+      N,dN=calc_fforma(eet,elem_j,pc[4,:])        
+      ps=cf*N
+      b=norm(ps-pf)/norm(Δelem)
 
+      eta,Jt=sinhtrans(qsi,eet,b)
+      h,g= integrabezier(pf,cf,pc[4,:],eta,w.*Jt,elem_j,dad)
+    
+      Ti[i]+=h'*T[elem_j.indices]-g'*q[elem_j.indices]
+    end
+  end
+  Ti
+end
 
 function calc_Aeb(dad::potencial,npg=8)
   nelem = size(dad.ELEM,1)    # Quantidade de elementos discretizados no contorno
