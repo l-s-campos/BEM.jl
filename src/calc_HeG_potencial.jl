@@ -235,7 +235,7 @@ end
 
 
 function calc_HeG(dad::potencial_iso,npg=8)
-  nelem = size(dad.ELEM,1)    # Quantidade de elementos discretizados no contorno
+  # nelem = size(dad.ELEM,1)    # Quantidade de elementos discretizados no contorno
   nfonte = size(dad.NOS,1)    # Quantidade de elementos discretizados no contorno
   n = size(dad.NOS,1)
   H=zeros(n,n)

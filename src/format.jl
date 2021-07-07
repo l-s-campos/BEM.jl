@@ -523,11 +523,11 @@ function aplicaCDC(H, G, dad::potencial_iso)
     A = deepcopy(H)
     b = zeros(n)
     valoresconhecidos = dad.E \ dad.valorCDC
-    troca = dad.tipoCDC .== 0
-
+    troca = dad.tipoCDC[:] .== 0
+# @infiltrate
     A[:,troca] =  -G[:,troca]
     b +=  -H[:,troca] * valoresconhecidos[troca]
-    b +=  G[:,dad.tipoCDC .== 1] * valoresconhecidos[dad.tipoCDC .== 1]   
+    b +=  G[:,.~troca] * valoresconhecidos[.~troca]   
 
     A, b
 end
@@ -537,15 +537,40 @@ end
 function separa(dad::potencial_iso, x)
   # Separa fluxo e temperatura
   
-    troca = dad.tipoCDC .== 0
+    troca = dad.tipoCDC[:] .== 0
   # T = vetor que contêm as temperaturas nos nós
   # q = vetor que contêm o fluxo nos nós
-    nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
-    n = size(dad.NOS, 1)
     T = deepcopy(x[1:length(troca)])
     q = deepcopy(dad.valorCDC)
-     @infiltrate
+    #  @infiltrate
     T[troca] =  dad.valorCDC[troca]
     q[troca] =  x[1:length(troca)][troca]
     dad.E * T, dad.E * q
+end
+
+function aplicaCDC(H, G, dad::elastico_iso)
+    # nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
+    n = size(dad.NOS, 1)
+    A = deepcopy(H)
+    b = zeros(2*n)
+    valoresconhecidos = dad.E \ dad.valorCDC
+    troca = dad.tipoCDC'[:] .== 0
+# @infiltrate
+    A[:,troca] =  -G[:,troca]
+    b +=  -H[:,troca] * valoresconhecidos'[troca]
+    b +=  G[:,.~troca] * valoresconhecidos'[.~troca]   
+
+    A, b
+end
+
+function separa(dad::elastico_iso,x)
+    # nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
+
+    troca = dad.tipoCDC'[:] .== 0
+    u = deepcopy(x[1:length(troca)])
+    t = deepcopy(dad.valorCDC'[:])
+    #  @infiltrate
+    u[troca] =  dad.valorCDC[troca]
+    t[troca] =  x[1:length(troca)][troca]
+    [dad.E * u[1:2:end] dad.E * u[2:2:end]], [dad.E * t[1:2:end] dad.E * t[2:2:end]]
 end

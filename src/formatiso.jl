@@ -134,7 +134,7 @@ for j = 1:size(crv[i].conn, 1)  # Corre as curvas de Bézier
     ELEM[cont_el] = bezier(indcoluna[cont_el],Ce,p,[x0 xf],Wb,sing[cont_el])
 end
 end
-# @infiltrate
+#    @infiltrate
 prob(NOS,pts_controle,gera_p_in(NPX,NPY,PONTOS,SEGMENTOS),tipoCDC,valorCDC,ELEM,k,E)
 
 
@@ -214,12 +214,11 @@ function indices(crv,CCSeg)
     nbezier=zeros(Integer,n)
 
     if size(CCSeg,2)==3
-    vCDC=zeros(0,1)
+    vCDC=zeros(0)
     tCDC=zeros(Int64,0)
 elseif size(CCSeg,2)==5
     vCDC=zeros(0,2)
     tCDC=zeros(Int64,0,2)
-    tCDC=zeros(Int64,0)
 elseif size(CCSeg,2)==7
     vCDC=zeros(0,3)
     tCDC=zeros(Int64,0,3)
@@ -230,10 +229,11 @@ end
         nnos[k]=crv[k].number;
         nbezier[k]=size(crv[k].conn,1)
         valorCDC=CCSeg[k,3:2:end];
-        tipoCDC=round(Int,CCSeg[k,2:2:end]);
+        tipoCDC=round.(Int,CCSeg[k,2:2:end]);
         for i=1:crv[k].number
-            vCDC= [vCDC;valorCDC];
-            tCDC = [tCDC;tipoCDC];
+            # @infiltrate
+            vCDC= [vCDC;valorCDC'];
+            tCDC = [tCDC;tipoCDC'];
         end
     end
 

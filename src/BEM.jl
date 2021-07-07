@@ -5,7 +5,7 @@ using TimerOutputs#, FFTW
 using GLMakie,Triangulate#, WriteVTK
 using Infiltrator,Distances,ParallelKMeans,LowRankApprox
 
-export potencial,potencial_iso,elastico,elemento
+export potencial,potencial_iso,elastico,elastico_iso,elemento
 export mostra_geometria,mostra_resultado
 export calc_HeG,format_dad,separa,aplicaCDC,calc_Ti,calc_Aeb,nc,ni
 export calc_HeG_interp,Hinterp,cluster,Ainterp,matvec,Akmeans,Akmeans2
@@ -59,18 +59,18 @@ struct potencial_iso  <: escalar
     NOS ::Array{Float64,2}
     pontos_controle ::Array{Float64,2}
     pontos_internos ::Array{Float64,2}
-    tipoCDC  ::Array{Int64,1}
+    tipoCDC  ::Array{Int64,2}
     valorCDC  ::Array{Float64,2}
     ELEM ::Array{bezier,1}
     k ::Float64  
     E ::SparseMatrixCSC{Float64,Int64} 
 end
 
-struct elastico_iso<: vetorial 
+struct elastico_iso <: vetorial 
     NOS ::Array{Float64,2}
     pontos_controle ::Array{Float64,2}
     pontos_internos ::Array{Float64,2}
-    tipoCDC  ::Array{Int64,1}
+    tipoCDC  ::Array{Int64,2}
     valorCDC  ::Array{Float64,2}
     ELEM ::Array{bezier,1}
     Ev ::Array{Float64,1}
