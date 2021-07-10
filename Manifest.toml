@@ -814,6 +814,11 @@ git-tree-sha1 = "c031d2332c9a8e1c90eca239385815dc271abb22"
 uuid = "647866c9-e3ac-4575-94e7-e3d426903924"
 version = "0.1.1"
 
+[[PolynomialRoots]]
+git-tree-sha1 = "5f807b5345093487f733e520a1b7395ee9324825"
+uuid = "3a141323-8675-5d76-9d11-e1df1406c778"
+version = "1.0.0"
+
 [[Preferences]]
 deps = ["TOML"]
 git-tree-sha1 = "00cfd92944ca9c760982747e9a1d0d5d86ab1e5a"

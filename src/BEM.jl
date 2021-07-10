@@ -4,12 +4,14 @@ using LinearAlgebra,Statistics, FastGaussQuadrature, ForwardDiff,SparseArrays
 using TimerOutputs#, FFTW
 using GLMakie,Triangulate#, WriteVTK
 using Infiltrator,Distances,ParallelKMeans,LowRankApprox
+using PolynomialRoots
 
-export potencial,potencial_iso,elastico,elastico_iso,elemento
+export potencial,potencial_iso,elastico,elastico_iso,elemento,elastico_aniso
 export mostra_geometria,mostra_resultado
 export calc_HeG,format_dad,separa,aplicaCDC,calc_Ti,calc_Aeb,nc,ni
 export calc_HeG_interp,Hinterp,cluster,Ainterp,matvec,Akmeans,Akmeans2
 export Monta_M_RIMd,Finterp
+export Compute_Material,Compute_T,Compute_Qbar,Assembly_Q
 
 
 abstract type DadosBEM end
@@ -41,6 +43,13 @@ struct elastico <: vetorial
     pontos_internos ::Array{Float64,2}
     ELEM ::Array{elementov,1}
     Ev ::Array{Float64,1}
+end
+
+struct elastico_aniso <: vetorial
+    NOS ::Array{Float64,2}
+    pontos_internos ::Array{Float64,2}
+    ELEM ::Array{elementov,1}
+    k ::Array{Complex,2}
 end
 struct potencial  <: escalar 
     NOS ::Array{Float64,2}
@@ -95,6 +104,7 @@ include("arvore.jl")
 include("nurbs.jl")
 export format_dad_iso
 include("formatiso.jl")
+include("aniso.jl")
 
 import Base.size
 size(e::elemento)=size(e.indices,1)

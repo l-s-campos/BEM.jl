@@ -243,7 +243,7 @@ function format_dad(entrada, NPX=2, NPY=2, afasta=1)
 end
 
 
-function aplicaCDC(H, G, dad::elastico)
+function aplicaCDC(H, G, dad::Union{elastico, elastico_aniso})
     nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
     n = size(dad.NOS, 1)
     A = zeros(2 * n, 2 * n)
@@ -279,7 +279,7 @@ function aplicaCDC(H, G, dad::potencial)
     A, b
 end
 
-function separa(dad::elastico, x)
+function separa(dad::Union{elastico, elastico_aniso}, x)
 # Separa fluxo e temperatura
 
 # ncdc = número de linhas da matriz CDC

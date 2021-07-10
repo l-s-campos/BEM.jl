@@ -1,4 +1,4 @@
-function calc_HeG(dad::elastico,npg=8)
+function calc_HeG(dad::Union{elastico, elastico_aniso},npg=8)
   nelem = size(dad.ELEM,1)    # Quantidade de elementos discretizados no contorno
   n = size(dad.NOS,1)
   H=zeros(2*n,2*n)
@@ -31,19 +31,18 @@ end
 
 #__________________________________________________________________________________________________________
 "Funcao para calcular fazer integracao no contorno "
-function integraelem(pf,x,eta,w,elem,dad::elastico)
+function integraelem(pf,x,eta,w,elem,dad::Union{elastico, elastico_aniso})
   h = zeros(Float64,2,2*size(elem))
   g = zeros(Float64,2,2*size(elem))
   Nm = zeros(Float64,2,2*size(elem))
   for k = 1:size(w,1)
     N,dN=calc_fforma(eta[k],elem)
       pg = N'*x    # Ponto de gauss interpolador
-      r = pg'-pf      # Distancia entre ponto de gauss e ponto fonte
       dxdqsi = dN'*x   # dx/dξ & dy/dξ
       dgamadqsi = norm(dxdqsi)  # dΓ/dξ = J(ξ) Jacobiano
       sx=dxdqsi[1]/dgamadqsi # vetor tangente dx/dΓ
       sy=dxdqsi[2]/dgamadqsi # vetor tangente dy/dΓ
-      uast,tast=calsolfund(r,[sy,-sx],dad)
+      uast,tast=calsolfund(pg,pf,[sy,-sx],dad)
       Nm[1,1:2:end]=N
       Nm[2,2:2:end]=N
       h+=tast*Nm*dgamadqsi*w[k]
@@ -56,7 +55,7 @@ end
 
 
 
-function calc_Aeb(dad::elastico,npg=8)
+function calc_Aeb(dad::Union{elastico, elastico_aniso},npg=8)
   nelem = size(dad.ELEM,1)    # Quantidade de elementos discretizados no contorno
   n = size(dad.NOS,1)
   A=zeros(2*n,2*n)
@@ -148,12 +147,11 @@ function integrabeziersing(pf,cf,we,eta,w,elem::bezier,dad::elastico_iso,eet)
   for k = 1:size(w,1)
     N,dN = calc_fforma(eta[k],elem,we)
     pg = cf*N    # Ponto de gauss interpolador
-    r = pg-pf      # Distancia entre ponto de gauss e ponto fonte
     dxdqsi = cf*dN   # dx/dξ & dy/dξ
     dgamadqsi = norm(dxdqsi)  # dΓ/dξ = J(ξ) Jacobiano
     sx=dxdqsi[1]/dgamadqsi # vetor tangente dx/dΓ
     sy=dxdqsi[2]/dgamadqsi # vetor tangente dy/dΓ
-    uast,tast=calsolfund(r,[sy,-sx],dad)
+    uast,tast=calsolfund(pg,pf,[sy,-sx],dad)
     # h+=N*dgamadqsi*w[k]
     # g+=N*dgamadqsi*w[k]
     Nm[1,1:2:end]=N
@@ -198,9 +196,10 @@ function integrabezier(pf,cf,we,eta,w,elem::bezier,dad::elastico_iso)
 end
 
 
-function calsolfund(r,n,dad::Union{elastico, elastico_iso})
+function calsolfund(pg,pf,n,dad::Union{elastico, elastico_iso})
   # @infiltrate
   E,v=dad.Ev[1],dad.Ev[2]
+  r = pg'-pf      # Distancia entre ponto de gauss e ponto fonte
   
     GE=E/(2*(1+v));
     # Distance of source and field points
@@ -228,6 +227,42 @@ function calsolfund(r,n,dad::Union{elastico, elastico_iso})
   
          tast = [t11   t12
            t21   t22];
+  
+  uast,tast
+  end
+
+
+function calsolfund(pg,pf,n,dad::elastico_aniso)
+  # @infiltrate
+  mi=dad.k[1,:]
+  A=dad.k[2:3,:]
+  q=dad.k[4:5,:]
+  g=dad.k[6:7,:]
+
+  xcampo=pg[1]
+  ycampo=pg[2]
+  xf=pf[1]
+  yf=pf[2]
+
+
+    #Cálculo da distância do ponto fonte (xf,yf) ao ponto campo
+    z1 = xcampo - xf+mi[1]*(ycampo - yf);
+    z2 = xcampo - xf+mi[2]*(ycampo - yf);
+    
+    # Solução fundamental de deslocamento
+    
+    lns=[log(z1)     0
+            0  log(z2)];
+    
+    
+    uast = 2*real(A*lns*conj(q)');
+    
+    # Solução fundamental de forcas de superficies
+    
+    mi_n_z=[(mi[1]*n[1]-n[2])/z1         0
+                   0          (mi[2]*n[1]-n[2])/z2];
+    
+    tast = 2*real(A*mi_n_z*conj(g)');
   
   uast,tast
   end
