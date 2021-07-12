@@ -42,7 +42,7 @@ function integraelem(pf,x,eta,w,elem,dad::Union{elastico, elastico_aniso})
       dgamadqsi = norm(dxdqsi)  # dΓ/dξ = J(ξ) Jacobiano
       sx=dxdqsi[1]/dgamadqsi # vetor tangente dx/dΓ
       sy=dxdqsi[2]/dgamadqsi # vetor tangente dy/dΓ
-      uast,tast=calsolfund(pg,pf,[sy,-sx],dad)
+      uast,tast=calsolfund(pg',pf,[sy,-sx],dad)
       Nm[1,1:2:end]=N
       Nm[2,2:2:end]=N
       h+=tast*Nm*dgamadqsi*w[k]
@@ -180,12 +180,12 @@ function integrabezier(pf,cf,we,eta,w,elem::bezier,dad::elastico_iso)
   for k = 1:size(w,1)
     N,dN = calc_fforma(eta[k],elem,we)
     pg = cf*N    # Ponto de gauss interpolador
-    r = pg-pf      # Distancia entre ponto de gauss e ponto fonte
+ #   r = pg-pf      # Distancia entre ponto de gauss e ponto fonte
     dxdqsi = cf*dN   # dx/dξ & dy/dξ
     dgamadqsi = norm(dxdqsi)  # dΓ/dξ = J(ξ) Jacobiano
     sx=dxdqsi[1]/dgamadqsi # vetor tangente dx/dΓ
     sy=dxdqsi[2]/dgamadqsi # vetor tangente dy/dΓ
-    uast,tast=calsolfund(r,[sy,-sx],dad)
+    uast,tast=calsolfund(pg,pf,[sy,-sx],dad)
     Nm[1,1:2:end]=N
     Nm[2,2:2:end]=N
     h+=tast*Nm*dgamadqsi*w[k]/2
@@ -199,7 +199,7 @@ end
 function calsolfund(pg,pf,n,dad::Union{elastico, elastico_iso})
   # @infiltrate
   E,v=dad.Ev[1],dad.Ev[2]
-  r = pg'-pf      # Distancia entre ponto de gauss e ponto fonte
+  r = pg-pf      # Distancia entre ponto de gauss e ponto fonte
   
     GE=E/(2*(1+v));
     # Distance of source and field points
