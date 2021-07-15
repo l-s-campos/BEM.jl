@@ -517,7 +517,7 @@ end      #  inpoly()
 
 
   
-function aplicaCDC(H, G, dad::potencial_iso)
+function aplicaCDC(H, G, dad::potencial_iga)
     nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
     n = size(dad.NOS, 1)
     A = deepcopy(H)
@@ -534,7 +534,7 @@ end
 
 
 
-function separa(dad::potencial_iso, x)
+function separa(dad::potencial_iga, x)
   # Separa fluxo e temperatura
   
     troca = dad.tipoCDC[:] .== 0
@@ -548,7 +548,7 @@ function separa(dad::potencial_iso, x)
     dad.E * T, dad.E * q
 end
 
-function aplicaCDC(H, G, dad::elastico_iso)
+function aplicaCDC(H, G, dad::elastico_iga)
     # nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
     n = size(dad.NOS, 1)
     A = deepcopy(H)
@@ -563,7 +563,7 @@ function aplicaCDC(H, G, dad::elastico_iso)
     A, b
 end
 
-function separa(dad::elastico_iso,x)
+function separa(dad::elastico_iga,x)
     # nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
 
     troca = dad.tipoCDC'[:] .== 0

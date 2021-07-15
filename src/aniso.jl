@@ -66,7 +66,7 @@ function  Compute_Material(Material)
    A[2,2] = A2[3];
    g = [mi[1] mi[2]
       -1     -1];
-return [mi,A,q,g]
+return (mi=mi,A=A,q=q,g=g)
 end
 
 function  Compute_T(theta)

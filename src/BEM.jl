@@ -6,7 +6,7 @@ using GLMakie,Triangulate#, WriteVTK
 using Infiltrator,Distances,ParallelKMeans,LowRankApprox
 using PolynomialRoots
 
-export potencial,potencial_iso,elastico,elastico_iso,elemento,elastico_aniso
+export potencial,potencial_iga,elastico,elastico_iga,elemento,elastico_aniso,elastico_aniso_iga
 export mostra_geometria,mostra_resultado
 export calc_HeG,format_dad,separa,aplicaCDC,calc_Ti,calc_Aeb,nc,ni
 export calc_HeG_interp,Hinterp,cluster,Ainterp,matvec,Akmeans,Akmeans2
@@ -49,7 +49,7 @@ struct elastico_aniso <: vetorial
     NOS ::Array{Float64,2}
     pontos_internos ::Array{Float64,2}
     ELEM ::Array{elementov,1}
-    k ::Array{Complex,2}
+    k ::NamedTuple
 end
 struct potencial  <: escalar 
     NOS ::Array{Float64,2}
@@ -64,7 +64,7 @@ struct helmholtz  <: escalar
     k ::Array{Float64,1}    
 end
 
-struct potencial_iso  <: escalar 
+struct potencial_iga  <: escalar 
     NOS ::Array{Float64,2}
     pontos_controle ::Array{Float64,2}
     pontos_internos ::Array{Float64,2}
@@ -75,7 +75,7 @@ struct potencial_iso  <: escalar
     E ::SparseMatrixCSC{Float64,Int64} 
 end
 
-struct elastico_iso <: vetorial 
+struct elastico_iga <: vetorial 
     NOS ::Array{Float64,2}
     pontos_controle ::Array{Float64,2}
     pontos_internos ::Array{Float64,2}
@@ -86,7 +86,16 @@ struct elastico_iso <: vetorial
     E ::SparseMatrixCSC{Float64,Int64} 
 end
 
-
+struct elastico_aniso_iga <: vetorial 
+    NOS ::Array{Float64,2}
+    pontos_controle ::Array{Float64,2}
+    pontos_internos ::Array{Float64,2}
+    tipoCDC  ::Array{Int64,2}
+    valorCDC  ::Array{Float64,2}
+    ELEM ::Array{bezier,1}
+    k ::NamedTuple
+    E ::SparseMatrixCSC{Float64,Int64} 
+end
 
 
 nc(dad::DadosBEM) = size(dad.NOS,1)
@@ -102,8 +111,8 @@ include("mostra_problema.jl")
 include("rim.jl")
 include("arvore.jl")
 include("nurbs.jl")
-export format_dad_iso
-include("formatiso.jl")
+export format_dad_iga
+include("format_iga.jl")
 include("aniso.jl")
 
 import Base.size

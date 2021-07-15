@@ -26,7 +26,7 @@ function cluster(dad; max_elem=4,η = 1.0)
     centro=centros(dad)
     collocCoord= [dad.NOS;dad.pontos_internos]
     Tree1,child1,center_row1,diam1=Tree(collocCoord,max_elem)
-    if typeof(dad)==potencial_iso
+    if typeof(dad)==potencial_iga
         Tree2,child2,center_row2,diam2=Tree(centro,max_elem,[dad.tipoCDC[i.indices[1]] for i in dad.ELEM]) 
     else
         Tree2,child2,center_row2,diam2=Tree(centro,max_elem,[i.tipoCDC for i in dad.ELEM]) 
@@ -248,7 +248,7 @@ function Ainterp(dad,Tree1,Tree2,block;ninterp=3,compressão=true,ϵ=1e-3)
         b2 = Tree2[block[i,2]]       # Nós J da malha que formam a submatriz (Pontos Campo) (Colunas)
         # Submatriz = Produto cartesiano I x J
         
-        if typeof(dad)==potencial_iso
+        if typeof(dad)==potencial_iga
             CDCs=vcat([dad.valorCDC[dad.ELEM[ii].indices] for ii in b2]...)
             tipo=dad.tipoCDC[dad.ELEM[b2[1]].indices[1]]
         else
@@ -286,7 +286,7 @@ function Ainterp(dad,Tree1,Tree2,block;ninterp=3,compressão=true,ϵ=1e-3)
     end
     return HA,b
 end
-function montaAcheia(hmat,block,Tree1,Tree2,dad::potencial_iso;full=true)
+function montaAcheia(hmat,block,Tree1,Tree2,dad::potencial_iga;full=true)
     nelem = size(dad.ELEM,1)    # Quantidade de elementos discretizados no contorno
     nc = size(dad.NOS,1)
     ni = size(dad.pontos_internos,1)
@@ -398,7 +398,7 @@ function Akmeans(dad,Tree1,Tree2,block;nnucleos=6,compressão=true,ϵ=1e-3)
         b1 = Tree1[block[i,1]]       # Nós I da malha que formam a submatriz (Pontos Fonte) (linhas)
         b2 = Tree2[block[i,2]]       # Nós J da malha que formam a submatriz (Pontos Campo) (Colunas)
         # Submatriz = Produto cartesiano I x J
-        if typeof(dad)==potencial_iso
+        if typeof(dad)==potencial_iga
             CDCs=vcat([dad.valorCDC[dad.ELEM[ii].indices] for ii in b2]...)
             tipo=dad.tipoCDC[dad.ELEM[b2[1]].indices[1]]
         else
@@ -474,7 +474,7 @@ function Akmeans2(dad,Tree1,Tree2,block;nnucleos=6,compressão=true,ϵ=1e-3)
         b2 = Tree2[block[i,2]]       # Nós J da malha que formam a submatriz (Pontos Campo) (Colunas)
         # Submatriz = Produto cartesiano I x J
         
-        if typeof(dad)==potencial_iso
+        if typeof(dad)==potencial_iga
             CDCs=vcat([dad.valorCDC[dad.ELEM[ii].indices] for ii in b2]...)
             tipo=dad.tipoCDC[dad.ELEM[b2[1]].indices[1]]
         else

@@ -8,7 +8,7 @@ NPY = 2 #pontos internos na direção y
 npg = 10    #apenas números pares
 ## Formatação dos dados ________________________________________________
 println("1. Formatando os dados");
-dad = format_dad_iso(potencial1diso(nelem),NPX,NPY) # dados
+dad = format_dad_iga(potencial1diso(nelem),NPX,NPY) # dados
 # dad = format_dad(placacomfuro(nelem),NPX,NPY) # dados
 
 println("2. Montando a matriz A e o vetor b")

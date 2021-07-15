@@ -8,7 +8,7 @@ NPY = 2 #pontos internos na direção y
 npg = 30    #apenas números pares
 ## Formatação dos dados ________________________________________________
 println("1. Formatando os dados");
-dad = format_dad_iso(elastico1diso(0,0),NPX,NPY) # dados
+dad = format_dad_iga(elastico1diso(0,0),NPX,NPY) # dados
 
 println("2. Montando a matriz A e o vetor b")
  H,G = calc_HeG(dad,npg)  #importante

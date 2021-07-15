@@ -11,7 +11,7 @@ NPY = 5 #pontos internos na direção y
 npg = 16    #apenas números pares
 ## Formatação dos dados ________________________________________________
 println("1. Formatando os dados");
-@timeit to "dados" dad = format_dad_iso(potencial1diso(nelem),NPX,NPY) # dados
+@timeit to "dados" dad = format_dad_iga(potencial1diso(nelem),NPX,NPY) # dados
 
 println("2. Montando a matriz A e o vetor b")
 @timeit to "padrão" H,G = calc_HeG(dad,npg)  #importante

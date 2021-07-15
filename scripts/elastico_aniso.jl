@@ -8,7 +8,8 @@ NPY = 2 #pontos internos na direção y
 npg = 10    #apenas números pares
 ## Formatação dos dados ________________________________________________
 println("1. Formatando os dados");
-dad = format_dad(elastico_aniso_1d(nelem,3),NPX,NPY,) # dados
+# dad = format_dad(elastico_aniso_1d(nelem,3),NPX,NPY) # dados
+dad = format_dad_iga(elastico_aniso_1d_iga(nelem,3),NPX,NPY) # dados
 
 
 #println("2. Montando a matriz A e o vetor b")

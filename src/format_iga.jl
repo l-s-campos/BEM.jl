@@ -33,8 +33,8 @@ function calc_ncont(SEGMENTOS)
   return contorno
   end
 
-# function format_dad_iso(PONTOS,SEGMENTOS) 
-  function  format_dad_iso(entrada,NPX=2,NPY=2)
+# function format_dad_iga(PONTOS,SEGMENTOS) 
+  function  format_dad_iga(entrada,NPX=2,NPY=2)
     prob,PONTOS,SEGMENTOS,MALHA,CCSeg,k=entrada
 
 #   println("PONTOS = $PONTOS")

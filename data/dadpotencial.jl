@@ -128,5 +128,5 @@ function potencial1diso(ne=15,tipo=2)
     # Condutividade Térmica do material
     k = 1
     # Malha de pontos internos
-    return potencial_iso,PONTOS,SEGMENTOS,MALHA,CCSeg,k
+    return potencial_iga,PONTOS,SEGMENTOS,MALHA,CCSeg,k
 end

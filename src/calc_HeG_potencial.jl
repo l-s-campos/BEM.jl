@@ -73,7 +73,7 @@ function calc_Ti(dad::potencial,T,q,npg=8)
   end
   Ti
 end
-function calc_Ti(dad::potencial_iso,T,q,npg=8)
+function calc_Ti(dad::potencial_iga,T,q,npg=8)
   nelem = size(dad.ELEM,1)    # Quantidade de elementos discretizados no contorno
   n = size(dad.pontos_internos,1)
   Ti=zeros(n)
@@ -234,7 +234,7 @@ end
 
 
 
-function calc_HeG(dad::potencial_iso,npg=8)
+function calc_HeG(dad::potencial_iga,npg=8)
   # nelem = size(dad.ELEM,1)    # Quantidade de elementos discretizados no contorno
   nfonte = size(dad.NOS,1)    # Quantidade de elementos discretizados no contorno
   n = size(dad.NOS,1)
@@ -264,7 +264,7 @@ function calc_HeG(dad::potencial_iso,npg=8)
   end
    H-dad.E/2,G
 end
-function integrabezier(pf,cf,we,eta,w,elem::bezier,prob::potencial_iso)
+function integrabezier(pf,cf,we,eta,w,elem::bezier,prob::potencial_iga)
   h = zeros(Float64,size(elem))
   g = zeros(Float64,size(elem))
   for k = 1:size(w,1)
@@ -286,7 +286,7 @@ function integrabezier(pf,cf,we,eta,w,elem::bezier,prob::potencial_iso)
 end
 
 
-function calc_HeG_interp(dad::potencial_iso,b1,b2,npg=8,ninterp=3)
+function calc_HeG_interp(dad::potencial_iga,b1,b2,npg=8,ninterp=3)
   collocCoord=[dad.NOS;dad.pontos_internos][b1,:]
   xmax=maximum(collocCoord,dims=1)
   xmin=minimum(collocCoord,dims=1)
@@ -332,7 +332,7 @@ function calc_HeG_interp(dad::potencial_iso,b1,b2,npg=8,ninterp=3)
   L,H,G
 end
 
-function calc_HeG(dad::potencial_iso,b1,b2,npg=8)
+function calc_HeG(dad::potencial_iga,b1,b2,npg=8)
   n1 = size(b1,1)
   n2 = size(b2,1)
   H=zeros(n1,0)
@@ -379,7 +379,7 @@ function calsolfund(r,n,prob::potencial)
   Qast,Tast
 end
 
-function calsolfund(r,n,prob::potencial_iso)
+function calsolfund(r,n,prob::potencial_iga)
   R=norm(r)
   Qast=dot(r,n)/R^2/(2*π)       # Equação 4.36
   Tast=-log(R)/(2*π*prob.k)
