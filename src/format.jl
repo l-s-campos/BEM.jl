@@ -81,6 +81,8 @@ function format_dad(entrada, NPX=2, NPY=2, afasta=1)
     num_elementos = sum(MALHA[:,2])
     if prob == potencial
         ELEM = Vector{elemento}(undef, num_elementos)
+    elseif prob == helmholtz
+            ELEM = Vector{elemento}(undef, num_elementos)
     else prob == elastico
         ELEM = Vector{elementov}(undef, num_elementos)
     end
@@ -178,6 +180,8 @@ function format_dad(entrada, NPX=2, NPY=2, afasta=1)
             qsis = range(-1 + afasta / tipo_elem, stop=1 - afasta / tipo_elem, length=tipo_elem) # Parametrização de -1 a 1
             if prob == potencial
                 ELEM[cont_el] = elemento(nos, CCSeg[t,2], fill(CCSeg[t,3], tipo_elem), qsis)
+            elseif prob == helmholtz
+                ELEM[cont_el] = elemento(nos, CCSeg[t,2], fill(CCSeg[t,3], tipo_elem), qsis)
             else prob == elastico
                 ELEM[cont_el] = elementov(nos, CCSeg[t,[2,4]], repeat(CCSeg[t,[3,5]], 1, tipo_elem), qsis)
             end
@@ -261,19 +265,20 @@ function aplicaCDC(H, G, dad::Union{elastico, elastico_aniso})
     A, b
 end
 
-function aplicaCDC(H, G, dad::potencial)
-    nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
+function aplicaCDC(H, G, dad::Union{potencial,helmholtz})
+    # nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
     n = size(dad.NOS, 1)
-    A = zeros(n, n)
-    b = zeros(n)
+    A = zeros(typeof(H[1]),n, n)
+    b = zeros(typeof(H[1]),n)
     for elem_i in dad.ELEM  # Laço dos pontos fontes
         ind_elem = elem_i.indices
+        # @infiltrate
         if elem_i.tipoCDC == 0
             A[:,ind_elem] =  -G[:,ind_elem]
             b +=  -H[:,ind_elem] * elem_i.valorCDC
         elseif elem_i.tipoCDC == 1
-    A[:,ind_elem] =  H[:,ind_elem]  
-    b +=  G[:,ind_elem] * elem_i.valorCDC    
+            A[:,ind_elem] =  H[:,ind_elem]  
+            b +=  G[:,ind_elem] * elem_i.valorCDC    
         end
     end
     A, b
@@ -285,7 +290,6 @@ function separa(dad::Union{elastico, elastico_aniso}, x)
 # ncdc = número de linhas da matriz CDC
 # T = vetor que contêm as temperaturas nos nós
 # q = vetor que contêm o fluxo nos nós
-    nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
     n = size(dad.NOS, 1)
     T = zeros(2n)
     q = zeros(2n)
@@ -303,16 +307,15 @@ function separa(dad::Union{elastico, elastico_aniso}, x)
 end
 
 
-function separa(dad::potencial, x)
+function separa(dad::Union{potencial,helmholtz}, x)
   # Separa fluxo e temperatura
   
   # ncdc = número de linhas da matriz CDC
   # T = vetor que contêm as temperaturas nos nós
   # q = vetor que contêm o fluxo nos nós
-    nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
     n = size(dad.NOS, 1)
-    T = zeros(n)
-    q = zeros(n)
+    T = zeros(typeof(x[1]),n)
+    q = zeros(typeof(x[1]),n)
     for elem_i in dad.ELEM  # Laço dos pontos fontes
         ind_elem = elem_i.indices
         if elem_i.tipoCDC == 0
@@ -548,7 +551,7 @@ function separa(dad::potencial_iga, x)
     dad.E * T, dad.E * q
 end
 
-function aplicaCDC(H, G, dad::elastico_iga)
+function aplicaCDC(H, G, dad::Union{elastico_iga, elastico_aniso_iga})
     # nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
     n = size(dad.NOS, 1)
     A = deepcopy(H)
@@ -563,7 +566,7 @@ function aplicaCDC(H, G, dad::elastico_iga)
     A, b
 end
 
-function separa(dad::elastico_iga,x)
+function separa(dad::Union{elastico_iga, elastico_aniso_iga},x)
     # nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
 
     troca = dad.tipoCDC'[:] .== 0

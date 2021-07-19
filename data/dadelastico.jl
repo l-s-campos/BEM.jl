@@ -161,8 +161,8 @@ function elastico_aniso_1d_iga(ne=15,tipo=2)
         3 1 0 0 0
         4 0 0 1 0]
     # Condutividade Térmica do material
-    Material = [1 2.200000    4.4   0.7692      0.4286  15 1;
-    2 2.200000    4.4   0.7692      0.4286 -25 1];
+    Material = [1 2.2000001    2.2   0.7692      0.4286  0 1;
+    2 2.2000001    2.2   0.7692      0.4286 0 1];
     # const_material = Compute_Material(Material)
     # mi,A,q,g = const_material
     # k=zeros(Complex,7,2)
@@ -171,5 +171,5 @@ function elastico_aniso_1d_iga(ne=15,tipo=2)
     # k[4:5,:]=q
     # k[6:7,:]=g
     # Malha de pontos internos
-    return elastico_aniso,PONTOS,SEGMENTOS,MALHA,CCSeg,Compute_Material(Material)
+    return elastico_aniso_iga,PONTOS,SEGMENTOS,MALHA,CCSeg,Compute_Material(Material)
 end

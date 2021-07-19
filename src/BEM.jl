@@ -1,12 +1,13 @@
 module BEM
+using Base: NamedTuple
 using ForwardDiff: length
 using LinearAlgebra,Statistics, FastGaussQuadrature, ForwardDiff,SparseArrays
 using TimerOutputs#, FFTW
 using GLMakie,Triangulate#, WriteVTK
 using Infiltrator,Distances,ParallelKMeans,LowRankApprox
-using PolynomialRoots
+using PolynomialRoots, SpecialFunctions
 
-export potencial,potencial_iga,elastico,elastico_iga,elemento,elastico_aniso,elastico_aniso_iga
+export potencial,helmholtz,potencial_iga,elastico,elastico_iga,elemento,elastico_aniso,elastico_aniso_iga
 export mostra_geometria,mostra_resultado
 export calc_HeG,format_dad,separa,aplicaCDC,calc_Ti,calc_Aeb,nc,ni
 export calc_HeG_interp,Hinterp,cluster,Ainterp,matvec,Akmeans,Akmeans2
@@ -61,7 +62,7 @@ struct helmholtz  <: escalar
     NOS ::Array{Float64,2}
     pontos_internos ::Array{Float64,2}
     ELEM ::Array{elemento,1}
-    k ::Array{Float64,1}    
+    k ::NamedTuple    
 end
 
 struct potencial_iga  <: escalar 

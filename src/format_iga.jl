@@ -134,7 +134,7 @@ for j = 1:size(crv[i].conn, 1)  # Corre as curvas de Bézier
     ELEM[cont_el] = bezier(indcoluna[cont_el],Ce,p,[x0 xf],Wb,sing[cont_el])
 end
 end
-#    @infiltrate
+    # @infiltrate
 prob(NOS,pts_controle,gera_p_in(NPX,NPY,PONTOS,SEGMENTOS),tipoCDC,valorCDC,ELEM,k,E)
 
 

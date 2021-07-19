@@ -17,8 +17,10 @@ function calc_HeG(dad::potencial,npg=8)
         b=norm(ps'-pf)/norm(Δelem)
         eta,Jt=sinhtrans(qsi,eet,b)
         h,g= integraelem(pf,x,eta,w.*Jt,elem_j,dad)
+        # @infiltrate
         H[contafonte,elem_j.indices]=h
         G[contafonte,elem_j.indices]=g
+        
       end
       contafonte+=1
     end
@@ -31,7 +33,7 @@ end
 
 #__________________________________________________________________________________________________________
 "Funcao para calcular a temperatura pelo metodo da integracao de contorno utilizada no estimador de erro recursivo"
-function integraelem(pf,x,eta,w,elem,dad::potencial)
+function integraelem(pf,x,eta,w,elem,dad::Union{potencial,helmholtz})
   h = zeros(Float64,size(elem))
   g = zeros(Float64,size(elem))
   
@@ -44,6 +46,8 @@ function integraelem(pf,x,eta,w,elem,dad::potencial)
     sx=dxdqsi[1]/dgamadqsi # vetor tangente dx/dΓ
     sy=dxdqsi[2]/dgamadqsi # vetor tangente dy/dΓ
     Qast,Tast=calsolfund(r,[sy,-sx],dad)
+    # @infiltrate
+    # @show pg,pf,r,[sy,-sx],Qast
     h+=N*Qast*dgamadqsi*w[k]
     g+=N*Tast*dgamadqsi*w[k]
     
@@ -51,7 +55,7 @@ function integraelem(pf,x,eta,w,elem,dad::potencial)
   h,g
 end
 
-function calc_Ti(dad::potencial,T,q,npg=8)
+function calc_Ti(dad::Union{potencial,helmholtz},T,q,npg=8)
   nelem = size(dad.ELEM,1)    # Quantidade de elementos discretizados no contorno
   n = size(dad.pontos_internos,1)
   Ti=zeros(n)
@@ -102,7 +106,7 @@ function calc_Ti(dad::potencial_iga,T,q,npg=8)
   Ti
 end
 
-function calc_Aeb(dad::potencial,npg=8)
+function calc_Aeb(dad::Union{potencial,helmholtz},npg=8)
   nelem = size(dad.ELEM,1)    # Quantidade de elementos discretizados no contorno
   n = size(dad.NOS,1)
   ni = size(dad.pontos_internos,1)
@@ -136,7 +140,7 @@ function calc_Aeb(dad::potencial,npg=8)
 end
 
 
-function calc_HeG(dad::potencial,b1,b2,npg=8)
+function calc_HeG(dad::Union{potencial,helmholtz},b1,b2,npg=8)
   n1 = size(b1,1)
   n2 = size(b2,1)
   H=zeros(n1,0)
@@ -152,7 +156,7 @@ function calc_HeG(dad::potencial,b1,b2,npg=8)
       pf = [dad.NOS;dad.pontos_internos][ind,:]   # Coordenada (x,y)  dos pontos fonte
       Δelem=x[end,:]-x[1,:]     # Δx e Δy entre o primeiro e ultimo nó geometrico
       eet=(elem_j.ξs[end] -elem_j.ξs[1])*dot(Δelem,pf.-x[1,:])/norm(Δelem)^2+elem_j.ξs[1]
-      N_geo,~=calc_fforma_gen(eet,elem_j.ξs)
+      N_geo,~=calc_fforma(eet,elem_j)
       ps=N_geo'*x
       b=norm(ps'-pf)/norm(Δelem)
       eta,Jt=sinhtrans(qsi,eet,b)
@@ -169,7 +173,7 @@ function calc_HeG(dad::potencial,b1,b2,npg=8)
 end
 
 
-function calc_HeG_interp(dad::potencial,b1,b2,npg=8,ninterp=3)
+function calc_HeG_interp(dad::Union{potencial,helmholtz},b1,b2,npg=8,ninterp=3)
   collocCoord=[dad.NOS;dad.pontos_internos][b1,:]
   xmax=maximum(collocCoord,dims=1)
   xmin=minimum(collocCoord,dims=1)
@@ -196,7 +200,7 @@ function calc_HeG_interp(dad::potencial,b1,b2,npg=8,ninterp=3)
         pf = [xks[i1,1],xks[i2,2]]   # Coordenada (x,y)  dos pontos fonte
         Δelem=x[end,:]-x[1,:]     # Δx e Δy entre o primeiro e ultimo nó geometrico
         eet=(elem_j.ξs[end] -elem_j.ξs[1])*dot(Δelem,pf.-x[1,:])/norm(Δelem)^2+elem_j.ξs[1]
-        N_geo,~=calc_fforma_gen(eet,elem_j.ξs)
+        N_geo,~=calc_fforma(eet,elem_j)
         ps=N_geo'*x
         b=norm(ps'-pf)/norm(Δelem)
         eta,Jt=sinhtrans(qsi,eet,b)
@@ -372,14 +376,7 @@ end
 
 
 
-function calsolfund(r,n,prob::potencial)
-  R=norm(r)
-  Qast=dot(r,n)/R^2/(2*π)       # Equação 4.36
-  Tast=-log(R)/(2*π*prob.k)
-  Qast,Tast
-end
-
-function calsolfund(r,n,prob::potencial_iga)
+function calsolfund(r,n,prob::Union{potencial,potencial_iga})
   R=norm(r)
   Qast=dot(r,n)/R^2/(2*π)       # Equação 4.36
   Tast=-log(R)/(2*π*prob.k)

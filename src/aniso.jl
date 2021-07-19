@@ -98,3 +98,96 @@ function Assembly_Q(El,Et,Glt,nult)
       Q16 Q26 Q66];
 return  Q
 end
+
+
+function integrabeziersing(pf,cf,we,eta,w,elem::bezier,dad::elastico_aniso_iga,eet)
+   h = zeros(Float64,2,2*size(elem))
+   basisrc,dN=calc_fforma(eet,elem,we)       
+   dxdqsi = cf*dN   # dx/dξ & dy/dξ
+   fonte = cf*basisrc    # Ponto de gauss interpolador
+
+   dgamadqsif = norm(dxdqsi)/2  # dΓ/dξ = J(ξ) Jacobiano    
+   sx=dxdqsi[1]/dgamadqsif # vetor tangente dx/dΓ
+   sy=dxdqsi[2]/dgamadqsif # vetor tangente dy/dΓ
+   nfonte=[sy,-sx]
+   matbasisrc=zeros(2,2*size(elem))
+   matbasisrc[1,1:2:end]=basisrc
+   matbasisrc[2,2:2:end]=basisrc
+ 
+   z0 =[fonte[1]+fonte[2]*dad.k.mi[1]*im,fonte[1]+fonte[2]*dad.k.mi[2]*im]
+   mi_n=[(dad.k.mi[1]*nfonte[1]-nfonte[2]),(dad.k.mi[2]*nfonte[1]-nfonte[2])]
+   g_mi_n=dad.k.g.*mi_n;
+   T1=dad.k.A[:,1]*g_mi_n[:,1]'
+   T2=dad.k.A[:,2]*g_mi_n[:,2]'
+ 
+  
+   # htermMatrix=herm*matbasisrc
+ 
+   Nm = zeros(Float64,2,2*size(elem))
+ 
+ 
+   for k = 1:size(w,1)
+     N,dN = calc_fforma(eta[k],elem,we)
+     pg = cf*N    # Ponto de gauss interpolador
+     dxdqsi = cf*dN   # dx/dξ & dy/dξ
+     dgamadqsi = norm(dxdqsi)  # dΓ/dξ = J(ξ) Jacobiano
+     sx=dxdqsi[1]/dgamadqsi # vetor tangente dx/dΓ
+     sy=dxdqsi[2]/dgamadqsi # vetor tangente dy/dΓ
+     uast,tast=calsolfund(pg,pf,[sy,-sx],dad)
+     # h+=N*dgamadqsi*w[k]
+     # g+=N*dgamadqsi*w[k]
+     Nm[1,1:2:end]=N
+     Nm[2,2:2:end]=N
+     za=z0+(eta[k]-eet)*dgamadqsif/2*mi_n
+     h+=(tast*Nm*dgamadqsi/2-real(T1/(za[1]-z0[1])+T2/(za[2]-z0[2]))*matbasisrc*dgamadqsif)*w[k]
+   #   @show eet,eta[k],h
+   #   @infiltrate
+   end
+ # @show h
+   if abs(eet)==1
+     beta_m=1/dgamadqsif
+   #   h+=htermMatrix*log(abs(2/beta_m))*sign(-eet)
+     h+=dgamadqsif*real((dad.k.A[:,1]*dad.k.g[:,1]'+dad.k.A[:,2]*dad.k.g[:,2]')*log(abs(2/beta_m))*sign(-eet))*matbasisrc;
+ #        println("h = $(htermMatrix*log(abs(2/beta_m))*sign(-eet))")
+ else
+     h+=dgamadqsif*real((dad.k.A[:,1]*dad.k.g[:,1]'+dad.k.A[:,2]*dad.k.g[:,2]')*log(abs((1-eet)/(1+eet))))*matbasisrc;
+ end
+   h
+ end
+
+
+ 
+function calsolfund(pg,pf,n,dad::Union{elastico_aniso, elastico_aniso_iga})
+   # @infiltrate
+   mi=dad.k.mi
+   A=dad.k.A
+   q=dad.k.q
+   g=dad.k.g
+ 
+   xcampo=pg[1]
+   ycampo=pg[2]
+   xf=pf[1]
+   yf=pf[2]
+ 
+ 
+     #Cálculo da distância do ponto fonte (xf,yf) ao ponto campo
+     z1 = xcampo - xf+mi[1]*(ycampo - yf);
+     z2 = xcampo - xf+mi[2]*(ycampo - yf);
+     
+     # Solução fundamental de deslocamento
+     
+     lns=[log(z1)     0
+             0  log(z2)];
+     
+     
+     uast = 2*real(A*lns*conj(q)');
+     
+     # Solução fundamental de forcas de superficies
+     
+     mi_n_z=[(mi[1]*n[1]-n[2])/z1         0
+                    0          (mi[2]*n[1]-n[2])/z2];
+     
+     tast = 2*real(A*mi_n_z*conj(g)');
+   
+   uast,tast
+   end
