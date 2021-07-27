@@ -87,7 +87,7 @@ function calc_ncont(SEGMENTOS)
       for i=1:ncrv
         degree=crv[i].order-1
         if MALHA[i,3]>degree
-          coefs,knots = bspdegelev(degree,crv[i].coefs,crv[i].knots,MALHA[i,3])
+          coefs,knots = bspdegelev(degree,crv[i].coefs,crv[i].knots,MALHA[i,3]-degree)
           crv[i] = nrbmak(coefs,knots)
       end
   end

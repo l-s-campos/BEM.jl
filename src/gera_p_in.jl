@@ -42,7 +42,7 @@ while l<= npc; # for over the lines that defines the boundary
       xc,yc=calcula_centro(x1,y1,x2,y2,raio[l]); # compute the center of the arc
       if(xpi<xc+abs(raio[l]) && xpi>xc-abs(raio[l])) # check only if the x coordinate of the point is between
                  # the values xc-radius and xc+radius
-         teta_i,teta_f=calcula_arco(x1,y1,x2,y2,xc,yc); # compute the arc between the line that defines the arc and
+         teta_i,teta_f=calcula_arco(x1,y1,x2,y2,xc,yc,raio[l]); # compute the arc between the line that defines the arc and
          # the horizontal direction (-π<teta<π)
          tetac=zeros(2,1)
          y=zeros(2,1)
@@ -156,8 +156,8 @@ while (aceita=="sim" && l < npc)
       end
    else    # The segment is an arc
       xc,yc=calcula_centro(x1,y1,x2,y2,raio[l]); # Center of the arc
-      teta_i,teta_f=calcula_arco(x1,y1,x2,y2,xc,yc); # angle of the lines that defines the arc with the horizontal direction
-      teta_i,teta_p=calcula_arco(x1,y1,xpi,ypi,xc,yc);  # teta_p angle of the line that cross the center point and the
+      teta_i,teta_f=calcula_arco(x1,y1,x2,y2,xc,yc,raio[l]); # angle of the lines that defines the arc with the horizontal direction
+      teta_i,teta_p=calcula_arco(x1,y1,xpi,ypi,xc,yc,raio[l]);  # teta_p angle of the line that cross the center point and the
       # internal point with the horizontal direction
       if(raio[l]>0) # The center is in the left side of the arc (from the initial to the end point)
          if(teta_f>teta_i)
