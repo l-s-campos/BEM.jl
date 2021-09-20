@@ -12,7 +12,7 @@ export mostra_geometria,mostra_resultado
 export calc_HeG,format_dad,separa,aplicaCDC,calc_Ti,calc_Aeb,nc,ni
 export calc_HeG_interp,Hinterp,cluster,Ainterp,matvec,Akmeans,Akmeans2
 export Monta_M_RIMd,Finterp
-export Compute_Material,Compute_T,Compute_Qbar,Assembly_Q
+export Compute_Material,Compute_T,Compute_Qbar,Assembly_Q, calc_Hsing
 
 
 abstract type DadosBEM end
