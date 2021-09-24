@@ -1,4 +1,4 @@
-function calc_HeG(dad::Union{elastico, elastico_aniso},npg=8)
+function calc_HeG(dad::elastico,npg=8)
   nelem = size(dad.ELEM,1)    # Quantidade de elementos discretizados no contorno
   n = size(dad.NOS,1)
   H=zeros(2*n,2*n)
@@ -28,6 +28,107 @@ function calc_HeG(dad::Union{elastico, elastico_aniso},npg=8)
   end
 H,G
 end
+
+function calc_HeG(dad::elastico_aniso,npg=8)
+  nelem = size(dad.ELEM,1)    # Quantidade de elementos discretizados no contorno
+  n = size(dad.NOS,1)
+  H=zeros(2*n,2*n)
+  G=zeros(2*n,2*n)
+  qsi,w = gausslegendre(npg)    # Quadratura de gauss
+      for i=1:n
+            pf = dad.NOS[i,:]   # Coordenada (x,y)  dos pontos fonte
+            for elem_j in dad.ELEM  #Laço dos elementos
+              x = dad.NOS[elem_j.indices,:]   # Coordenada (x,y) dos nós geométricos
+              Δelem=x[end,:]-x[1,:]     # Δx e Δy entre o primeiro e ultimo nó geometrico
+              eet=(elem_j.ξs[end]-elem_j.ξs[1])*dot(Δelem,pf.-x[1,:])/norm(Δelem)^2+elem_j.ξs[1]
+              N_geo=calc_fforma(eet,elem_j,false)
+              ps=N_geo'*x
+              b=norm(ps'-pf)/norm(Δelem)
+              eta,Jt=sinhtrans(qsi,eet,b)
+              # eta,Jt=telles(qsi,eet)
+              h,g= integraelem(pf,x,eta,w.*Jt,elem_j,dad)
+	      if(i in elem_j.indices)
+                  if(i==elem_j.indices[1])
+                      xi0=-(2/3.)
+                      no_pf=1
+                  elseif(i==elem_j.indices[2])
+                      xi0=0.
+                      no_pf=2
+                  elseif(i==elem_j.indices[3])
+                      xi0=2/3.
+                      no_pf=3
+                  end
+                  Hesing=calc_Hsing(xi0,x,dad,elem_j,qsi,w)
+                  h[:,2*no_pf-1:2*no_pf]=Hesing;
+              end
+              cols=[2elem_j.indices.-1 2elem_j.indices]'[:]
+              H[2i-1:2i,cols]=h
+              G[2i-1:2i,cols]=g
+          end
+      end
+  
+ # for i = 1:n                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
+ #   H[2i-1:2i,2i-1:2i].=0
+ #   H[2i-1:2i,2i-1:2i]=-[sum(H[2i-1:2i,1:2:end],dims=2) sum(H[2i-1:2i,2:2:end],dims=2)]
+ # end
+H,G
+end
+
+
+function calc_Hsing(xi0,x,dad,elem,xi,w)
+mi=dad.k.mi
+A=dad.k.A
+q=dad.k.q
+g=dad.k.g
+
+N,dN=calc_fforma(xi0,elem)
+x0 = N'*x    # Ponto fonte
+npontos=length(xi)
+integral=log(1-xi0)-log(1+xi0)
+Hsing = zeros(Complex,2,2)
+Hesing = zeros(Float64,2,2)
+for i=1:npontos
+    delta=xi[i]-xi0;
+    kernelsing=(1/delta);
+    N,dN=calc_fforma(xi[i],elem)
+    if(xi0==-2/3)
+        Nno=N[1];
+        no=1
+    elseif (xi0==0)
+        Nno=N[2];
+        no=2
+    else
+        Nno=N[3];
+        no=3
+    end    
+    pg = N'*x    # Ponto de gauss interpolador
+    dxdqsi = dN'*x   # dx/dξ & dy/dξ
+    dgamadqsi = norm(dxdqsi)  # dΓ/dξ = J(ξ) Jacobiano
+    sx=dxdqsi[1]/dgamadqsi # vetor tangente dx/dΓ
+    sy=dxdqsi[2]/dgamadqsi # vetor tangente dy/dΓ
+    nx=sy
+    ny=-sx
+
+    # Compute the distance from the source point (xf,yf) to the field point (xcampo, ycampo)
+    z1 = pg[1] - x0[1]+mi[1]*(pg[2] - x0[2]);
+    mi_n_z1=(mi[1]*nx-ny)/z1;
+    z2 = pg[1] - x0[1]+mi[2]*(pg[2] - x0[2]);
+    mi_n_z2=(mi[2]*nx-ny)/z2;
+    kernel1=mi_n_z1*dgamadqsi*Nno;
+    kernel2=mi_n_z2*dgamadqsi*Nno;
+    kernelreg1=kernel1-kernelsing;
+    kernelreg2=kernel2-kernelsing;
+    Hsing=Hsing+[kernelreg1 0;0 kernelreg2]*w[i];
+end
+Hsing=Hsing+[integral 0;0 integral];
+Hesing  = 2*real(A*Hsing*conj(g)')+[1/2 0;0 1/2]
+return Hesing
+end
+
+
+
+
+
 
 #__________________________________________________________________________________________________________
 "Funcao para calcular fazer integracao no contorno "
