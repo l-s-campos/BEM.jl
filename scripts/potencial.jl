@@ -5,7 +5,7 @@
 using DrWatson
 @quickactivate "BEM"
 include(scriptsdir("includes.jl"))
-nelem = 4  #Numero de elementos
+nelem = 10  #Numero de elementos
 NPX = 2 #pontos internos na direção x
 NPY = 2 #pontos internos na direção y
 npg = 10    #apenas números pares
@@ -17,6 +17,7 @@ dad = format_dad(potencial1d(nelem),NPX,NPY) # dados
 
 println("2. Montando a matriz A e o vetor b")
 H,G = calc_HeG(dad,npg)  #importante
+# H1,G1 = calc_HeG(dad,10*npg)  #importante
 
 
 A,b = aplicaCDC(H,G,dad) # Calcula a matriz A e o vetor b

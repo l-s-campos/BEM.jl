@@ -14,9 +14,14 @@ function calc_HeG(dad::potencial,npg=8)
         eet=(elem_j.ξs[end] -elem_j.ξs[1])*dot(Δelem,pf.-x[1,:])/norm(Δelem)^2+elem_j.ξs[1]
         N_geo,~=calc_fforma(eet,elem_j)
         ps=N_geo'*x
-        b=norm(ps'-pf)/norm(Δelem)
-        eta,Jt=sinhtrans(qsi,eet,b)
-        h,g= integraelem(pf,x,eta,w.*Jt,elem_j,dad)
+        b=norm(ps'-pf)#/norm(Δelem)
+        # eta,Jt=sinhtrans(qsi,eet,b)
+        # @show eet,b
+        eta,wt=pontosintegra(dad.NOS,elem_j,ind_elem,qsi,w)
+        # @show norm(eta-eta1)
+
+        h,g= integraelem(pf,x,eta,wt,elem_j,dad)
+        # h,g= integraelem(pf,x,eta,w.*Jt,elem_j,dad)
         # @infiltrate
         H[contafonte,elem_j.indices]=h
         G[contafonte,elem_j.indices]=g
@@ -26,7 +31,7 @@ function calc_HeG(dad::potencial,npg=8)
     end
   end
   for i = 1:n                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
-    H[i,i]+=-0.5
+    H[i,i]=-0.5
   end
   H,G
 end

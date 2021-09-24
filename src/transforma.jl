@@ -90,12 +90,55 @@ end
 #
 # [sum(f1(u).*w) sum(f1(x).*w.*j) sum(f1(e).*w.*jt) sum(f1(m).*w.*jm)].-ana
 
-function pontosintegra(x,elem_j,qsi,w)
-Δelem=x[end,:]-x[1,:]     # Δx e Δy entre o primeiro e ultimo nó geometrico
-eet=(elem_j.ξs[end] -elem_j.ξs[1])*dot(Δelem,pf.-x[1,:])/norm(Δelem)^2+elem_j.ξs[1]
-N_geo,~=calc_fforma(eet,elem_j)
-ps=N_geo'*x
-b=norm(ps'-pf)/norm(Δelem)
-eta,Jt=sinhtrans(qsi,eet,b)
-eta,w.*Jt
+function pontosintegra(NOS,elem_j,ind_elem,qsi,w)
+   
+     nosing = elem_j.indices .== ind_elem
+
+    if sum(nosing) == 1 #integração singular
+
+        eet=(elem_j.ξs[nosing])[1]
+        if eet^2!=1
+            x1=qsi*(eet+1)/2 .+(eet-1)/2
+            x2=qsi*(1-eet)/2 .+(eet+1)/2
+            qsis=[x1;x2]
+            ws=[w*(1+eet)/2;w*(1-eet)/2]
+            eta,Jt=Monegato(qsis,eet,11.0)
+            inds=eta.!=eet
+            return eta[inds],ws[inds].*Jt[inds]
+        end
+        # eta,Jt=sinhtrans(qsi,eet[1],0)
+        eta,Jt=Monegato(qsi,eet,11.0)
+        inds=eta.!=eet
+        return eta[inds],w[inds].*Jt[inds]
+    else
+        xel = NOS[elem_j.indices,:]   # Coordenada (x,y) dos nós geométricos
+        pf = NOS[ind_elem,:] 
+        
+        if distancia(xel[1],xel,pf,elem_j)>5*elem_j.comprimento
+            # @show distancia(xel[1],xel,pf,elem_j),elem_j.comprimento
+            return qsi,w
+        end
+        res=optimize(x->distancia(x[1],xel,pf,elem_j),[0.0],Newton(),Optim.Options(g_tol = 1e-3,iterations = 10))
+        # @infiltrate
+        # eta,Jt=sinhtrans(qsi,Optim.minimizer(res)[1],Optim.minimum(res))
+        eta,Jt=sinhtrans(qsi,Optim.minimizer(res)[1],Optim.minimum(res)/elem_j.comprimento)
+        # @show Optim.minimizer(res)[1],Optim.minimum(res)/elem_j.comprimento
+        return eta,w.*Jt
+    end
+    
+end
+
+function distancia(qsi,x,pf,elem)
+    N_geo,~=calc_fforma(qsi,elem)
+    ps=N_geo'*x
+    norm(ps'-pf)
+end
+
+
+function Monegato(t,s0,q=5.0)
+   δ=2^(-q)*((1+s0)^(1/q)+(1-s0)^(1/q))^q
+   t0=((1+s0)^(1/q)-(1-s0)^(1/q))/((1+s0)^(1/q)+(1-s0)^(1/q))
+   s=s0.+δ*(t.-t0).^q
+   ds=q*δ*(t.-t0).^(q-1)
+s,ds
 end
