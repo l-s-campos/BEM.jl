@@ -92,6 +92,7 @@ function format_dad(entrada, NPX=2, NPY=2, afasta=1)
     cont_el = Int64(0);	# Counter to the elements (the number of physical and geometric elements is the same).
     num_lin = length(SEGMENTOS[:,1]);	# Número de linhas/lados no contorno
     p_ini = round(Int64, SEGMENTOS[1,2])
+pontosg,pesosg= gausslegendre(2)    # Quadratura de gauss
 
   # ______________________________________________________________________
   # Definition of the biggest dimension of the problem
@@ -178,12 +179,15 @@ function format_dad(entrada, NPX=2, NPY=2, afasta=1)
             cont_el = cont_el + 1
             nos = (cont_el - 1) * tipo_elem + 1:cont_el * tipo_elem
             qsis = range(-1 + afasta / tipo_elem, stop=1 - afasta / tipo_elem, length=tipo_elem) # Parametrização de -1 a 1
-            if prob == potencial
-                ELEM[cont_el] = elemento(nos, CCSeg[t,2], fill(CCSeg[t,3], tipo_elem), qsis)
-            elseif prob == helmholtz
-                ELEM[cont_el] = elemento(nos, CCSeg[t,2], fill(CCSeg[t,3], tipo_elem), qsis)
+# @infiltrate
+N1,~=calc_fforma_gen(pontosg[1],qsis)
+N2,~=calc_fforma_gen(pontosg[2],qsis)
+            tamanho=norm(N1'*[xs ys]*pesosg[1]+N2'*[xs ys]*pesosg[2])
+            # @infiltrate
+            if prob == potencial || prob == helmholtz
+                ELEM[cont_el] = elemento(nos, CCSeg[t,2], fill(CCSeg[t,3], tipo_elem), qsis,tamanho)
             else prob == elastico
-                ELEM[cont_el] = elementov(nos, CCSeg[t,[2,4]], repeat(CCSeg[t,[3,5]], 1, tipo_elem), qsis)
+                ELEM[cont_el] = elementov(nos, CCSeg[t,[2,4]], repeat(CCSeg[t,[3,5]], 1, tipo_elem), qsis,tamanho)
             end
         end
         t = t + 1
@@ -206,9 +210,9 @@ function format_dad(entrada, NPX=2, NPY=2, afasta=1)
         for i = 1:size(ELEM1, 1)
             if prob == potencial
               # @infiltrate
-                ELEM[i] = elemento(ELEMn[i,:], ELEM[i].tipoCDC, ELEM[i].valorCDC, ELEM[i].ξs)
+                ELEM[i] = elemento(ELEMn[i,:], ELEM[i].tipoCDC, ELEM[i].valorCDC, ELEM[i].ξs,0)
             else prob == elastico
-                ELEM[i] = elementov(ELEMn[i,:], ELEM[i].tipoCDC, ELEM[i].valorCDC, ELEM[i].ξs)
+                ELEM[i] = elementov(ELEMn[i,:], ELEM[i].tipoCDC, ELEM[i].valorCDC, ELEM[i].ξs,0)
             end
           end
           return prob(NOSn, gera_p_in(NPX, NPY, PONTOS, SEGMENTOS), ELEM, k)
