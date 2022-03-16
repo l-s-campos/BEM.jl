@@ -158,7 +158,7 @@ function integrabeziersing(pf,cf,we,eta,w,elem::bezier,dad::elastico_aniso_iga,e
                                  0         (mi[2]*nx-ny)/z2];    
      kernelreg = 2*real(A*(mi_n_z)*conj(g)')*dgamadqsi*Nm/2
 	 
-     kernelexp = 2*real(A*(kernelsing)*conj(g)')*dgamadqsif/2*Nmsing
+     kernelexp = 2*real(A*(kernelsing)*conj(g)')*Nmsing
      Hsing=Hsing+(kernelreg-kernelexp)*w[k]
    # @show (kernelreg[2]-kernelexp[2]),eet-eta[k]
    #   @infiltrate
