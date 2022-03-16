@@ -5,10 +5,10 @@ include(scriptsdir("includes.jl"))
 nelem = 4  #Numero de elementos
 NPX = 2 #pontos internos na direção x
 NPY = 2 #pontos internos na direção y
-npg = 30    #apenas números pares
+npg = 10    #apenas números pares
 ## Formatação dos dados ________________________________________________
 println("1. Formatando os dados");
-dad = format_dad_iga(elastico1diso(0,0),NPX,NPY) # dados
+dad = format_dad_iga(elastico1diga(0,0),NPX,NPY) # dados
 
 println("2. Montando a matriz A e o vetor b")
  H,G = calc_HeG(dad,npg)  #importante
@@ -29,3 +29,4 @@ A,b = aplicaCDC(H,G,dad) # Calcula a matriz A e o vetor b
 
 # # geo=mostra_geometria(dad)
 # # mapa=mostra_resultado(dad,[T;Ti])
+sum(H,dims=2)

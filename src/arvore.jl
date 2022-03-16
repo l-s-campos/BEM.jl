@@ -105,6 +105,43 @@ function matvec(hmat,b,block,Tree1,Tree2,dad)
     v
 end
 
+function colsblocks(block,Tree2,dad)
+    # cols= BEM.colsblocks(block,Tree2,dad)
+
+    # v=b*0
+    cols=Vector{Vector{Int64}}(undef,length(block[:,3]))
+    for i =1:length(block[:,3])
+        # b1 =  @views Tree1[block[i,1]]       # Nós I da malha que formam a submatriz (Pontos Fonte) (linhas)
+        b2 = @views Tree2[block[i,2]]       # Nós J da malha que formam a submatriz (Pontos Campo) (Colunas)
+        cols[i]=vcat([dad.ELEM[i].indices for i in b2]...)
+        # if block[i,3]==1
+        #     v[b1]+=hmat[i,1]*(hmat[i,2]*b[cols])
+        # else
+        #       v[b1]+=hmat[i,1]*b[cols]
+        # end
+    end
+cols
+end
+*(hmat::hmat,b)=matvec(hmat,b)
+function matvec(hmat::hmat,b)
+    v=b*0
+        for i =1:length(hmat.block[:,3])
+        b1 =@views hmat.Tree1[hmat.block[i,1]]       # Nós I da malha que formam a submatriz (Pontos Fonte) (linhas)
+
+        if hmat.block[i,3]==1
+             v[b1]+=@views hmat.A[i,1]*(hmat.A[i,2]*b[hmat.cols[i]])
+            #  mul!(@view(v[b1]),hmat[i,1],hmat[i,2]*@view(b[cols[i]]),1,1)
+        else
+            #  v[b1]=v[b1]+mul!(v[b1],hmat[i,1],(b[cols[i]])) 
+            v[b1]+=@views hmat.A[i,1]*(b[hmat.cols[i]])
+            # mul!(@view(v[b1]),hmat[i,1],@view(b[cols[i]]),1,1) 
+
+        end
+    end
+    v[nc(hmat.dad)+1:end]-= @views b[nc(hmat.dad)+1:end]
+    v
+end
+
 function tamanho(hmat,block,Tree)
     A=0
     for i =1:length(block[:,3])
@@ -187,7 +224,7 @@ function Tree(X,max_elem,tipoCDC=1)
         i = i + 1
     end
     
-    Tree = Array{Any}(undef,inode+ileaf-1)    # Define tamanho da árvore
+    Tree = Array{Vector{Int64}}(undef,inode+ileaf-1)    # Define tamanho da árvore
     for i=1:inode                       # Para todos os nós
         Tree[i] = nodes[i]              # Insere os nós na árvore
         if child1[i] > 0                # Se aquele nó tem folhas
@@ -213,8 +250,8 @@ function Hinterp(dad,Tree1,Tree2,block;ninterp=3,compressão=true,ϵ=1e-3)
     # arg = [NOS1,NOS_GEO1,tipoCDC,valorCDC,normal,ELEM1,k]
     #         1      2        3      4        5     6   7
     n = size(block,1)               # Quantidade de Submatrizes
-    HA = Array{Any}(undef,n,2)          # Cria vetor{Any} que armazena submatrizes [Nº de submatrizes x 2]
-    HB = Array{Any}(undef,n,2)          # Cria vetor{Any} que armazena submatrizes [Nº de submatrizes x 2]
+    HA = Array{Matrix{Float64}}(undef,n,2)          # Cria vetor{Any} que armazena submatrizes [Nº de submatrizes x 2]
+    HB = Array{Matrix{Float64}}(undef,n,2)          # Cria vetor{Any} que armazena submatrizes [Nº de submatrizes x 2]
     for i=1:n                       # Para cada Submatriz
         # @timeit to "Para cada Submatriz" begin
         b1 = Tree1[block[i,1]]       # Nós I da malha que formam a submatriz (Pontos Fonte) (linhas)
@@ -232,14 +269,14 @@ function Hinterp(dad,Tree1,Tree2,block;ninterp=3,compressão=true,ϵ=1e-3)
     return HA,HB
 end
 
-function Ainterp(dad,Tree1,Tree2,block;ninterp=3,compressão=true,ϵ=1e-3)
+function Ainterp(dad,Tree1,Tree2,block,ninterp=3;compressão=true,ϵ=1e-3)
     # arg = [NOS1,NOS_GEO1,tipoCDC,valorCDC,normal,ELEM1,k]
     #         1      2        3      4        5     6   7
     nc = size(dad.NOS,1)
     ni = size(dad.pontos_internos,1)
     b=zeros(nc+ni)
     n = size(block,1)               # Quantidade de Submatrizes
-    HA = Array{Any}(undef,n,2)          # Cria vetor{Any} que armazena submatrizes [Nº de submatrizes x 2]
+    HA = Array{Matrix{Float64}}(undef,n,2)          # Cria vetor{Any} que armazena submatrizes [Nº de submatrizes x 2]
     # HB = Array{Any}(undef,n,2)          # Cria vetor{Any} que armazena submatrizes [Nº de submatrizes x 2]
     
     for i=1:n                       # Para cada Submatriz
@@ -286,7 +323,7 @@ function Ainterp(dad,Tree1,Tree2,block;ninterp=3,compressão=true,ϵ=1e-3)
     end
     return HA,b
 end
-function montaAcheia(hmat,block,Tree1,Tree2,dad::potencial_iga;full=true)
+function montaAcheia(hmat,block,Tree1,Tree2,cols,dad::potencial_iga;full=true)
     nelem = size(dad.ELEM,1)    # Quantidade de elementos discretizados no contorno
     nc = size(dad.NOS,1)
     ni = size(dad.pontos_internos,1)
@@ -301,24 +338,23 @@ function montaAcheia(hmat,block,Tree1,Tree2,dad::potencial_iga;full=true)
         for i =1:length(block[:,3])
         b1 = Tree1[block[i,1]]       # Nós I da malha que formam a submatriz (Pontos Fonte) (linhas)
         b2 = Tree2[block[i,2]]       # Nós J da malha que formam a submatriz (Pontos Campo) (Colunas)
-        # @show i,block[i,3]
+         @show i,cols[block[i,2]]
         if block[i,3]==0
-            conta=1
-            for ii in b2
-            cols=dad.ELEM[ii].indices
+            # conta=1
+            # cols=dad.ELEM[ii].indices
             # @show norm(A[b1,cols]-H[b1,cols])
-            A[b1,cols]+=hmat[i,1][:,conta:conta-1+size(cols,1)]            
-            conta+=size(cols,1)
-            end
+            A[b1,cols[i]]+=hmat[i,1]            
+            # conta+=size(cols,1)
+            
         elseif full
             # @infiltrate
-            conta=1
-            for ii in b2
-            cols=dad.ELEM[ii].indices
+            # conta=1
+            # for ii in b2
+            # cols=dad.ELEM[ii].indices
             # @show norm(A[b1,cols]-H[b1,cols])
-            A[b1,cols]+=hmat[i,1]*hmat[i,2][:,conta:conta-1+size(cols,1)]            
-            conta+=size(cols,1)
-            end
+            A[b1,cols[i]]+=hmat[i,1]*hmat[i,2]          
+            # conta+=size(cols,1)
+            # end
             # cols=vcat([dad.ELEM[i].indices for i in b2]...)
             # A[b1,cols]+=(hmat[i,1]*hmat[i,2])
             # A[b1,cols]+=H[b1,cols]
@@ -375,7 +411,7 @@ end
 I
 end
 
-function Akmeans(dad,Tree1,Tree2,block;nnucleos=6,compressão=true,ϵ=1e-3)
+function Akmeans(dad,Tree1,Tree2,block,nnucleos=6;compressão=true,ϵ=1e-3)
     # arg = [NOS1,NOS_GEO1,tipoCDC,valorCDC,normal,ELEM1,k]
     #         1      2        3      4        5     6   7
 
@@ -383,7 +419,7 @@ function Akmeans(dad,Tree1,Tree2,block;nnucleos=6,compressão=true,ϵ=1e-3)
     ni = size(dad.pontos_internos,1)
     b=zeros(nc+ni)
     n = size(block,1)               # Quantidade de Submatrizes
-    HA = Array{Any}(undef,n,2)          # Cria vetor{Any} que armazena submatrizes [Nº de submatrizes x 2]
+    HA = Array{Matrix{Float64}}(undef,n,2)          # Cria vetor{Any} que armazena submatrizes [Nº de submatrizes x 2]
     # HB = Array{Any}(undef,n,2)          # Cria vetor{Any} que armazena submatrizes [Nº de submatrizes x 2]
     indices=Dict()
     for i in unique(block[:,2])
@@ -446,14 +482,14 @@ function Akmeans(dad,Tree1,Tree2,block;nnucleos=6,compressão=true,ϵ=1e-3)
 end
 
 
-function Akmeans2(dad,Tree1,Tree2,block;nnucleos=6,compressão=true,ϵ=1e-3)
+function Akmeans2(dad,Tree1,Tree2,block,nnucleos=6;compressão=true,ϵ=1e-3)
     # arg = [NOS1,NOS_GEO1,tipoCDC,valorCDC,normal,ELEM1,k]
     #         1      2        3      4        5     6   7
     nc = size(dad.NOS,1)
     ni = size(dad.pontos_internos,1)
     b=zeros(nc+ni)
     n = size(block,1)               # Quantidade de Submatrizes
-    HA = Array{Any}(undef,n,2)          # Cria vetor{Any} que armazena submatrizes [Nº de submatrizes x 2]
+    HA = Array{Matrix{Float64}}(undef,n,2)          # Cria vetor{Any} que armazena submatrizes [Nº de submatrizes x 2]
     # HB = Array{Any}(undef,n,2)          # Cria vetor{Any} que armazena submatrizes [Nº de submatrizes x 2]
      
     indices2=Dict()
@@ -513,4 +549,11 @@ function Akmeans2(dad,Tree1,Tree2,block;nnucleos=6,compressão=true,ϵ=1e-3)
         
     end
     return HA,b
+end
+
+function MatrizH(dad,f,p=9)
+    Tree1,Tree2,block=cluster(dad,η = 1,max_elem=30)
+    cols= colsblocks(block,Tree2,dad)
+    Ai,bi=f(dad,Tree1,Tree2,block,p)
+    hmat(Ai,block,Tree1,Tree2,dad,cols),bi
 end

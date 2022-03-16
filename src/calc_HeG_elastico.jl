@@ -47,17 +47,10 @@ function calc_HeG(dad::elastico_aniso,npg=8)
               eta,Jt=sinhtrans(qsi,eet,b)
               # eta,Jt=telles(qsi,eet)
               h,g= integraelem(pf,x,eta,w.*Jt,elem_j,dad)
-	      if(i in elem_j.indices)
-                  if(i==elem_j.indices[1])
-                      xi0=-(2/3.)
-                      no_pf=1
-                  elseif(i==elem_j.indices[2])
-                      xi0=0.
-                      no_pf=2
-                  elseif(i==elem_j.indices[3])
-                      xi0=2/3.
-                      no_pf=3
-                  end
+              nosing =  elem_j.indices .== i
+              if sum(nosing) == 1
+                no_pf=findfirst(nosing)
+                xi0=elem_j.ξs[no_pf]
                   Hesing=calc_Hsing(xi0,x,dad,elem_j,qsi,w)
                   h[:,2*no_pf-1:2*no_pf]=Hesing;
               end
@@ -202,6 +195,7 @@ function calc_HeG(dad::Union{elastico_iga, elastico_aniso_iga},npg=8)
     pc=dad.pontos_controle[:,elem_j.indices]
     # @infiltrate
     cf=pc[1:2,:]./pc[4,:]'
+    # for i =1 : 1
     for i =1 : n
       pf = dad.NOS[i,:]   # Coordenada (x,y)  dos pontos fonte
       eet=2*dot(Δelem,pf.-x0)/norm(Δelem)^2-1
@@ -209,16 +203,19 @@ function calc_HeG(dad::Union{elastico_iga, elastico_aniso_iga},npg=8)
         ps=cf*N
         b=norm(ps-pf)/norm(Δelem)
         eta,Jt=sinhtrans(qsi,eet,b)
-        h,g= integrabezier(pf,cf,pc[4,:],eta,w.*Jt,elem_j,dad)
+         h,g= integrabezier(pf,cf,pc[4,:],eta,w.*Jt,elem_j,dad)
               if i in elem_j.sing
-                h=integrabeziersing(pf,cf,pc[4,:],eta,w.*Jt,elem_j,dad,eet)
+                # @infiltrate
+                ind=findfirst(i .==elem_j.sing)
+                h=integrabeziersing(pf,cf,pc[4,:],eta,w.*Jt,elem_j,dad,elem_j.eets[ind])
               end
               cols=[2elem_j.indices.-1 2elem_j.indices]'[:]
+              # @infiltrate
               H[2i-1:2i,cols]=h
               G[2i-1:2i,cols]=g
           end
       end
-  
+
 
   H[1:2:end,1:2:end]+=dad.E/2
   H[2:2:end,2:2:end]+=dad.E/2
@@ -257,16 +254,18 @@ function integrabeziersing(pf,cf,we,eta,w,elem::bezier,dad::elastico_iga,eet)
     # g+=N*dgamadqsi*w[k]
     Nm[1,1:2:end]=N
     Nm[2,2:2:end]=N
-    h+=(tast*Nm*dgamadqsi/2-htermMatrix/(eta[k]-eet))*w[k]
     # @infiltrate
+    h+=(tast*Nm*dgamadqsi/2-htermMatrix/(eta[k]-eet))*w[k]
   end
-# @show h
+  # @show h
   if abs(eet)==1
     beta_m=1/dgamadqsif
     h+=htermMatrix*log(abs(2/beta_m))*sign(-eet)
-#        println("h = $(htermMatrix*log(abs(2/beta_m))*sign(-eet))")
-else
-    h+=htermMatrix*log(abs((1-eet)/(1+eet)));
+    #        println("h = $(htermMatrix*log(abs(2/beta_m))*sign(-eet))")
+  else
+    # @infiltrate
+     h+=htermMatrix*log(abs((1-eet)/(1+eet)));
+     @show htermMatrix*log(abs((1-eet)/(1+eet)));
 end
   h
 end

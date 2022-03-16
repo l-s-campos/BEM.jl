@@ -186,7 +186,7 @@ N2,~=calc_fforma_gen(pontosg[2],qsis)
             # @infiltrate
             if prob == potencial || prob == helmholtz
                 ELEM[cont_el] = elemento(nos, CCSeg[t,2], fill(CCSeg[t,3], tipo_elem), qsis,tamanho)
-            else prob == elastico
+            else prob == elastico || prob == placa_fina
                 ELEM[cont_el] = elementov(nos, CCSeg[t,[2,4]], repeat(CCSeg[t,[3,5]], 1, tipo_elem), qsis,tamanho)
             end
         end
@@ -251,7 +251,7 @@ N2,~=calc_fforma_gen(pontosg[2],qsis)
 end
 
 
-function aplicaCDC(H, G, dad::Union{elastico, elastico_aniso})
+function aplicaCDC(H, G, dad::Union{elastico, elastico_aniso,placa_fina})
     nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
     n = size(dad.NOS, 1)
     A = zeros(2 * n, 2 * n)
@@ -288,7 +288,7 @@ function aplicaCDC(H, G, dad::Union{potencial,helmholtz})
     A, b
 end
 
-function separa(dad::Union{elastico, elastico_aniso}, x)
+function separa(dad::Union{elastico, elastico_aniso,placa_fina}, x)
 # Separa fluxo e temperatura
 
 # ncdc = número de linhas da matriz CDC

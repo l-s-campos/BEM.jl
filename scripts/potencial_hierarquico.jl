@@ -14,39 +14,21 @@ println("1. Formatando os dados");
 # dad = format_dad(placacomfuro(nelem),NPX,NPY) # dados
 
 println("2. Montando a matriz A e o vetor b")
-@timeit to "padrão" H,G = calc_HeG(dad,npg)  #importante
 # Ht,Gt = calc_HeG(dad,1:nc(dad)+ni(dad),1:4*nelem,npg)  #importante
-@timeit to "arvore" Tree1,Tree2,block=cluster(dad,η = 1,max_elem=30)
-# Haca,Baca=Hinterp(dad,Tree1,Tree2,block)
-@timeit to "interp" Ai,bi=Ainterp(dad,Tree1,Tree2,block,ninterp=3)
-@timeit to  "kmeans" A1,b1=Akmeans(dad,Tree1,Tree2,block,nnucleos=9);
-@timeit to "kmeans2" A2,b2=Akmeans2(dad,Tree1,Tree2,block,nnucleos=9)
+@timeit to "kmeans" A1,b1=MatrizH(dad,BEM.Akmeans,9)
+
+@timeit to "padrão" H,G = calc_HeG(dad,npg)  #importante
+
 show(to)
 # Aicheia=BEM.montacheia(Ai,block,Tree1,Tree2,dad,Ht)
-A,b = aplicaCDC(H,G,dad) # Calcula a matriz A e o vetor b
 println("3. Resolvendo o sistema linear")
 # x2,f = gmres(A,b,5,tol=1e-5,maxIter=100,out=0) #GMRES nas matrizes hierarquicas
+H,G = calc_HeG(dad,npg)  #importante=
+A,b = aplicaCDC(H,G,dad) # Calcula a matriz A e o vetor b
 x = A\b
 println("4. Separando fluxo e temperatura")
 T,q = separa(dad,x) #importante
-# A1,b1 = calc_Aeb(dad,npg)  #importante
-# tol =1e-6
-# @time x1=A1\b1;
-# @time x2,r = gmres(A,b ,3,tol=tol,maxIter=100,out=0);
-# @time x3,r =fgmres(A,b ,3,tol=tol,maxIter=100,out=0);
-# @time x4,r =bicgstb(A,b ,tol=tol,maxIter=100,out=0);
-# @time x5,r =minres(A,b ,rtol=tol,maxIter=100,out=0);
-Ac = BEM.montaAcheia(Ai,block,Tree1,Tree2,dad)#matriz cheia
-Ac1= BEM.montaAcheia(A1,block,Tree1,Tree2,dad)#matriz cheia
-Ac2= BEM.montaAcheia(A2,block,Tree1,Tree2,dad)#matriz cheia
-@show norm(Ac[1:nc(dad),1:nc(dad)]-A[1:nc(dad),1:nc(dad)])
-@show norm(Ac1[1:nc(dad),1:nc(dad)]-A[1:nc(dad),1:nc(dad)])
-@show norm(Ac2[1:nc(dad),1:nc(dad)]-A[1:nc(dad),1:nc(dad)])
-
-Pre= BEM.montaAcheia(Ai,block,Tree1,Tree2,dad,full=false)#matriz pre dos blocos não admissiveis
-
-xi,f = gmres(vet->matvec(A1,vet,block,Tree1,Tree2,dad),b1,5,tol=1e-5,maxIter=100,out=0) #GMRES nas matrizes hierarquicas
-# xi1,f = gmres(vet->matvec(Aaca,vet,block,Tree1,Tree2,dad),baca,5,M=vet->Pre\vet,tol=1e-5,maxIter=100,out=0) #GMRES nas matrizes hierarquicas
+xi,f =  gmres(A1,b1,5,tol=1e-5,maxIter=100,out=0) #GMRES nas matrizes 
 T1,q1 = separa(dad,xi) #importante
 T1i=xi[nc(dad)+1:end]
 println("5. Calculando nos pontos internos")

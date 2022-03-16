@@ -40,7 +40,7 @@ function elastico1d(ne=15,tipo=2)
     return elastico,PONTOS,SEGMENTOS,MALHA,CCSeg,[E,v]
 end
 
-function elastico1diso(ne=15,tipo=2)
+function elastico1diga(ne=15,tipo=2)
     PONTOS  = [1 0 0
         2 1 0
         3 1 1
@@ -53,7 +53,7 @@ function elastico1diso(ne=15,tipo=2)
     #                   < 0 -> O centro é a direita do segmento (do ponto
     #                          inicial para o ponto final)
     #                   = 0 -> O segmento é uma linha reta
-    SEGMENTOS = [1 1 2 0
+    SEGMENTOS = [1 1 2 1
         2 2 3 0
         3 3 4 0
         4 4 1 0]
@@ -115,8 +115,7 @@ function elastico_aniso_1d(ne=15,tipo=2)
         3 1 0 0 0
         4 0 0 1 0]
     # Condutividade Térmica do material
-    Material = [1 2.200000    4.4   0.7692      0.4286  15 1;
-    2 2.200000    4.4   0.7692      0.4286 -25 1];
+    Material = [1 1.001    1.   0.5      0.  0 1.];
     # const_material = Compute_Material(Material)
     # mi,A,q,g = const_material
     # k=zeros(Complex,7,2)
@@ -142,7 +141,7 @@ function elastico_aniso_1d_iga(ne=15,tipo=2)
     #                   < 0 -> O centro é a direita do segmento (do ponto
     #                          inicial para o ponto final)
     #                   = 0 -> O segmento é uma linha reta
-    SEGMENTOS = [1 1 2 0
+    SEGMENTOS = [1 1 2 1
         2 2 3 0
         3 3 4 0
         4 4 1 0]
@@ -161,8 +160,7 @@ function elastico_aniso_1d_iga(ne=15,tipo=2)
         3 1 0 0 0
         4 0 0 1 0]
     # Condutividade Térmica do material
-    Material = [1 2.2000001    2.2   0.7692      0.4286  0 1;
-    2 2.2000001    2.2   0.7692      0.4286 0 1];
+    Material = [1 1.000001    1   1      1  0 1];
     # const_material = Compute_Material(Material)
     # mi,A,q,g = const_material
     # k=zeros(Complex,7,2)

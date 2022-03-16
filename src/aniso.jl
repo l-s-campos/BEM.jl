@@ -100,62 +100,81 @@ return  Q
 end
 
 
+
+
 function integrabeziersing(pf,cf,we,eta,w,elem::bezier,dad::elastico_aniso_iga,eet)
    h = zeros(Float64,2,2*size(elem))
+   A=dad.k.A
+   q=dad.k.q
+   g=dad.k.g
+   mi=dad.k.mi   
+
+
    basisrc,dN=calc_fforma(eet,elem,we)       
    dxdqsi = cf*dN   # dx/dξ & dy/dξ
    fonte = cf*basisrc    # Ponto de gauss interpolador
 
-   dgamadqsif = norm(dxdqsi)/2  # dΓ/dξ = J(ξ) Jacobiano    
+   dgamadqsif = norm(dxdqsi)  # dΓ/dξ = J(ξ) Jacobiano    
    sx=dxdqsi[1]/dgamadqsif # vetor tangente dx/dΓ
    sy=dxdqsi[2]/dgamadqsif # vetor tangente dy/dΓ
+
    nfonte=[sy,-sx]
-   matbasisrc=zeros(2,2*size(elem))
-   matbasisrc[1,1:2:end]=basisrc
-   matbasisrc[2,2:2:end]=basisrc
+
+   
+   
+   Nsing,dNsing = calc_fforma(eet,elem,we)
  
    z0 =[fonte[1]+fonte[2]*dad.k.mi[1]*im,fonte[1]+fonte[2]*dad.k.mi[2]*im]
    mi_n=[(dad.k.mi[1]*nfonte[1]-nfonte[2]),(dad.k.mi[2]*nfonte[1]-nfonte[2])]
-   g_mi_n=dad.k.g.*mi_n;
-   T1=dad.k.A[:,1]*g_mi_n[:,1]'
-   T2=dad.k.A[:,2]*g_mi_n[:,2]'
  
-  
-   # htermMatrix=herm*matbasisrc
+
  
    Nm = zeros(Float64,2,2*size(elem))
- 
+   Nmsing = zeros(Float64,2,2*size(elem))
+   Nmsing[1,1:2:end]=Nsing
+   Nmsing[2,2:2:end]=Nsing
+   Hsing  = zeros(Float64,2,2*size(elem)) 
+   integral=log(1-eet)-log(1+eet)
  
    for k = 1:size(w,1)
      N,dN = calc_fforma(eta[k],elem,we)
+
+     delta=eta[k]-eet;
+     kernelsing=[(1/delta) 0
+             0 (1/delta)]
+
      pg = cf*N    # Ponto de gauss interpolador
      dxdqsi = cf*dN   # dx/dξ & dy/dξ
      dgamadqsi = norm(dxdqsi)  # dΓ/dξ = J(ξ) Jacobiano
      sx=dxdqsi[1]/dgamadqsi # vetor tangente dx/dΓ
      sy=dxdqsi[2]/dgamadqsi # vetor tangente dy/dΓ
-     uast,tast=calsolfund(pg,pf,[sy,-sx],dad)
-     # h+=N*dgamadqsi*w[k]
-     # g+=N*dgamadqsi*w[k]
+     nx=sy
+     ny=-sx
      Nm[1,1:2:end]=N
      Nm[2,2:2:end]=N
-     za=z0+(eta[k]-eet)*dgamadqsif/2*mi_n
-     h+=(tast*Nm*dgamadqsi/2-real(T1/(za[1]-z0[1])+T2/(za[2]-z0[2]))*matbasisrc*dgamadqsif)*w[k]
-   #   @show eet,eta[k],h
+     z1 = pg[1] - pf[1] + mi[1] * (pg[2] - pf[2]);
+     z2 = pg[1] - pf[1] + mi[2] * (pg[2] - pf[2]); 
+     mi_n_z     = [(mi[1]*nx-ny)/z1         0;
+                                 0         (mi[2]*nx-ny)/z2];    
+     kernelreg = 2*real(A*(mi_n_z)*conj(g)')*dgamadqsi*Nm/2
+	 
+     kernelexp = 2*real(A*(kernelsing)*conj(g)')*dgamadqsif/2*Nmsing
+     Hsing=Hsing+(kernelreg-kernelexp)*w[k]
+   # @show (kernelreg[2]-kernelexp[2]),eet-eta[k]
    #   @infiltrate
+
    end
- # @show h
-   if abs(eet)==1
-     beta_m=1/dgamadqsif
-   #   h+=htermMatrix*log(abs(2/beta_m))*sign(-eet)
-     h+=dgamadqsif*real((dad.k.A[:,1]*dad.k.g[:,1]'+dad.k.A[:,2]*dad.k.g[:,2]')*log(abs(2/beta_m))*sign(-eet))*matbasisrc;
- #        println("h = $(htermMatrix*log(abs(2/beta_m))*sign(-eet))")
- else
-     h+=dgamadqsif*real((dad.k.A[:,1]*dad.k.g[:,1]'+dad.k.A[:,2]*dad.k.g[:,2]')*log(abs((1-eet)/(1+eet))))*matbasisrc;
- end
-   h
- end
 
-
+if abs(eet)==1
+    beta_m=2/dgamadqsif
+    Hsing+=2*real(A*conj(g)')*Nmsing*log(abs(2/beta_m))*sign(-eet)
+    #        println("h = $(htermMatrix*log(abs(2/beta_m))*sign(-eet))")
+   else
+    Hsing+=2*real(A*conj(g)')*Nmsing*log(abs((1-eet)/(1+eet)));
+    2*real(A*conj(g)')*Nmsing*log(abs((1-eet)/(1+eet)))
+   end   
+   Hsing
+ end
  
 function calsolfund(pg,pf,n,dad::Union{elastico_aniso, elastico_aniso_iga})
    # @infiltrate

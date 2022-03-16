@@ -24,6 +24,7 @@ struct bezier
     limites ::Array{Float64,2}
     Wb :: Array{Float64,1}
     sing ::Array{Int64,1}
+    eets::Array{Float64,1}
 end
 struct elastico <: vetorial 
     NOS ::Array{Float64,2}
@@ -61,6 +62,16 @@ struct potencial_iga  <: escalar
     k ::Float64  
     E ::SparseMatrixCSC{Float64,Int64} 
 end
+struct potencial_iga_3d  <: escalar 
+    NOS ::Array{Float64,2}
+    pontos_controle ::Array{Float64,2}
+    pontos_internos ::Array{Float64,2}
+    tipoCDC  ::Array{Int64,2}
+    valorCDC  ::Array{Float64,2}
+    ELEM ::Array{bezier,1}
+    k ::Float64  
+    E ::SparseMatrixCSC{Float64,Int64} 
+end
 
 struct elastico_iga <: vetorial 
     NOS ::Array{Float64,2}
@@ -83,8 +94,20 @@ struct elastico_aniso_iga <: vetorial
     k ::NamedTuple
     E ::SparseMatrixCSC{Float64,Int64} 
 end
-
-
+struct placa_fina <: vetorial 
+    NOS ::Array{Float64,2}
+    pontos_internos ::Array{Float64,2}
+    ELEM ::Array{elementov,1}
+    k ::NamedTuple
+end
+struct hmat
+    A :: Matrix{Matrix{Float64}}
+    block :: Matrix{Int64}
+    Tree1 :: Vector{Vector{Int64}}
+    Tree2 :: Vector{Vector{Int64}}
+    dad :: DadosBEM
+    cols :: Vector{Vector{Int64}}
+end
 nc(dad::DadosBEM) = size(dad.NOS,1)
 ni(dad::DadosBEM) = size(dad.pontos_internos,1)
 

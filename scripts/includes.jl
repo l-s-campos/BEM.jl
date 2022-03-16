@@ -8,3 +8,4 @@ using KrylovMethods,SparseArrays
 includet(datadir("dadpotencial.jl"))
 includet(datadir("dadelastico.jl"))
 includet(datadir("dadhelmholtz.jl"))
+includet(datadir("dadplacafina.jl"))

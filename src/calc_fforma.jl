@@ -7,8 +7,8 @@ function calc_fforma(ξ,elem,deriv=true) # funções de forma gerais para m elem
     for j = 1:tipo  # m(numero de nós) = tipo
       if j != i
         # @infiltrate
-        N[i] = N[i]*(ξ - ξs[j])/(ξs[i] - ξs[j]) #Eq. interpolador de lagrange
-        cte[i] +=1/(ξ - ξs[j])
+        N[i] = @views N[i]*(ξ - ξs[j])/(ξs[i] - ξs[j]) #Eq. interpolador de lagrange
+        cte[i] += @views 1/(ξ - ξs[j])
       end
     end
   end
@@ -20,7 +20,7 @@ function calc_fforma(ξ,elem,deriv=true) # funções de forma gerais para m elem
 
 end
 
-function calc_fforma_gen(ξ,ξs) # funções de forma gerais para m elementos
+function calc_fforma_gen(ξ,ξs,deriv=true) # funções de forma gerais para m elementos
   tipo=length(ξs)
   N = ones(typeof(ξ),tipo) #vetor linha das funções de forma N_1, N_2, ..., N_m
   cte=zeros(typeof(ξ),tipo)
@@ -33,7 +33,11 @@ function calc_fforma_gen(ξ,ξs) # funções de forma gerais para m elementos
       end
     end
   end
-  N,cte.*N
+  if deriv
+    return N,cte.*N
+else
+    return N
+end
 end
 
 function calc_dfforma_gen(qsi,qsis) # funções de forma gerais para m elementos

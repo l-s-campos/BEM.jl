@@ -131,7 +131,7 @@ for j = 1:size(crv[i].conn, 1)  # Corre as curvas de Bézier
     R = diagm(we)*Ce*Be/wb    
     xf=(pts_controle_e./ [ we'; we'])*R # Calcula as coordenadas xy dos pontos de integração
     # @infiltrate
-    ELEM[cont_el] = bezier(indcoluna[cont_el],Ce,p,[x0 xf],Wb,sing[cont_el])
+    ELEM[cont_el] = bezier(indcoluna[cont_el],Ce,p,[x0 xf],Wb,sing[cont_el],collocPts[sing[cont_el]]*2 .-1)
 end
 end
     # @infiltrate

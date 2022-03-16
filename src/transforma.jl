@@ -136,6 +136,7 @@ end
 
 
 function Monegato(t,s0,q=5.0)
+    # https://reader.elsevier.com/reader/sd/pii/S0377042700002739?token=22075A9D16581857977817E8FC5B4BCB57C70C027F94CA7963B5E7196142F6825F02DDFA5F9F4D1398E43A66F3116E21&originRegion=us-east-1&originCreation=20211103173036
    δ=2^(-q)*((1+s0)^(1/q)+(1-s0)^(1/q))^q
    t0=((1+s0)^(1/q)-(1-s0)^(1/q))/((1+s0)^(1/q)+(1-s0)^(1/q))
    s=s0.+δ*(t.-t0).^q
