@@ -4,8 +4,6 @@ This code base is using the Julia Language and [DrWatson](https://juliadynamics.
 to make a reproducible scientific project named
 > BEM
 
-It is authored by Lucas.
-
 To (locally) reproduce this project, do the following:
 
 0. Download this code base. Notice that raw data are typically not included in the
