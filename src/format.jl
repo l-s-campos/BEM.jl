@@ -103,7 +103,6 @@ function format_dad(entrada, NPX=2, NPY=2, afasta=1; canto=false)
         ELEM = Vector{elementov}(undef, num_elementos)
     end
     NOS = zeros(Float64, 0, 2)
-
     cont_nos = Int64(0)  # Counter to the physical nodes
     cont_el = Int64(0)# Counter to the elements (the number of physical and geometric elements is the same).
     num_lin = length(SEGMENTOS[:, 1])# Número de linhas/lados no contorno
@@ -215,6 +214,7 @@ function format_dad(entrada, NPX=2, NPY=2, afasta=1; canto=false)
             tamanho = norm(dN1' * [xs ys]) * pesosg[1] + norm(dN2' * [xs ys]) * pesosg[2]
             # tamanho=norm(N1'*[xs ys]+N2'*[xs ys])
             # @infiltrate
+            # @infiltrate
             if prob == potencial || prob == helmholtz
                 if subregioes == 0
                     ELEM[cont_el] = elemento(nos, CCSeg[t, 2], fill(CCSeg[t, 3], tipo_elem), qsis, tamanho, 0)
@@ -222,7 +222,7 @@ function format_dad(entrada, NPX=2, NPY=2, afasta=1; canto=false)
                     ELEM[cont_el] = elemento(nos, CCSeg[t, 2], fill(CCSeg[t, 3], tipo_elem), qsis, tamanho, subregioes.regiao[cont_el])
                 end
 
-            elseif prob == elastico || prob == placa_fina
+            elseif prob == elastico || prob == elastico_aniso || prob == placa_fina || prob == placa_fina_isotropica
                 if subregioes == 0
                     ELEM[cont_el] = elementov(nos, CCSeg[t, [2, 4]], repeat(CCSeg[t, [3, 5]], 1, tipo_elem), qsis, tamanho, 0)
                 else

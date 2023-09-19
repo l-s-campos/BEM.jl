@@ -698,8 +698,8 @@ function passonotempo(dad, A, B, q, bc_val, M, dM, npg)
   sol = solve(linsolve)
   @showprogress "Resolvendo no tempo" for idt = 1:dad.k.n_dt
     b = B * bc_val + M * (1 / dad.k.dt^2 * (5 * U_ant[:, 3] - 4 * U_ant[:, 2] + U_ant[:, 1])) + q
-    linsolve = LinearSolve.set_b(sol.cache, b)
-    sol = solve(linsolve)
+    linsolve.b = b
+    sol = solve!(linsolve)
     x = sol.u
     # x = A \ b
     listdisp, listtra = separa(x, dad)

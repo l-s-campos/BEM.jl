@@ -2,96 +2,99 @@
 using DrWatson
 @quickactivate "BEM"
 include(scriptsdir("includes.jl"))
-# include(scriptsdir("placa.jl"))
-nelem = [5]  #Numero de elementos
-NPX = [20] #pontos internos na direção x
-npg = [20]    #apenas números pares
-## Formatação dos dados
-# problema = ["sladek03_apoiado"]
-# problema = ["redonda"]
-problema = ["placa_furo_retangular"]
-# problema = ["ex1"]
-# carrega = ["comprex", "comprexy", "shear"]
-# carrega = [-1, 0, 0]
-# bc = ["FSCS"]
-# bc = ["CCCC"]
-bc = ["SSSS"]
-# bc = ["SSSS", "SSSC", "CSSS", "SCSC", "CSCS", "FSSS", "SSSF", "FSCS", "SCSF", "FSFS", "SFSF", "CCCC"]
-# anacomprex = Dict(bc .=> [4.0000, 4.8471, 5.7401, 6.7431, 7.6911, 1.4014, 2.3639, 1.6522, 2.3901, 0.9522, 2.0413, 10.0737])
-
-# simula_placa_flambagem(dicts[1], [-1, 0, 0])
-# simula_placa_flambagem(dicts[1])
-# for i = 1:1
-#     nelem = nelems[i]
-#     NPX = NPXs[i]
-params = @strdict nelem NPX npg problema bc
-dicts = dict_list(params)
-#     f, H, G, q, It, dNs, dMd, Md, dM, M = BEM.Matrizes_placa_flambagem(dicts[1])
-#     for (i, d) in enumerate(dicts)
-#         @show savename(d)
-#         f = BEM.flambagem(f, d, H, G, It, dNs, dMd, Md, dM, M)
-#         wsave(datadir("simulations\\flamba", savename(d, "jld2")), f)
-#         # @show f
-#     end
-#     # MATLAB -> 44_49 -> 1718.375603segundos
-# end
-
-@unpack nelem, NPX, npg, problema, bc = dicts[1]
+# include(scriptsdir("placacopy.jl"))
+NPX = 7#pontos internos na direção x
+nelem = 7
+npg = 16   #apenas números pares
+## Formatação dos dados 
+# problema = "sladek03"
+# problema = "large1"
+# metodo = "Monta_M_RIM"
+# metodo = "DRM"
+# metodo = ["Monta_M_RIMd"]
 NPY = NPX
-entrada = getfield(Main, Symbol(problema))(nelem, 3)
-# entrada = getfield(Main, Symbol(problema))(nelem, 3, bc)
+# entrada = bhatta2(nelem, 3, "CCCC")
+# entrada1 = bhatta3(nelem, 3, "CCCC")
+# entradaiso = bhattaiso(nelem, 3, "CCCC")
+# entrada = reddy(nelem, 3, "SSSS")
+# entrada = marc(nelem, 3, "CCCC")
+# entrada = chia(nelem, 3, "SSSS")
+# entrada = Putcha(nelem, 3, "SSSS")
+entrada = large1(nelem, 3, "SSSS")
 
 tdad = @timed dad = format_dad(entrada[1], NPX, NPY, canto=true) # dados
-tdadpe = @timed dadpe = format_dad(entrada[2], NPX, NPY) # dados
-tHeG = @timed H, G, q, It, dNs = calc_HeGeIt(dad, npg)  #importante
-tHeGpl = @timed Hpe, Gpe = calc_HeG(dadpe, npg)
-# dad = format_dad(placacomfuro(nelem),NPX,NPY) # dados
+tdadpe = @timed dadpe = format_dad(entrada[2], NPX, NPY, canto=true) # dados
+
+# tdad = @timed dad1 = format_dad(entrada1[1], NPX, NPY, canto=true) # dados
+# tdadpe = @timed dadpe1 = format_dad(entrada1[2], NPX, NPY, canto=true) # dados
+
+# dadiso = format_dad(entradaiso[1], NPX, NPY, canto=true) # dados
+# dadpeiso = format_dad(entradaiso[2], NPX, NPY, canto=true) # dados
+# dad = format_dad(vibra(nelem,3),NPX,NPY) # dados
 # println("2. Montando a matriz A e o vetor b")
-
-# nosrestritos = [1 1]
-A, b = aplicaCDC(Hpe, Gpe, dadpe) # Calcula a matriz A e o vetor b
-# @infiltrate
-x = A \ b
-u, t = separa(dadpe, x)
-tens_cont, tens_nt = calc_tens_cont(dadpe, u, t)
-tens_int = calc_tens_int(dadpe, u, t, 30)
+nt = 50
+# ws = BEM.placa_grande(dad, dadpe, nt, npg, 0.5)
+# ws1 = BEM.placa_grande(dad1, dadpe1, nt, npg, 0.5)
 
 
-tdMd = @timed dMd = BEM.Monta_dM_RIMd(dad, npg)
-# tdM = @timed dMd = BEM.Monta_dM_RIM(dad, npg)
-# tMd = @timed Md = BEM.Monta_M_RIMd(dad, npg)
-# tM = @timed Md = BEM.Monta_M_RIM(dad, npg)
-# @infiltrate
-# @show dad.pontos_internos
-nosrestritos = [floor(Int, nelem / 2)+2 1
-    floor(Int, nelem / 2)+2+nelem*3 2
-    floor(Int, nelem / 2)+2+nelem*6 1
-    floor(Int, nelem / 2)+2+nelem*9 2]
 
-# ddMit = BEM.aplicaT(G, It, tens_nt, dNs, dMd[6], [tens_cont; tens_int])
-dMit = BEM.aplicaT(dad, G, tens_nt, dNs, dMd[1], [tens_cont; tens_int])
-# Mit = BEM.aplicaT(dad, Md, [tens_cont; tens_int])
+mats = BEM.matrizes_grande(dad, dadpe, npg)
+ws = BEM.placa_grande(mats, nt, dad, dadpe, 0.5)
 
-ns = nc(dad) + ni(dad)
-# ddMit = BEM.aplicaT(G, It, tens_nt, dNs, dMd[6], [-ones(ns) zeros(ns) zeros(ns)])
-# dMit = BEM.aplicaT(dad, G, tens_nt, dNs, dMd[1], [-ones(ns) zeros(ns) zeros(ns)])
-# Mit = BEM.aplicaT(dad, Md, [-ones(ns) zeros(ns) zeros(ns)])
-# @infiltrate
-# a, v = BEM.autovalor(i["H"], i["G"], i["Ib"], dad)
-# a2, v2 = BEM.autovalor(H, G, ddMit, dad)
-# a1, v1 = BEM.autovalor(H, G, dMit, dad)
-a1, v1 = BEM.autovalor_num(H, G, dMit, dad)
-# @time a1, v1 = BEM.autovalor(H, G, dMit, dad, num=true)
-# a, v = BEM.autovalor(H, G, Mit, dad)
-# a, v = BEM.autovalor(H, G, i["Ib"], dad)
-# lambda2 = minimum(abs.(a2))
-# lambda1 = minimum(abs.(a1))
-# lambda = minimum(abs.(a))
+# mats1 = BEM.matrizes_grande(dad1, dadpe1, npg)
+# ws1 = BEM.placa_grande(mats1, nt, dad, dadpe1, 0.5)
 
-# k2 = a2 / dad.k.D / pi^2
-k1 = a1 / dad.k.D / pi^2
-# k = a / dad.k.D / pi^2
+# matsiso = BEM.matrizes_grande(dadiso, dadpeiso, npg)
+# wsiso = BEM.placa_grande(matsiso, nt, dadiso, dadpeiso, 0.5)
 
-# [k k1 k2]
-# =#
+no_meio = ceil(Int, 2 * size(dad.NOS, 1) + size(dad.pontos_internos, 1) / 2)
 
+h = 1
+# a = 16
+
+# ws_meio = -ws[no_meio, :]/h
+ws_meio = -ws[no_meio, :]
+ws_meio[abs.(ws_meio).>2] .= NaN;
+
+# ws_meio1 = -ws1[no_meio, :] / h
+# ws_meioiso = -wsiso[no_meio, :] / h
+
+# E2 = dad.k.Material[1, 3]
+# E1 = dad.k.Material[1, 2]
+# nult = dad.k.Material[5]
+# nutl = nult * E2 / E1
+# D0 = E2 * h^3 / 12 / (1 - nult * nutl)
+
+
+# ws_meio = -ws[no_meio, :] / dad.k.h
+# Q = (1:nt) / nt * -dad.k.carga[3] / D0 / h
+# Q = (1:nt) / nt * -dad.k.carga[3] * (1 - nult * nutl) / dad.k.D22 / h
+# Q = (1:nt) / nt * -dad.k.carga[3]
+# Q = (1:nt) / nt * -dad.k.carga[3] / E2 / h^4
+# Q = (1:nt) / nt * -dad.k.carga[3] * (1 - nult * nutl) / E2 / h^4
+# Q = (1:nt) / nt * -dad.k.carga[3] / E1 / h^4
+Q = (1:nt) / nt * -dad.k.carga[3] / dadpe.k.E / dad.k.h^4
+
+fig, ax, p = BEM.lines(Q, ws_meio)
+# BEM.lines!(ds.qb, ds.wb)
+# BEM.lines!(Q, ws_meio1)
+# BEM.lines!(Q, ws_meioiso)
+# BEM.scatter!(ds.x, ds.w12)
+# BEM.scatter!(Q, ws_meio1)
+BEM.DataInspector(fig)
+ws_meio[end]
+
+# qpala = [5, 10, 15, 20, 25]
+# wpala = [0.5214
+#     0.8521
+#     1.080
+#     1.255
+#     1.399]
+# qpala = [50, 100, 150, 200, 250]
+# wpala = [0.1878
+#     0.3576
+#     0.5035
+#     0.6380
+#     0.7355]
+# BEM.scatter!(qpala, wpala)
+# fig

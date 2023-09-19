@@ -79,7 +79,7 @@ function elastico1diga(ne=15, tipo=2)
     E = 1
     v = 0.0
     # Malha de pontos internos
-    return elastico_iga, PONTOS, SEGMENTOS, MALHA, CCSeg, [E, v]
+    return elastico_iga, PONTOS, SEGMENTOS, MALHA, CCSeg, (E=E, nu=v)
 end
 
 

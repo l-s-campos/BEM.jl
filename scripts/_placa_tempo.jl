@@ -3,8 +3,8 @@ using DrWatson
 @quickactivate "BEM"
 include(scriptsdir("includes.jl"))
 # include(scriptsdir("placa.jl"))
-nelem = [5]  #Numero de elementos
-NPX = [11] #pontos internos na direção x
+nelem = [3]  #Numero de elementos
+NPX = [5] #pontos internos na direção x
 npg = [10]    #apenas números pares
 # nt = [20, 40, 80, 160]    #apenas números pares
 nt = [80]    #apenas números pares

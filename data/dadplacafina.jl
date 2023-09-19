@@ -177,7 +177,7 @@ function sladek03_apoiado(ne=15, tipo=2, n_dt=100)
         # N�mero(n_dt) de intervalos e Passos(dt) de Tempo
         #-------------------------------------------------------------------------#
         # n_dt = 100
-
+        # @infiltrate
         dt = 0.9 * to / n_dt #simplesmente apoiado
         # dt =0.5*to/n_dt; #engastada
         # dt = to / 2n_dt #

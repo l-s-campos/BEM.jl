@@ -182,12 +182,20 @@ function integrabeziersing(pf, cf, we, eta, w, elem::bezier, dad::elastico_aniso
    Hsing
 end
 
-function calsolfund(pg, pf, n, dad::Union{elastico_aniso,elastico_aniso_iga})
+function calsolfund(pg, pf, n, dad::Union{elastico_aniso,elastico_aniso_iga}, regiao=0)
    # @infiltrate
-   mi = dad.k.mi
-   A = dad.k.A
-   q = dad.k.q
-   g = dad.k.g
+   if regiao == 0
+      mi = dad.k.mi
+      A = dad.k.A
+      q = dad.k.q
+      g = dad.k.g
+   else
+      mi = dad.k.mi[regiao]
+      A = dad.k.A[regiao]
+      q = dad.k.q[regiao]
+      g = dad.k.g[regiao]
+   end
+   # @infiltrate
 
    xcampo = pg[1]
    ycampo = pg[2]
@@ -212,18 +220,28 @@ function calsolfund(pg, pf, n, dad::Union{elastico_aniso,elastico_aniso_iga})
       0 (mi[2]*n[1]-n[2])/z2]
 
    tast = 2 * real(A * mi_n_z * conj(g)')
-# @infiltrate
+   # @infiltrate
    uast, tast
 end
 
 
-function caldsolfund(pg, pf, n, dad::Union{elastico_aniso,elastico_aniso_iga})
+function caldsolfund(pg, pf, n, dad::Union{elastico_aniso,elastico_aniso_iga}, regiao=0)
    # @infiltrate
-   mu = dad.k.mi
-   Afs = dad.k.A
-   A = dad.k.A3
-   q = dad.k.q
-   g = dad.k.g
+   if regiao == 0
+      mu = dad.k.mi
+      Afs = dad.k.A
+      A = dad.k.A3
+      q = dad.k.q
+      g = dad.k.g
+   else
+      mu = dad.k.mi[regiao]
+      Afs = dad.k.A[regiao]
+      A = dad.k.A3[regiao]
+      q = dad.k.q[regiao]
+      g = dad.k.g[regiao]
+   end
+   # @infiltrate
+
 
    xcampo = pg[1]
    ycampo = pg[2]

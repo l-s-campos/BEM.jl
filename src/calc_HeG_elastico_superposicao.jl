@@ -35,7 +35,7 @@ function calc_HeG(dad::Vector{elastico}, npg=8)
           if jdad == 1
             mult = 1
           else
-            mult = dad[jdad].Ev[1] / dad[1].Ev[1]
+            mult = dad[jdad].k.E / dad[1].k.E
           end
           # @infiltrate jdad == 2
           H[(2i-1:2i).+iold, cols.+jold] = mult * h

@@ -146,6 +146,7 @@ struct hmat
     Tree2::Vector{Vector{Int64}}
     dad::DadosBEM
     cols::Vector{Vector{Int64}}
+    n::Int
 end
 nc(dad::DadosBEM) = size(dad.NOS, 1)
 ni(dad::DadosBEM) = size(dad.pontos_internos, 1)
