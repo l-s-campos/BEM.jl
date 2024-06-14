@@ -207,7 +207,8 @@ function format_dad(entrada, NPX=2, NPY=2, afasta=1; canto=false)
 
             cont_el = cont_el + 1
             nos = (cont_el-1)*tipo_elem+1:cont_el*tipo_elem
-            qsis = range(-1 + afasta / tipo_elem, stop=1 - afasta / tipo_elem, length=tipo_elem) # Parametrização de -1 a 1
+            # qsis = range(-1 + afasta / tipo_elem, stop=1 - afasta / tipo_elem, length=tipo_elem) # Parametrização de -1 a 1
+            qsis, ~ = gausslegendre(tipo_elem) # Parametrização de -1 a 1
             # @infiltrate
             N1, dN1 = calc_fforma_gen(pontosg[1], qsis)
             N2, dN2 = calc_fforma_gen(pontosg[2], qsis)
@@ -372,7 +373,7 @@ function aplicaCDC(H, G, dad::Union{elastico,elastico_aniso}, nosrestritos)
     end
     A, b
 end
-function aplicaCDC(H, G, dad::Union{potencial,helmholtz})
+function aplicaCDC(H::Matrix{Float64}, G::Matrix{Float64}, dad::Union{potencial,helmholtz})
     # nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
     n = size(dad.NOS, 1)
     A = zeros(typeof(H[1]), n, n)
@@ -839,4 +840,33 @@ function aplicaCDC(H, G, dad::placa_espessa_isotropica)
     end
 
     A, B, bcval
+end
+
+function tipoCDC(dad)
+    tipos = fill(true, ni(dad) + nc(dad))
+    for i in dad.ELEM
+        if i.tipoCDC == 0
+            tipos[i.indices] .= false
+        end
+    end
+    tipos
+end
+function valorCDC(dad)
+    valores = fill(0.0,nc(dad))
+    for i in dad.ELEM
+        valores[i.indices] = i.valorCDC
+    end
+    valores
+end
+function valoresCDC(dad)
+    valoresu = fill(0.0,ni(dad) +nc(dad))
+    valoresq = fill(0.0,ni(dad) +nc(dad))
+    for i in dad.ELEM
+        if i.tipoCDC == 0
+            valoresu[i.indices] = i.valorCDC
+        else
+            valoresq[i.indices] = i.valorCDC
+        end
+    end
+    valoresu,valoresq
 end

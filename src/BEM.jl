@@ -5,18 +5,28 @@ using ForwardDiff: length
 using LinearAlgebra, Statistics, FastGaussQuadrature, ForwardDiff, SparseArrays, Optim
 using TimerOutputs#, FFTW
 using GLMakie, DelaunayTriangulation#, WriteVTK
-export lines, lines!, scatter, scatter!,tricontourf
+export lines, lines!, scatter, scatter!, tricontourf
 using Infiltrator, Distances, ParallelKMeans, LowRankApprox
 using PolynomialRoots, SpecialFunctions
 using LinearSolve, IterativeSolvers
 using ProgressMeter
-
+using Printf
+using RecipesBase
+using Distributed
+using Base.Threads
+using AbstractTrees
+using SparseArrays, StaticArrays
 include("estruturas.jl")
+
+include("./Hmat/HMatrices.jl")
+
 include("integra.jl")
 
 include("calc_HeG_elastico.jl")
 include("calc_HeG_elastico_superposicao.jl")
 include("calc_HeG_potencial.jl")
+include("calc_HeG_potencial_direto.jl")
+include("calc_HeG_potencial_tudoemu.jl")
 include("calc_HeG_helmholtz.jl")
 include("casca.jl")
 export calc_HeG, format_dad, separa, aplicaCDC, calc_Ti, calc_Aeb, nc, ni, calc_tens_int, calc_tens_cont, calc_SeD
@@ -29,7 +39,7 @@ include("trinca.jl")
 include("calc_fforma.jl")
 include("transforma.jl")
 include("mostra_problema.jl")
-export mostra_geometria, mostra_resultado,mostra_deformação
+export mostra_geometria, mostra_resultado, mostra_deformação
 include("rim.jl")
 import Base: *
 export MatrizH, matvec
@@ -47,6 +57,10 @@ include("placa_tensao.jl")
 include("radial.jl")
 export define_SubRegioes, subregioes
 include("SubRegioes.jl")
+
+
+
+
 export nrmse, nme
 nrmse(y_true::Array, y_pred) = sqrt(sum((y_true .- y_pred) .^ 2) / length(y_true)) / (maximum(y_true) - minimum(y_true))
 nrmse(y_true::Number, y_pred) = sqrt(sum((y_true .- y_pred) .^ 2) / length(y_pred)) / y_true

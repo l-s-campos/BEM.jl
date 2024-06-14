@@ -193,7 +193,8 @@ function sladek03_apoiado(ne=15, tipo=2, n_dt=100)
         #         ωmn = [ωmn; pi^2 / a^2 * sqrt(1 / rho) * sqrt(dadmat.D11 * m^4 + (dadmat.D12 + 2dadmat.D66) * m^2 * n^2 + dadmat.D22 * n^4)]
         # end
         # @show ωmn
-        [[placa_fina, POINTS, SEGMENTS, MESH, BC_Segments, (; dadmat..., carga=[A, B, C], rho=rho, thickness=thickness, dt=dt, n_dt=n_dt, to=to, w_st=23.42e-3)], [elastico_aniso, POINTS, SEGMENTS, MESH, BC_Segments_pl, Compute_Material(Material)]]
+        placa_fina, POINTS, SEGMENTS, MESH, BC_Segments, (; dadmat..., carga=[A, B, C], rho=rho, thickness=thickness, dt=dt, n_dt=n_dt, to=to, w_st=23.42e-3)
+        # [[placa_fina, POINTS, SEGMENTS, MESH, BC_Segments, (; dadmat..., carga=[A, B, C], rho=rho, thickness=thickness, dt=dt, n_dt=n_dt, to=to, w_st=23.42e-3)], [elastico_aniso, POINTS, SEGMENTS, MESH, BC_Segments_pl, Compute_Material(Material)]]
 end
 function large1(ne=15, tipo=2, bc="SSSS")
         a = 1

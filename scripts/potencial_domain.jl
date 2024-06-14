@@ -36,13 +36,30 @@ println("6. Gerando mapa de cor")
 # @show erro = norm(T - dad.NOS[:, 1])
 # @show erro = norm( Ti - dad.pontos_internos[:, 1])
 
-Au, bu = BEM.calc_Aeb_emu(dad)
+Ht, Gt = BEM.calc_HeGt(dad)
+Au, bu = BEM.aplicaCDC_u(Ht, Gt, dad)
 Tu = Au \ bu
 
-@show length(T), order
-@show sum(abs, T - dad.NOS[:, 1]) / length(T)
-@show sum(abs, Tu - [dad.NOS[:, 1]; dad.pontos_internos[:, 1]]) / length(Tu)
-@show sum(abs, [T; Ti] - [dad.NOS[:, 1]; dad.pontos_internos[:, 1]]) / length(Tu)
+M = BEM.Monta_M_RIMd(dad, npg)
+w = BEM.corrige_autovalor(Gt, Ht, M, dad)
+wu = BEM.corrige_autovalor_u(Gt, Ht, M, dad)
+fT = zeros(0)
+for m = 1:5
+    for n = 1:5
+        fT = [fT; pi * sqrt(m^2 + n^2)]
+    end
+end
+fT = sort(fT);
+
+
+
+
+
+
+# @show length(T), order
+# @show sum(abs, T - dad.NOS[:, 1]) / length(T)
+# @show sum(abs, Tu - [dad.NOS[:, 1]; dad.pontos_internos[:, 1]]) / length(Tu)
+# @show sum(abs, [T; Ti] - [dad.NOS[:, 1]; dad.pontos_internos[:, 1]]) / length(Tu)
 
 # t, T, Td, q, qd=BEM.compara_potencial(potencial1d,5,2,10,1,1)
 # geo=mostra_geometria(dad);

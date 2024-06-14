@@ -9,11 +9,11 @@ npg = [10]    #apenas números pares
 # nt = [20, 40, 80, 160]    #apenas números pares
 nt = [80]    #apenas números pares
 ## Formatação dos dados 
-# problema = ["sladek03_apoiado"]
-problema = ["sladek03", "sladek03_apoiado"]
-# metodo = ["DRM"]
+problema = ["sladek03_apoiado"]
+# problema = ["sladek03", "sladek03_apoiado"]
+metodo = ["DRM"]
 # metodo = ["Monta_M_RIMd", "Monta_M_RIM", "DRM"]
-metodo = ["Monta_M_RIMd"]
+# metodo = ["Monta_M_RIMd"]
 params = @strdict nelem NPX npg problema metodo nt
 
 dicts = dict_list(params)

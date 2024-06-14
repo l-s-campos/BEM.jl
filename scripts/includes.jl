@@ -5,7 +5,7 @@ using TimerOutputs
 # gaston()
 # using GLMakie
 # Makie.inline!(false)
-using FileIO, JLD2, LinearAlgebra
+using FileIO, JLD2, LinearAlgebra, Statistics
 using Krylov, LinearMaps, SparseArrays
 
 includet(datadir("dadpotencial.jl"))

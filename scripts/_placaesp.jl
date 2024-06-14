@@ -30,19 +30,20 @@ H, G, q = calc_HeG(dad, npg)
 np = nc(dad) + ni(dad)
 # tens = [-ones(np) zeros(np) zeros(np)];
 # tens = [-ones(np) -ones(np) zeros(np)];
-tens = [-ones(np) -ones(np) zeros(np)] * dad.k.h * dadterm.k.E * α / (1 - dadterm.k.nu);
+dadterm = format_dad(entradaterm, NPX, NPY); # dados
+α = 2e-6
+u, tens = termoelasticidade(dadterm, npg, θ=1);
+
+tensa = [-ones(np) -ones(np) zeros(np)] * dad.k.h * dadterm.k.E * α / (1 - dadterm.k.nu);
 f1 = 1
 f2(x, y) = x
 f3(x, y) = (x + y) / 2
-α = 2e-6
-dadterm = format_dad(entradaterm, NPX, NPY); # dados
-u, tens = termoelasticidade(dadterm, npg, k=α, θ=1);
 
-M = Monta_M_RIM(dad);
+# M = Monta_M_RIM(dad);
 Md = Monta_M_RIMd(dad);
 
-# M2d = BEM.aplicaT(dad, Md, tens)
-M2 = BEM.aplicaT(dad, M, tens);
+M2d = BEM.aplicaT(dad, Md, tens)
+# M2 = BEM.aplicaT(dad, M, tens);
 # M2 = BEM.aplicaT(dad, Md, tens);
 # ad, v = BEM.autovalor(H, G, M2d, dad)
 a, v = BEM.autovalor(H, G, M2, dad;)

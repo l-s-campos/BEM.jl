@@ -1093,7 +1093,8 @@ function compute_dtRw(pf, nf, dad, pre)
         a = 1
         theta = atan(r2, r1)
         r = norm(rs)
-        d2Rdxdy, d2Rdy2, d2Sdx2, d2Sdxdy, d2Sdy2, d4Rdx2dy2, d4Rdx3dy, d4Rdx4, d4Rdxdy3, d4Rdy4, d4Sdx2dy2, d4Sdx3dy, d4Sdx4, d4Sdxdy3, d4Sdy4, d2Rdx2, extra = pre
+        dRdx, dRdy, dSdx, dSdy, d2Rdx2, d2Rdxdy, d2Rdy2, d2Sdx2, d2Sdxdy, d2Sdy2, d3Rdx2dy, d3Rdx3, d3Rdxdy2, d3Rdy3, d3Sdx2dy, d3Sdx3, d3Sdxdy2, d3Sdy3, extra = pre
+
         for i = 1:2
             constA = (cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2
             constB = atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))

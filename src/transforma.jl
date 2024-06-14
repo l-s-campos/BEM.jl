@@ -102,12 +102,12 @@ function pontosintegra(NOS, elem_j, ind_elem, qsi, w)
             x2 = qsi * (1 - eet) / 2 .+ (eet + 1) / 2
             qsis = [x1; x2]
             ws = [w * (1 + eet) / 2; w * (1 - eet) / 2]
-            eta, Jt = Monegato(qsis, eet, 11.0)
+            eta, Jt = Monegato(qsis, eet, 5.0)
             inds = eta .!= eet
             return eta[inds], ws[inds] .* Jt[inds]
         end
         # eta,Jt=sinhtrans(qsi,eet[1],0)
-        eta, Jt = Monegato(qsi, eet, 11.0)
+        eta, Jt = Monegato(qsi, eet, 5.0)
         inds = eta .!= eet
         return eta[inds], w[inds] .* Jt[inds]
     else

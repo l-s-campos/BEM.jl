@@ -987,6 +987,7 @@ function simula_placa_tempo(d::Dict)
   tpasso = @timed dis, tens, tens_i = passonotempo(dad, A, B, q, bc_val, M, dM, npg)
   # dis / dad.k.w_st, range(0, step=dad.k.dt, length=dad.k.n_dt) / dad.k.to
   centro = 2 * size(dad.NOS, 1) + ceil(Int64, size(dad.pontos_internos, 1) / 2)
+  centroi = ceil(Int64, size(dad.pontos_internos, 1) / 2)
   # ws = autovalor(H, G, M, dad)
 
   fulld = copy(d)
@@ -996,8 +997,8 @@ function simula_placa_tempo(d::Dict)
   fulld["timerHeG"] = tHeG.time
   fulld["timerpasso"] = tpasso.time
   fulld["timerdad"] = tdad.time
-  fulld["tens"] = tens[1, centro]
-  fulld["timerdad"] = t
+  fulld["tens"] = tens[:, centroi, 1]
+  # fulld["timerdad"] = t
   # fulld["frequencias"] = ws
   fulld
 end
@@ -2112,6 +2113,7 @@ function corrige_derivada(w, dad, dwdx, dwdy)
   end
 end
 function placa_grande(mats, ntime, dad::placa_fina_isotropica, dadpe, e=0.5)
+  #https://docs.sciml.ai/NonlinearSolve/stable/tutorials/nonlinear/#Using-Jacobian-Free-Newton-Krylov-(JNFK)-Methods
   H, G, q, It, dNs, Hpe, Gpe, dMd, Mpe, A, B, bc_val = mats
 
   Ape, bpe = aplicaCDC(Hpe, Gpe, dadpe) # Calcula a matriz A e o vetor b

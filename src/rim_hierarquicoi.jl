@@ -14,7 +14,7 @@ function int_interpolaρdρ(r)
 end
 
 
-function Monta_M_RIMd(dad, npg)
+function Monta_M_RIMd(dad::potencial, npg)
     n_nos = size(dad.NOS, 1)
     nelem = size(dad.ELEM, 1)
     n_noi = size(dad.pontos_internos, 1) #Number of internal nodes
@@ -34,36 +34,10 @@ function Monta_M_RIMd(dad, npg)
         A[i, i] = -sum(A[i, :])
     end
     A + diagm(0 => M1)
-    M, M1, F, D
+    # M, M1, F, D
 end
 
-function calc_md(x, pf, k, qsi, w, elem)
-    npg = length(w)
-    m_el, m_el1 = 0, 0
 
-    for i = 1:npg
-        N = calc_fforma_gen(qsi[i], elem.ξs)
-        pg = N' * x    # Ponto de gauss interpolador
-        r = pg' - pf      # Distancia entre ponto de gauss e ponto fonte
-        dN_geo = calc_dfforma_gen(qsi[i], elem.ξs) # calcula dN\dξ N1,N2 e N3
-        dxdqsi = dN_geo' * x   # dx/dξ & dy/dξ
-        dgamadqsi = norm(dxdqsi)  # dΓ/dξ = J(ξ) Jacobiano
-        sx = dxdqsi[1] / dgamadqsi # vetor tangente dx/dΓ
-        sy = dxdqsi[2] / dgamadqsi # vetor tangente dy/dΓ
-
-        nx = sy # Componente x do vetor normal unit�rio
-        ny = -sx # Componente y do vetor normal unit�rio
-        # @infiltrate
-        r = pg' - pf
-        R = norm(r)
-        m = int_interpolaρdρ(R)
-        m1 = -(2 * R^2 * log(R) - R^2) / 4 / (2 * π * k)
-        # calcula_Fd(pr, pf, pg, [nx,ny], k, qsi2, w2);
-        m_el += dot([nx, ny], r) / norm(r)^2 * m * dgamadqsi * w[i]
-        m_el1 += dot([nx, ny], r) / norm(r)^2 * m1 * dgamadqsi * w[i]
-    end
-    return m_el, m_el1
-end
 function Finterp(dad, Tree1, Tree2, block; ninterp=3, compressão=true, ϵ=1e-3)
     # arg = [NOS1,NOS_GEO1,tipoCDC,valorCDC,normal,ELEM1,k]
     #         1      2        3      4        5     6   7
@@ -120,24 +94,7 @@ function FeD(dad, b1=0, b2=0)
 end
 
 
-function calcMs(dad, npg)
-    nodes = [dad.NOS; dad.pontos_internos]
-    n_pontos = size(nodes, 1)
-    M = zeros(n_pontos)
-    M1 = zeros(n_pontos)
-    qsi, w = gausslegendre(npg)
 
-    for i = 1:n_pontos #Laço dos pontos radiais
-        pf = nodes[i, :]
-        for elem_j in dad.ELEM  #Laço dos elementos
-            x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
-            m_el, m_el1 = calc_md(x, pf, dad.k, qsi, w, elem_j)
-            M[i] = M[i] + m_el
-            M1[i] = M1[i] + m_el1
-        end
-    end
-    M, M1
-end
 
 function FeDinterp(dad::potencial, b1, b2, npg=8, ninterp=3)
     nodes = [dad.NOS; dad.pontos_internos][b1, :]

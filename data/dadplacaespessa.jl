@@ -107,9 +107,10 @@ function termbuckl(ne=15, tipo=2, bc="SSSS")
 
     D = E * h^3 / (12 * (1 - nu^2))
 
+    α = 2e-6
 
     A = 0
     B = 0
     C = 0
-    [[placa_espessa_isotropica, POINTS, SEGMENTS, MESH, BC_Segments, (h=h, D=D, λ=λ, nu=nu, carga=[A, B, C])], [elastico, POINTS, SEGMENTS, MESH, CCSeg, (E=E, nu=nu)]]
+    [[placa_espessa_isotropica, POINTS, SEGMENTS, MESH, BC_Segments, (h=h, D=D, λ=λ, nu=nu, carga=[A, B, C])], [elastico, POINTS, SEGMENTS, MESH, CCSeg, (E=E, nu=nu, k=α)]]
 end
