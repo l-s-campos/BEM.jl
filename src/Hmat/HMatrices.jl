@@ -53,28 +53,6 @@ include("triangular.jl")
 include("lu.jl")
 
 
-mutable struct matrizA
-    H::HMatrix
-    G::HMatrix
-    tipoCDC::Vector{Bool}
-end
-
-import Base.*
-import LinearAlgebra.mul!
-function *(A::matrizA, vec)
-    vecH = zeros(size(A.H, 2))
-    vecG = zeros(size(A.H, 2))
-
-    vecH[A.tipoCDC] = vec[A.tipoCDC]
-    vecG[.!A.tipoCDC] = vec[.!A.tipoCDC]
-    return A.H * vecH - A.G * vecG
-end
-Base.size(A::matrizA) = size(A.H)
-function mul!(y::Vector, A::matrizA, x::Vector)
-    y .= A * x
-end
-
-
 
 export ClusterTree,
     CardinalitySplitter,

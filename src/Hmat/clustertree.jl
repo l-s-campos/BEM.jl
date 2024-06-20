@@ -146,44 +146,46 @@ end
 function ClusterTree(
     dad::DadosBEM,
     splitter=CardinalitySplitter();
-    threads=false,
+    threads=false, dist=1e6
 )
     elements = [[Point2D(dad.NOS[i, 1], dad.NOS[i, 2]) for i in 1:nc(dad)]; [Point2D(dad.pontos_internos[i, 1], dad.pontos_internos[i, 2]) for i in 1:ni(dad)]]
-    tipoCDC=BEM.tipoCDC(dad)
+    tipoCDC = BEM.tipoCDC(dad)
     elementsCDC = [[Point2D(dad.NOS[i, 1], dad.NOS[i, 2]) for i in 1:nc(dad)]; [Point2D(dad.pontos_internos[i, 1], dad.pontos_internos[i, 2]) for i in 1:ni(dad)]]
-   for i in 1:length(tipoCDC)
-    if tipoCDC[i]==1
-    elementsCDC[i]=elementsCDC[i].+1e3
+    for i in 1:length(tipoCDC)
+        if tipoCDC[i] == 1
+            elementsCDC[i] = elementsCDC[i] .+ dist
+        end
     end
-   end
-   
-#    @infiltrate
-#     bbox = bounding_box(elements)
-#     n = length(elements)
-#     irange = 1:n
-#     loc2glob = collect(irange)
-#     glob2loc = collect(irange) # used as buffer during the construction
-#     children = nothing
-#     parent = nothing
-#     #build the root, then recurse
-#     root = ClusterTree(elements, bbox, irange, loc2glob, glob2loc, children, parent)
-#     # binary_split_CDC!(root, dad)
-#     # @infiltrate
-#     _build_cluster_tree!(root, splitter, threads)
-#     # inverse the loc2glob permutation
-#     glob2loc .= invperm(loc2glob)
-#     # finally, permute the elements so as to use the local indexing
-#     copy!(elements, elements[loc2glob]) # faster than permute!
-#     return ClusterTree(elements, splitter),root
-    yclt=ClusterTree(elementsCDC, splitter)
-    yclt._elements=elements
-    return ClusterTree(elements, splitter),ClusterTree(elements, splitter)
+
+    #    @infiltrate
+    #     bbox = bounding_box(elements)
+    #     n = length(elements)
+    #     irange = 1:n
+    #     loc2glob = collect(irange)
+    #     glob2loc = collect(irange) # used as buffer during the construction
+    #     children = nothing
+    #     parent = nothing
+    #     #build the root, then recurse
+    #     root = ClusterTree(elements, bbox, irange, loc2glob, glob2loc, children, parent)
+    #     # binary_split_CDC!(root, dad)
+    #     # @infiltrate
+    #     _build_cluster_tree!(root, splitter, threads)
+    #     # inverse the loc2glob permutation
+    #     glob2loc .= invperm(loc2glob)
+    #     # finally, permute the elements so as to use the local indexing
+    #     copy!(elements, elements[loc2glob]) # faster than permute!
+    #     return ClusterTree(elements, splitter),root
+    yclt = ClusterTree(elementsCDC, splitter)
+    corrige_yclt!(yclt, elements, dist)
+    # @infiltrate
+    # return ClusterTree(elements, splitter), ClusterTree(elements, splitter)
+    return ClusterTree(elements, splitter), yclt
 end
 function _build_cluster_tree!(current_node, splitter, threads, depth=0)
     if should_split(current_node, depth, splitter)
-        if depth==0&&isleaf(current_node)
+        if depth == 0 && isleaf(current_node)
             split!(current_node, splitter)
-        elseif depth>0
+        elseif depth > 0
             split!(current_node, splitter)
         end
         if threads
@@ -199,6 +201,19 @@ function _build_cluster_tree!(current_node, splitter, threads, depth=0)
     end
     return current_node
 end
+function corrige_yclt!(current_node, elements, dist)
+    current_node._elements = elements
+    irange = index_range(current_node)
+    l2g = loc2glob(current_node)
+    l2g[irange]
+    current_node.container = bounding_box(elements[l2g[irange]])
+    for child in children(current_node)
+        # @infiltrate
+        corrige_yclt!(child, elements, dist)
+    end
+end
+
+
 
 function Base.show(io::IO, tree::ClusterTree{N,T}) where {N,T}
     return print(io, "ClusterTree with $(length(tree.index_range)) points.")

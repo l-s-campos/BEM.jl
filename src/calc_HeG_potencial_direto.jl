@@ -71,7 +71,7 @@ function calc_HeG_Hd(dad::potencial; npg=3, atol=1e-4)
   KH = BEM.kernelH(dad, normal_fonte, intelems)
   HG = assemble_hmat(KG, Xclt, Yclt; adm, comp)
   HH = assemble_hmat(KH, Xclt, Yclt; adm, comp)
-
+  # @infiltrate
   corrige_diagonais!(dad, HH, HG, normal_fonte)
   HH, HG
 end
@@ -146,6 +146,7 @@ function aplicaCDC(HH::HMatrix, HG::HMatrix, dad::DadosBEM)
     nodesG[block].data = -1 * (aux)
   end
   HG * valorCDC
+  # @infiltrate
 end
 
 function calc_Tid(dad::potencial, T, q, npg=3)
