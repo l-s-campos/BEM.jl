@@ -1,21 +1,15 @@
 module BEM
-using Reexport, DrWatson
-using Base: NamedTuple
-using ForwardDiff: length
-using LinearAlgebra, Statistics, FastGaussQuadrature, ForwardDiff, SparseArrays, Optim
-using TimerOutputs#, FFTW
-using GLMakie, DelaunayTriangulation#, WriteVTK
+using DrWatson
+using LinearAlgebra, Statistics, FastGaussQuadrature, SparseArrays, StaticArrays
+using TimerOutputs#, FFTW,ForwardDiff, Optim,Printf
+using GLMakie, DelaunayTriangulation#, WriteVTK,Distances
 export lines, lines!, scatter, scatter!, tricontourf
-using Infiltrator, Distances, ParallelKMeans, LowRankApprox
+using Infiltrator, ParallelKMeans, LowRankApprox
 using PolynomialRoots, SpecialFunctions
-using LinearSolve, IterativeSolvers
+using LinearSolve, IterativeSolvers, NonlinearSolve
 using ProgressMeter
-using Printf
-using RecipesBase
 using Distributed
-using Base.Threads
-using AbstractTrees
-using SparseArrays, StaticArrays
+using AbstractTrees, Printf
 include("estruturas.jl")
 
 include("./Hmat/HMatrices.jl")
@@ -23,13 +17,14 @@ include("./Hmat/HMatrices.jl")
 include("integra.jl")
 
 include("calc_HeG_elastico.jl")
+export Contato_sem_atrito_NL
 include("calc_HeG_elastico_superposicao.jl")
 include("calc_HeG_potencial.jl")
 include("calc_HeG_potencial_direto.jl")
 include("calc_HeG_potencial_tudoemu.jl")
 include("calc_HeG_helmholtz.jl")
 include("casca.jl")
-export calc_HeG, format_dad, separa, aplicaCDC, calc_Ti, calc_Aeb, nc, ni, calc_tens_int, calc_tens_cont, calc_SeD
+export calc_HeG, format_dad, separa, aplicaCDC, calc_Ti, calc_Aeb, nc, ni, calc_tens_int, calc_tens_cont, calc_SeD, potencial_correlato, corrigediag!, calc_gap, verifica_contato_sem_atrito, muda_nt!, muda_nt
 include("termoelasticidade.jl")
 export termoelasticidade
 

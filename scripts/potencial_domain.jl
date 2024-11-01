@@ -37,19 +37,22 @@ println("6. Gerando mapa de cor")
 # @show erro = norm( Ti - dad.pontos_internos[:, 1])
 
 Ht, Gt = BEM.calc_HeGt(dad)
+
 Au, bu = BEM.aplicaCDC_u(Ht, Gt, dad)
+T, q = BEM.aplicaCDC_alpha(Ht, Gt, dad)
+
 Tu = Au \ bu
 
 M = BEM.Monta_M_RIMd(dad, npg)
 w = BEM.corrige_autovalor(Gt, Ht, M, dad)
 wu = BEM.corrige_autovalor_u(Gt, Ht, M, dad)
-fT = zeros(0)
-for m = 1:5
-    for n = 1:5
-        fT = [fT; pi * sqrt(m^2 + n^2)]
-    end
-end
-fT = sort(fT);
+# fT = zeros(0)
+# for m = 1:5
+#     for n = 1:5
+#         fT = [fT; pi * sqrt(m^2 + n^2)]
+#     end
+# end
+# fT = sort(fT);
 
 
 

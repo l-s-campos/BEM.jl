@@ -5,11 +5,11 @@
 using DrWatson
 @quickactivate "BEM"
 include(scriptsdir("includes.jl"))
-nelem = 2  #Numero de elementos
+nelem = 20  #Numero de elementos
 order = 2
-NPX = 20 #pontos internos na direção x
+NPX = 10 #pontos internos na direção x
 NPY = NPX #pontos internos na direção y
-npg = 12    #apenas números pares
+npg = 20    #apenas números pares
 ## Formatação dos dados ________________________________________________
 println("1. Formatando os dados");
 dad = format_dad(potencial1d(nelem, order), NPX, NPY) # dados
@@ -17,6 +17,7 @@ dad = format_dad(potencial1d(nelem, order), NPX, NPY) # dados
 # dad = format_dad(placacomfuro(nelem),NPX,NPY) # dados
 
 println("2. Montando a matriz A e o vetor b")
+# H, G = BEM.calc_HeGd(dad, 3)
 H, G = calc_HeG(dad, npg)  #importante
 # H1,G1 = calc_HeG(dad,10*npg)  #importante
 
@@ -36,13 +37,14 @@ println("6. Gerando mapa de cor")
 # @show erro = norm(T - dad.NOS[:, 1])
 # @show erro = norm( Ti - dad.pontos_internos[:, 1])
 
-Au, bu = BEM.calc_Aeb_emu(dad)
-Tu = Au \ bu
+# Au, bu = BEM.calc_Aeb_emu(dad)
+# Tu = Au \ bu
 
 @show length(T), order
 @show sum(abs, T - dad.NOS[:, 1]) / length(T)
-@show sum(abs, Tu - [dad.NOS[:, 1]; dad.pontos_internos[:, 1]]) / length(Tu)
-@show sum(abs, [T; Ti] - [dad.NOS[:, 1]; dad.pontos_internos[:, 1]]) / length(Tu)
+# @show sum(abs, Tu - [dad.NOS[:, 1]; dad.pontos_internos[:, 1]]) / length(Tu)
+# @show sum(abs, [T; Ti] - [dad.NOS[:, 1]; dad.pontos_internos[:, 1]]) / length(Tu)
+@show sum(abs, Ti - dad.pontos_internos[:, 1]) / length(Ti)
 
 # t, T, Td, q, qd=BEM.compara_potencial(potencial1d,5,2,10,1,1)
 # geo=mostra_geometria(dad);

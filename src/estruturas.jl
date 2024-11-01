@@ -36,6 +36,7 @@ mutable struct elastico <: vetorial
     NOS::Array{Float64,2}
     pontos_internos::Array{Float64,2}
     ELEM::Array{elementov,1}
+    normal::Array{Float64,2}
     k::NamedTuple
 end
 
@@ -43,18 +44,21 @@ mutable struct elastico_aniso <: vetorial
     NOS::Array{Float64,2}
     pontos_internos::Array{Float64,2}
     ELEM::Array{elementov,1}
+    normal::Array{Float64,2}
     k::NamedTuple
 end
 mutable struct potencial <: escalar
     NOS::Array{Float64,2}
     pontos_internos::Array{Float64,2}
     ELEM::Array{elemento,1}
+    normal::Array{Float64,2}
     k::Float64
 end
 mutable struct helmholtz <: escalar
     NOS::Array{Float64,2}
     pontos_internos::Array{Float64,2}
     ELEM::Array{elemento,1}
+    normal::Array{Float64,2}
     k::NamedTuple
 end
 
@@ -104,12 +108,14 @@ mutable struct placa_fina <: vetorial
     NOS::Array{Float64,2}
     pontos_internos::Array{Float64,2}
     ELEM::Array{elementov,1}
+    normal::Array{Float64,2}
     k::NamedTuple
 end
 mutable struct placa_fina_isotropica <: vetorial
     NOS::Array{Float64,2}
     pontos_internos::Array{Float64,2}
     ELEM::Array{elementov,1}
+    normal::Array{Float64,2}
     k::NamedTuple
 end
 
@@ -117,12 +123,14 @@ mutable struct placa_espessa <: vetorial
     NOS::Array{Float64,2}
     pontos_internos::Array{Float64,2}
     ELEM::Array{elementov,1}
+    normal::Array{Float64,2}
     k::NamedTuple
 end
 mutable struct placa_espessa_isotropica <: vetorial
     NOS::Array{Float64,2}
     pontos_internos::Array{Float64,2}
     ELEM::Array{elementov,1}
+    normal::Array{Float64,2}
     k::NamedTuple
 end
 
@@ -163,7 +171,6 @@ KH=kernelH(dad,BEM.calc_normais(dad))
 """
 mutable struct kernelH <: AbstractMatrix{Float64}
     dad::DadosBEM
-    normalfonte::Matrix{Float64}
     integralelem::Vector{Float64}
 end
 mutable struct kernelG <: AbstractMatrix{Float64}
@@ -193,7 +200,7 @@ function Base.getindex(K::kernelH, i::Int, j::Int)
     if j > nc(K.dad)
         return 0.0
     end
-    Qast, Tast = calsolfund([xj - xi, yj - yi], K.normalfonte[j, :], K.dad)
+    Qast, Tast = calsolfund([xj - xi, yj - yi], k.dad.normal[j, :], K.dad)
     return Qast * K.integralelem[j]
 end
 function Base.getindex(K::kernelG, i::Int, j::Int)
@@ -240,5 +247,5 @@ export potencial,
     casca,
     casca_aniso,
     placa_espessa,
-    placa_espessa_isotropica,
-    
+    placa_espessa_isotropica
+

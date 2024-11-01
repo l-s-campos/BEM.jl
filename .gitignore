@@ -53,7 +53,7 @@ Backup of *.doc*
 
 # Excel temporary
 ~$*.xls*
-
+*.csv
 # Excel Backup File
 *.xlk
 

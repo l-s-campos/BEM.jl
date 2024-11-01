@@ -32,9 +32,9 @@ function potencial1d(ne=15, tipo=2)
     #     3 1 0
     #     4 0 0]
     CCSeg = [1 1 0
-        2 0 0
+        2 0 1
         3 1 0
-        4 0 1]
+        4 0 0]
     # Condutividade Térmica do material
     k = 1
     # Malha de pontos internos
@@ -448,3 +448,60 @@ function fa3(NOS, ns=1000)
     end
     Ts
 end
+
+# Entrada de dados para análise de temperatura pelo
+# método dos elementos de contorno
+function quarto_circ(ne=15, tipo=2)
+    PONTOS = [1 1 0
+        2 2 0
+        3 0 2
+        4 0 1]
+    # Segmentos que definem a geometria
+    # SEGMENTOS = [N° do segmento, N° do ponto inicial, N° do ponto final
+    #                                                  Raio, tipo do elemento]
+    # Raio do segmento: > 0 -> O centro é a esquerda do segmento (do ponto
+    #                          inicial para o ponto final)
+    #                   < 0 -> O centro é a direita do segmento (do ponto
+    #                          inicial para o ponto final)
+    #                   = 0 -> O segmento é uma linha reta
+    SEGMENTOS = [1 1 2 0
+        2 2 3 2
+        3 3 4 0
+        4 4 1 -1]
+    # Matriz para definição da malha
+    # MALHA = [número do segmento, número de elementos no segmento]
+    MALHA = [1 ne tipo
+        2 ne tipo
+        3 ne tipo
+        4 ne tipo]
+    # Condições de contorno nos segmentos
+    # CCSeg = [N° do segmento, tipo da CDC, valor da CDC]
+    # tipo da CDC = 0 => A temperatura é conhecida
+    # tipo da CDC = 1 => O fluxo é conhecido
+    # CCSeg = [1 1 0%correto
+    #     2 1 -1
+    #     3 1 0
+    #     4 0 0]
+    CCSeg = [1 1 0
+        2 1 -200
+        3 1 0
+        4 0 100]
+    # Condutividade Térmica do material
+    k = 1
+    # Malha de pontos internos
+    return potencial, PONTOS, SEGMENTOS, MALHA, CCSeg, k
+end
+
+function ana_quarto_circ(NOS, ri=1, re=2, ti=100, qe=-200)
+    NN = length(NOS[:, 1])
+    T = zeros(length(NOS[:, 1]))
+    for i = 1:NN
+        x, y = NOS[i, :]
+        r = sqrt(x^2 + y^2)
+        T[i] = ti - qe * re * log(r / ri)
+
+    end
+    return T
+
+end
+

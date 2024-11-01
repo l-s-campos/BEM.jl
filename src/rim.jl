@@ -1,20 +1,43 @@
 
 
-function interpola(r)
-    if r == 0
-        return 0
+function interpola(r; tipo="tps")
+    if tipo == "tps"
+        if r == 0
+            return 0
+        end
+        return r^2 * log(r)
+    elseif tipo == "r"
+        return r
+    elseif tipo == "d4"
+        C = 1
+        return (2C - r) / (r + C)^4
     end
-    r^2 * log(r)
-    # r
-
 end
-function int_interpolaρdρ(r)
-    (4 * r^4 * log(r) - r^4) / 16#  int r^3 * log(r)
-    # r^3 / 3
+function int_interpolaρdρ(r; tipo="tps")
+    if tipo == "tps"
+        if r == 0
+            return 0
+        end
+        return (4 * r^4 * log(r) - r^4) / 16 # int r^3 * log(r)
+    elseif tipo == "r"
+        return r^3 / 3
+    elseif tipo == "d4"
+        C = 1
+        return r^2 / (r + C)^3
+    end
 end
-function int_interpola(r)
-    (1 / 3) * (r^3) * log(r) - (1 / 9) * (r^3)#  integrate(r^2 * log(r))
-    # r^2 / 2
+function int_interpola(r; tipo="tps")
+    if tipo == "tps"
+        if r == 0
+            return 0
+        end
+        return (1 / 3) * (r^3) * log(r) - (1 / 9) * (r^3)#  integrate(r^2 * log(r))
+    elseif tipo == "r"
+        return r^2 / 2
+    elseif tipo == "d4"
+        C = 1
+        return (-C + r) / (2 * (C + r)^3)
+    end
 end
 
 function Monta_M_RIMd(dad::Union{placa_fina,placa_fina_isotropica}, npg)

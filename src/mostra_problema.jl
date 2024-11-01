@@ -1,5 +1,5 @@
 function mostra_geometria(dad)
-  f = Figure(resolution=(800, 800), Aspect=1)
+  f = Figure(size=(800, 800), Aspect=1)
   f[1, 1] = Axis(f)
   pos = f[1, 1]
   s = 0.1 * maximum(dad.NOS)
@@ -67,7 +67,7 @@ function mostra_resultado(dad, Ts; levels=10)
   f
 end
 function mostra_deformação(dad, u; escala=1)
-  f = Figure(resolution=(800, 800), Aspect=1)
+  f = Figure(size=(800, 800), Aspect=1)
   f[1, 1] = Axis(f)
   pos = f[1, 1]
   for el in dad.ELEM

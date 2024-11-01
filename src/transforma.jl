@@ -44,8 +44,10 @@ function sinhtrans(u, a, b)
     #https://onlinelibrary.wiley.com/doi/epdf/10.1002/nme.1208
     # https://onlinelibrary.wiley.com/doi/epdf/10.1002/nme.2244 iterado
     # https://www.sciencedirect.com/science/article/pii/S0955799715001125 3d
-    if b < 1e-6
-        return telles(u, a)
+    if b < 1e-12
+        b = 1e-12
+        # return telles(u, a, b)
+        # return Monegato(u, a)
     end
     μ = 1 / 2 * (asinh((1 + a) / b) + asinh((1 - a) / b))
     η = 1 / 2 * (asinh((1 + a) / b) - asinh((1 - a) / b))
@@ -70,6 +72,22 @@ function Ma(u, a, b)
     x, J
 end
 
+
+function Wenjing(r, a, m=10)
+    # https://link.springer.com/article/10.1007/s00466-008-0262-6
+    r = (r .+ 1) / 2
+    ro = 1 / (m - 1) * ((1 .- r .^ m) ./ (1 .- r) .- 1)
+    dro = ((m * (ro .- 1) - ro) .* ro .^ m + ro) ./ ((m - 1) * (ro .- 1) .^ 2 .* ro)
+    # dro = ((m * (r .- 1) - r) .* r .^ m + r) ./ ((m - 1) * (r .- 1) .^ 2 .* r)
+    if a == -1
+        return 2 * ro .- 1, dro
+    elseif a == 1
+        return 1 .- 2ro, dro
+    else
+        return [(a + 1) * ro .- 1; (1 - a) * ro .+ 0], [(a + 1) / 2 * dro; (1 - a) / 2 * dro]
+    end
+
+end
 function Xie(u, a, b)
     # https://www.sciencedirect.com/science/article/pii/S0955799711000208
 
@@ -77,19 +95,24 @@ function Xie(u, a, b)
 
 end
 #
-# f(x)=(1 .-x.^2)./sqrt.((x.-a).^2 .+b^2)
-# f1(x)=.5*log.((x.-a).^2 .+b^2)
-# a=1
-# b=0.1
-# ana=(-0.5 *(a - 1)* (log((a - 1)^2 + b^2) - 2) - b *atan((a - 1)/b))-(-0.5* (a + 1)* (log((a + 1)^2 + b^2) - 2) - b*atan((a + 1)/b))
-#
-# u,w=gausslegendre(10);
-# x,j=sinhtrans(u,a,b+1e-6);
-# e,jt=telles(u,a);
-# m,jm=Ma(u,a,b);
-#
-# [sum(f1(u).*w) sum(f1(x).*w.*j) sum(f1(e).*w.*jt) sum(f1(m).*w.*jm)].-ana
+#=
+f(x)=(1 .-x.^2)./sqrt.((x.-a).^2 .+b^2)
+f1(x)=.5*log.((x.-a).^2 .+b^2)
+f2(x)=.5 ./((x.-a).^2 .+b^2)
+a=1
+b=0.001
 
+ana1=(-0.5 *(a - 1)* (log((a - 1)^2 + b^2) - 2) - b *atan((a - 1)/b))-(-0.5* (a + 1)* (log((a + 1)^2 + b^2) - 2) - b*atan((a + 1)/b))
+ana2=-(0.5*atan((a - 1)/b))/b+(0.5*atan((a + 1)/b))/b
+x, w = BEM.gausslegendre(20);
+x1, j1 = BEM.sinhtrans(x, a, b);
+x2, j2 = BEM.telles(x, a);
+x3, j3 = BEM.Wenjing(x, a, 100);
+x4, j4 = BEM.Monegato(x, a, 5.0);
+[sum(f1(x) .* w)  sum(f1(x1) .* w .* j1) sum(f1(x2) .* w .* j2) sum(f1(x3) .* w .* j3) sum(f1(x4) .* w .* j4)] .- ana1
+[sum(f2(x) .* w)  sum(f2(x1) .* w .* j1) sum(f2(x2) .* w .* j2) sum(f2(x3) .* w .* j3) sum(f2(x4) .* w .* j4)] .- ana2
+
+=#
 function pontosintegra(NOS, elem_j, ind_elem, qsi, w)
 
     nosing = elem_j.indices .== ind_elem
@@ -136,7 +159,8 @@ end
 
 
 function Monegato(t, s0, q=5.0)
-    # https://reader.elsevier.com/reader/sd/pii/S0377042700002739?token=22075A9D16581857977817E8FC5B4BCB57C70C027F94CA7963B5E7196142F6825F02DDFA5F9F4D1398E43A66F3116E21&originRegion=us-east-1&originCreation=20211103173036
+    s0 = min(max(-1, s0), 1)
+
     δ = 2^(-q) * ((1 + s0)^(1 / q) + (1 - s0)^(1 / q))^q
     t0 = ((1 + s0)^(1 / q) - (1 - s0)^(1 / q)) / ((1 + s0)^(1 / q) + (1 - s0)^(1 / q))
     s = s0 .+ δ * (t .- t0) .^ q

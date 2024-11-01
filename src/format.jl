@@ -207,8 +207,9 @@ function format_dad(entrada, NPX=2, NPY=2, afasta=1; canto=false)
 
             cont_el = cont_el + 1
             nos = (cont_el-1)*tipo_elem+1:cont_el*tipo_elem
-            # qsis = range(-1 + afasta / tipo_elem, stop=1 - afasta / tipo_elem, length=tipo_elem) # Parametrização de -1 a 1
-            qsis, ~ = gausslegendre(tipo_elem) # Parametrização de -1 a 1
+            qsis = range(-1 + afasta / tipo_elem, stop=1 - afasta / tipo_elem, length=tipo_elem) # Parametrização de -1 a 1
+            # qsis = [-0.77, 0.77] # Parametrização de -1 a 1
+            # qsis, ~ = gausslegendre(tipo_elem) # Parametrização de -1 a 1
             # @infiltrate
             N1, dN1 = calc_fforma_gen(pontosg[1], qsis)
             N2, dN2 = calc_fforma_gen(pontosg[2], qsis)
@@ -303,14 +304,19 @@ function format_dad(entrada, NPX=2, NPY=2, afasta=1; canto=false)
     #  return  ELEM
     #     end
     # @infiltrate
-
+    normais = 0 * NOS
     if canto
-        prob(NOS, gera_p_in(NPX, NPY, PONTOS, SEGMENTOS), ELEM, (; k..., cantos=CORNERS, bc_canto=bc_canto))
+        dad = prob(NOS, gera_p_in(NPX, NPY, PONTOS, SEGMENTOS), ELEM, normais, (; k..., cantos=CORNERS, bc_canto=bc_canto))
+        normais = calc_normais(dad)
+        dad.normal = normais
         # prob(NOS, gera_p_in(NPX, NPY, PONTOS, SEGMENTOS), ELEM, merge(k,(cantos=CORNERS),))
     else
         # @infiltrate
-        prob(NOS, gera_p_in(NPX, NPY, PONTOS, SEGMENTOS), ELEM, k)
+        dad = prob(NOS, gera_p_in(NPX, NPY, PONTOS, SEGMENTOS), ELEM, normais, k)
+        normais = calc_normais(dad)
+        dad.normal = normais
     end
+    dad
 end
 
 
@@ -332,6 +338,11 @@ function aplicaCDC(H, G, dad::Union{elastico,elastico_aniso})
         elseif elem_i.tipoCDC[i] == 1
             # A[:, 2ind_elem.+(i-2)] = H[:, 2ind_elem.+(i-2)]
             b += G[:, 2ind_elem.+(i-2)] * elem_i.valorCDC[i, :]
+        elseif elem_i.tipoCDC[i] == 2 # tem contato
+            if i == 1
+                inds = [(2ind_elem .- 1) 2ind_elem]'[:]
+                A = [A -G[:, inds]]
+            end
         end
     end
     if temsubregioes(dad)
@@ -347,7 +358,7 @@ end
 function aplicaCDC(H, G, dad::Union{elastico,elastico_aniso}, nosrestritos)
     nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
     n = size(dad.NOS, 1)
-    A = zeros(2 * n, 2 * n)
+    A = deepcopy(H)
     b = zeros(2 * n)
     if typeof(dad) == elastico_aniso
         scale = dad.k.A3[3, 3]
@@ -356,12 +367,19 @@ function aplicaCDC(H, G, dad::Union{elastico,elastico_aniso}, nosrestritos)
     end
     for elem_i in dad.ELEM, i in 1:2  # Laço dos pontos fontes
         ind_elem = elem_i.indices
+        # @show elem_i.tipoCDC[i]
+
         if elem_i.tipoCDC[i] == 0
             A[:, 2ind_elem.+(i-2)] = -G[:, 2ind_elem.+(i-2)] * scale
             b += -H[:, 2ind_elem.+(i-2)] * elem_i.valorCDC[i, :]
         elseif elem_i.tipoCDC[i] == 1
-            A[:, 2ind_elem.+(i-2)] = H[:, 2ind_elem.+(i-2)]
+            # A[:, 2ind_elem.+(i-2)] = H[:, 2ind_elem.+(i-2)]
             b += G[:, 2ind_elem.+(i-2)] * elem_i.valorCDC[i, :]
+        elseif elem_i.tipoCDC[i] == 2 # tem contato
+            if i == 1
+                inds = [(2ind_elem .- 1) 2ind_elem]'[:]
+                A = [A -G[:, inds]]
+            end
         end
     end
     for i = 1:size(nosrestritos, 1)
@@ -369,11 +387,10 @@ function aplicaCDC(H, G, dad::Union{elastico,elastico_aniso}, nosrestritos)
         tipo = nosrestritos[i, 2]
         # @infiltrate
         A[:, (no-1)*2+tipo] = -G[:, (no-1)*2+tipo]
-
     end
     A, b
 end
-function aplicaCDC(H::Matrix{Float64}, G::Matrix{Float64}, dad::Union{potencial,helmholtz})
+function aplicaCDC(H, G, dad::Union{potencial,helmholtz})
     # nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
     n = size(dad.NOS, 1)
     A = zeros(typeof(H[1]), n, n)
@@ -392,7 +409,47 @@ function aplicaCDC(H::Matrix{Float64}, G::Matrix{Float64}, dad::Union{potencial,
     A, b
 end
 
-function separa(dad::Union{elastico,elastico_aniso}, x)
+# function separa(dad::Union{elastico,elastico_aniso}, x)
+#     # Separa fluxo e temperatura
+
+#     # ncdc = número de linhas da matriz CDC
+#     # T = vetor que contêm as temperaturas nos nós
+#     # q = vetor que contêm o fluxo nos nós
+#     n = size(dad.NOS, 1)
+#     T = zeros(2n)
+#     q = zeros(2n)
+#     if typeof(dad) == elastico_aniso
+#         scale = dad.k.A3[3, 3]
+#     else
+#         scale = 1
+#     end
+
+#     for elem_i in dad.ELEM, i in 1:2   # Laço dos pontos fontes
+#         ind_elem = elem_i.indices
+#         if elem_i.tipoCDC[i] == 0
+#             T[2ind_elem.+(i-2)] = elem_i.valorCDC[i, :] # A temperatura é a condição de contorno
+#             q[2ind_elem.+(i-2)] = x[2ind_elem.+(i-2)] * scale # O fluxo é o valor calculado
+#         elseif elem_i.tipoCDC[i] == 1
+#             T[2ind_elem.+(i-2)] = x[2ind_elem.+(i-2)] # 
+#             q[2ind_elem.+(i-2)] = elem_i.valorCDC[i, :]
+#         end
+#     end
+#     if temsubregioes(dad)
+#         neq = size(dad.k.subregioes.equivale, 1)
+#         indeq = [2 * dad.k.subregioes.equivale[:, 1] .- 1 dad.k.subregioes.equivale[:, 1] * 2 2 * dad.k.subregioes.equivale[:, 2] .- 1 dad.k.subregioes.equivale[:, 2] * 2]'[:]
+#         q[indeq] = x[2n+1:end]
+#         return [T[1:2:end] T[2:2:end]], [q[1:2:end] q[2:2:end]]
+
+#     end
+#     if length(x) > 2n
+#         uint = [x[2n+1:2:end] x[2n+2:2:end]]
+#         return [T[1:2:end] T[2:2:end]], [q[1:2:end] q[2:2:end]], uint
+#     else
+#         return [T[1:2:end] T[2:2:end]], [q[1:2:end] q[2:2:end]]
+#     end
+# end
+
+function separa(dad::Union{elastico,elastico_aniso}, x, nosrestritos=[], h=[])
     # Separa fluxo e temperatura
 
     # ncdc = número de linhas da matriz CDC
@@ -406,7 +463,6 @@ function separa(dad::Union{elastico,elastico_aniso}, x)
     else
         scale = 1
     end
-
     for elem_i in dad.ELEM, i in 1:2   # Laço dos pontos fontes
         ind_elem = elem_i.indices
         if elem_i.tipoCDC[i] == 0
@@ -415,53 +471,26 @@ function separa(dad::Union{elastico,elastico_aniso}, x)
         elseif elem_i.tipoCDC[i] == 1
             T[2ind_elem.+(i-2)] = x[2ind_elem.+(i-2)] # 
             q[2ind_elem.+(i-2)] = elem_i.valorCDC[i, :]
-        end
-    end
-    if temsubregioes(dad)
-        neq = size(dad.k.subregioes.equivale, 1)
-        indeq = [2 * dad.k.subregioes.equivale[:, 1] .- 1 dad.k.subregioes.equivale[:, 1] * 2 2 * dad.k.subregioes.equivale[:, 2] .- 1 dad.k.subregioes.equivale[:, 2] * 2]'[:]
-        q[indeq] = x[2n+1:end]
-        return [T[1:2:end] T[2:2:end]], [q[1:2:end] q[2:2:end]]
-
-    end
-    if length(x) > 2n
-        uint = [x[2n+1:2:end] x[2n+2:2:end]]
-        return [T[1:2:end] T[2:2:end]], [q[1:2:end] q[2:2:end]], uint
-    else
-        return [T[1:2:end] T[2:2:end]], [q[1:2:end] q[2:2:end]]
-    end
-end
-
-function separa(dad::Union{elastico,elastico_aniso}, x, nosrestritos)
-    # Separa fluxo e temperatura
-
-    # ncdc = número de linhas da matriz CDC
-    # T = vetor que contêm as temperaturas nos nós
-    # q = vetor que contêm o fluxo nos nós
-    n = size(dad.NOS, 1)
-    T = zeros(2n)
-    q = zeros(2n)
-    if typeof(dad) == elastico_aniso
-        scale = dad.k.A3[3, 3]
-    else
-        scale = 1
-    end
-    for elem_i in dad.ELEM, i in 1:2   # Laço dos pontos fontes
-        ind_elem = elem_i.indices
-        if elem_i.tipoCDC[i] == 0
-            T[2ind_elem.+(i-2)] = elem_i.valorCDC[i, :] # A temperatura é a condição de contorno
-            q[2ind_elem.+(i-2)] = x[2ind_elem.+(i-2)] * scale # O fluxo é o valor calculado
-        elseif elem_i.tipoCDC[i] == 1
+        elseif elem_i.tipoCDC[i] == 2
             T[2ind_elem.+(i-2)] = x[2ind_elem.+(i-2)] # 
-            q[2ind_elem.+(i-2)] = elem_i.valorCDC[i, :]
         end
     end
-    for i = 1:size(nosrestritos, 1)
-        no = nosrestritos[i, 1]
-        tipo = nosrestritos[i, 2]
-        ind = (no - 1) * 2 + tipo
-        T[ind] = 0 # A temperatura é a condição de contorno
-        q[ind] = x[ind] * scale # O fluxo é o valor calculado
+    if !isempty(nosrestritos)
+        for i = 1:size(nosrestritos, 1)
+            no = nosrestritos[i, 1]
+            tipo = nosrestritos[i, 2]
+            ind = (no - 1) * 2 + tipo
+            T[ind] = 0 # A temperatura é a condição de contorno
+            q[ind] = x[ind] * scale # O fluxo é o valor calculado
+            # @infiltrate
+        end
+    end
+    if !isempty(h)
+        for i = 1:size(h[1], 1)
+            no = h[1][i]
+            q[2no-1] = x[2nc(dad)+2i-1]
+            q[2no] = x[2nc(dad)+2i]
+        end
     end
     [T[1:2:end] T[2:2:end]], [q[1:2:end] q[2:2:end]]
 end
@@ -841,8 +870,15 @@ function aplicaCDC(H, G, dad::placa_espessa_isotropica)
 
     A, B, bcval
 end
-
-function tipoCDC(dad)
+function tipoCDC(dad::elastico)
+    tipos = fill(1, ni(dad) + 2 * nc(dad))
+    for i in dad.ELEM
+        tipos[2*i.indices.-1] .= i.tipoCDC[1]
+        tipos[2*i.indices] .= i.tipoCDC[2]
+    end
+    tipos
+end
+function tipoCDC(dad::potencial)
     tipos = fill(true, ni(dad) + nc(dad))
     for i in dad.ELEM
         if i.tipoCDC == 0
@@ -852,15 +888,15 @@ function tipoCDC(dad)
     tipos
 end
 function valorCDC(dad)
-    valores = fill(0.0,nc(dad))
+    valores = fill(0.0, nc(dad))
     for i in dad.ELEM
         valores[i.indices] = i.valorCDC
     end
     valores
 end
 function valoresCDC(dad)
-    valoresu = fill(0.0,ni(dad) +nc(dad))
-    valoresq = fill(0.0,ni(dad) +nc(dad))
+    valoresu = fill(0.0, ni(dad) + nc(dad))
+    valoresq = fill(0.0, ni(dad) + nc(dad))
     for i in dad.ELEM
         if i.tipoCDC == 0
             valoresu[i.indices] = i.valorCDC
@@ -868,5 +904,9 @@ function valoresCDC(dad)
             valoresq[i.indices] = i.valorCDC
         end
     end
-    valoresu,valoresq
+    valoresu, valoresq
+end
+
+function potencial_correlato(dad::helmholtz)
+    potencial(dad.NOS, dad.pontos_internos, dad.ELEM, dad.normal, 1), dad.k.FR, dad.k.CW
 end

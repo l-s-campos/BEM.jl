@@ -1,10 +1,11 @@
-function calc_HeG(dad::potencial, npg=8)
+function calc_HeG(dad::potencial, npg=8; Pint=false)
   nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
   n = size(dad.NOS, 1)
   H = zeros(n, n)
   G = zeros(n, n)
   qsi, w = gausslegendre(npg)    # Quadratura de gauss
   contafonte = 1
+
   for elem_i in dad.ELEM  #Laço dos pontos fontes
     for ind_elem = elem_i.indices
       pf = dad.NOS[ind_elem, :]   # Coordenada (x,y)  dos pontos fonte
@@ -15,13 +16,14 @@ function calc_HeG(dad::potencial, npg=8)
         N_geo, ~ = calc_fforma(eet, elem_j)
         ps = N_geo' * x
         b = norm(ps' - pf)#/norm(Δelem)
+        # eta, Jt = telles(qsi, eet, b)
         eta, Jt = sinhtrans(qsi, eet, b)
         # @show eet,b
         # eta, wt = pontosintegra(dad.NOS, elem_j, ind_elem, qsi, w)
         # @show norm(eta-eta1)
 
-        # h, g = integraelem(pf, x, eta, wt, elem_j, dad)
         h, g = integraelem(pf, x, eta, w .* Jt, elem_j, dad)
+        # h, g = integraelem(pf, x, qsi, w, elem_j, dad)
         # @infiltrate contafonte == 2
         H[contafonte, elem_j.indices] = h
         G[contafonte, elem_j.indices] = g
@@ -31,13 +33,110 @@ function calc_HeG(dad::potencial, npg=8)
     end
   end
   for i = 1:n                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
-    H[i, i] = -0.5
+    H[i, i] += -0.5
+
+    # G[i, i] = 0
+    # H[i, i] = 0
+    # H[i, i] = -sum(H[i, :])
+  end
+  # somaH = H * (dad.NOS[:, 1] + dad.NOS[:, 2])
+  # somaG = G * (normal_fonte[:, 1] + normal_fonte[:, 2]) * dad.k
+  # for i = 1:n                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
+  #   G[i, i] = (-somaH[i] - somaG[i]) / (normal_fonte[i, 1] + normal_fonte[i, 2])
+  # end
+  # corrigediag!(H, G, dad)
+  if Pint
+    ni = size(dad.pontos_internos, 1)
+    Hi = zeros(ni, n)
+    Gi = zeros(ni, n)
+    for i = 1:ni
+      pf = dad.pontos_internos[i, :]   # Coordenada (x,y)  dos pontos fonte
+      for elem_j in dad.ELEM  #Laço dos elementos
+        x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
+        Δelem = x[end, :] - x[1, :]     # Δx e Δy entre o primeiro e ultimo nó geometrico
+        eet = (elem_j.ξs[end] - elem_j.ξs[1]) * dot(Δelem, pf .- x[1, :]) / norm(Δelem)^2 + elem_j.ξs[1]
+        N_geo = calc_fforma(eet, elem_j, false)
+        ps = N_geo' * x
+        b = norm(ps' - pf) / norm(Δelem)
+        eta, Jt = sinhtrans(qsi, eet, b)
+        # eta,Jt=telles(qsi,eet)
+        h, g = integraelem(pf, x, eta, w .* Jt, elem_j, dad)
+        cols = elem_j.indices
+        # @infiltrate
+        Hi[i, cols] = h
+        Gi[i, cols] = g
+      end
+    end
+    H = [H zeros(n, ni); Hi -I]
+    G = [G; Gi]
   end
   H, G
 end
 
-#__________________________________________________________________________________________________________
-"Funcao para calcular a temperatura pelo metodo da integracao de contorno utilizada no estimador de erro recursivo"
+function calc_HeG_hiper(dad::potencial, npg=8)
+  nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
+  n = size(dad.NOS, 1)
+  H = zeros(n, n)
+  G = zeros(n, n)
+  qsi, w = gausslegendre(npg)    # Quadratura de gauss
+  contafonte = 1
+
+  for elem_i in dad.ELEM  #Laço dos pontos fontes
+    for ind_elem = elem_i.indices
+      pf = dad.NOS[ind_elem, :]   # Coordenada (x,y)  dos pontos fonte
+      for elem_j in dad.ELEM  #Laço dos elementos
+        x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
+
+        nosing = elem_j.indices .== contafonte
+        if sum(nosing) == 1
+          no_pf = findfirst(nosing)
+          xi0 = elem_j.ξs[no_pf]
+          # h, g = integraelemsing(pf, nf, x, qsi2, w2, elem_j, dad, xi0)
+          # hn, gn = integraelemsing_num(pf, nf, x, elem_j, dad, pre, xi0, 30)
+          h, g = integraelem_hiper_sing(pf, dad.normal[contafonte, :], x, xi0, elem_j, dad)
+        else
+          Δelem = x[end, :] - x[1, :]     # Δx e Δy entre o primeiro e ultimo nó geometrico
+          eet = (elem_j.ξs[end] - elem_j.ξs[1]) * dot(Δelem, pf .- x[1, :]) / norm(Δelem)^2 + elem_j.ξs[1]
+          N_geo, ~ = calc_fforma(eet, elem_j)
+          ps = N_geo' * x
+          b = norm(ps' - pf)#/norm(Δelem)
+          # eta, Jt = telles(qsi, eet, b)
+          eta, Jt = sinhtrans(qsi, eet, b)
+          # eta, Jt2 = sinhtrans(eta, eet, b)
+          # @show eet,b
+          # eta, wt = pontosintegra(dad.NOS, elem_j, ind_elem, qsi, w)
+          # @show norm(eta-eta1)
+          # @infiltrate
+
+
+          h, g = integraelem_hiper(pf, dad.normal[contafonte, :], x, eta, w .* Jt, elem_j, dad)
+        end
+        # h, g = integraelem_hiper(pf, dad.normal[contafonte, :], x, qsi, w, elem_j, dad)
+        # @infiltrate contafonte == 2
+        H[contafonte, elem_j.indices] = h
+        G[contafonte, elem_j.indices] = g
+
+      end
+      contafonte += 1
+    end
+  end
+  for i = 1:n                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
+    G[i, i] += -0.5
+
+    # G[i, i] = 0
+    # H[i, i] = 0
+    # H[i, i] = -sum(H[i, :])
+  end
+  # somaH = H * (dad.NOS[:, 1] + dad.NOS[:, 2])
+  # somaG = G * (dad.normal[:, 1] + dad.normal[:, 2]) * dad.k
+  # for i = 1:n                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
+  #   G[i, i] = (-somaH[i] - somaG[i]) / (dad.normal[i, 1] + dad.normal[i, 2])
+  # end
+  # corrigediag!(H, G, dad)
+
+  H, G
+end
+
 function integraelem(pf, x, eta, w, elem, dad::Union{potencial,helmholtz})
   h = zeros(Float64, size(elem))
   g = zeros(Float64, size(elem))
@@ -60,6 +159,52 @@ function integraelem(pf, x, eta, w, elem, dad::Union{potencial,helmholtz})
   h, g
 end
 
+function integraelem_hiper(pf, nf, x, eta, w, elem, dad::Union{potencial,helmholtz})
+  h = zeros(Float64, size(elem))
+  g = zeros(Float64, size(elem))
+
+  for k = 1:size(w, 1)
+    N, dN = calc_fforma(eta[k], elem)
+    pg = N' * x    # Ponto de gauss interpolador
+    r = pg' - pf      # Distancia entre ponto de gauss e ponto fonte
+    dxdqsi = dN' * x   # dx/dξ & dy/dξ
+    dgamadqsi = norm(dxdqsi)  # dΓ/dξ = J(ξ) Jacobiano
+    sx = dxdqsi[1] / dgamadqsi # vetor tangente dx/dΓ
+    sy = dxdqsi[2] / dgamadqsi # vetor tangente dy/dΓ
+    Qast, Tast = calsolfund_hiper(r, [sy, -sx], nf, dad)
+    # @infiltrate
+    # @show pg,pf,r,[sy,-sx],Qast
+    h += N * Qast * dgamadqsi * w[k]
+    g += N * Tast * dgamadqsi * w[k]
+
+  end
+  h, g
+end
+
+function integraelem_hiper_sing(pf, nf, x, xi0, elem, dad::Union{potencial,helmholtz}, npg=20)
+  h = zeros(Float64, size(elem))
+  g = zeros(Float64, size(elem))
+  eta, w = novelquad(2, xi0, 20 * npg)
+
+  for k = 1:size(w, 1)
+    N, dN = calc_fforma(eta[k], elem)
+    pg = N' * x    # Ponto de gauss interpolador
+    r = pg' - pf      # Distancia entre ponto de gauss e ponto fonte
+    dxdqsi = dN' * x   # dx/dξ & dy/dξ
+    dgamadqsi = norm(dxdqsi)  # dΓ/dξ = J(ξ) Jacobiano
+    sx = dxdqsi[1] / dgamadqsi # vetor tangente dx/dΓ
+    sy = dxdqsi[2] / dgamadqsi # vetor tangente dy/dΓ
+    Qast, Tast = calsolfund_hiper(r, [sy, -sx], nf, dad)
+    # @infiltrate
+    # @show pg,pf,r,[sy,-sx],Qast
+    h += N * Qast * dgamadqsi * w[k]
+    g += N * Tast * dgamadqsi * w[k]
+
+  end
+  h, g
+end
+
+
 function calc_Ti(dad::Union{potencial,helmholtz}, T, q, npg=8)
   nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
   n = size(dad.pontos_internos, 1)
@@ -77,6 +222,7 @@ function calc_Ti(dad::Union{potencial,helmholtz}, T, q, npg=8)
       b = norm(ps' - pf) / norm(Δelem)
       eta, Jt = sinhtrans(qsi, eet, b)
       h, g = integraelem(pf, x, eta, w .* Jt, elem_j, dad)
+      # h, g = integraelem(pf, x, qsi, w, elem_j, dad)
       Ti[i] += h' * T[elem_j.indices] - g' * q[elem_j.indices]
     end
   end
@@ -145,241 +291,14 @@ function calc_Aeb(dad::Union{potencial,helmholtz}, npg=8)
 end
 
 
-function calc_HeG(dad::Union{potencial,helmholtz}, b1, b2, npg=8)
-  n1 = size(b1, 1)
-  n2 = size(b2, 1)
-  H = zeros(n1, 0)
-  G = zeros(n1, 0)
-  qsi, w = gausslegendre(npg)    # Quadratura de gauss
-  for elem_j in dad.ELEM[b2]  #Laço dos elementos
-    x = [dad.NOS; dad.pontos_internos][elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
 
-    h1 = zeros(n1, size(elem_j))
-    g1 = zeros(n1, size(elem_j))
-    for i = 1:n1
-      ind = b1[i]  #Laço dos pontos fontes
-      pf = [dad.NOS; dad.pontos_internos][ind, :]   # Coordenada (x,y)  dos pontos fonte
-      Δelem = x[end, :] - x[1, :]     # Δx e Δy entre o primeiro e ultimo nó geometrico
-      eet = (elem_j.ξs[end] - elem_j.ξs[1]) * dot(Δelem, pf .- x[1, :]) / norm(Δelem)^2 + elem_j.ξs[1]
-      N_geo, ~ = calc_fforma(eet, elem_j)
-      ps = N_geo' * x
-      b = norm(ps' - pf) / norm(Δelem)
-      eta, Jt = sinhtrans(qsi, eet, b)
-      h, g = integraelem(pf, x, eta, w .* Jt, elem_j, dad)
-      h[elem_j.indices.==ind] = h[elem_j.indices.==ind] .- 0.5
-
-      h1[i, :] += h
-      g1[i, :] += g
-    end
-    H = [H h1]
-    G = [G g1]
-  end
-  H, G
+function calsolfund_hiper(r, n, nf, prob::Union{potencial,potencial_iga})
+  R = norm(r)
+  # @infiltrate
+  Qast = -(dot(nf, n) - 2 * dot(r, n) / R * dot(r, nf) / R) / R^2 / (2 * π)
+  Tast = dot(r, nf) / R^2 / (2 * π * prob.k)
+  Qast, Tast
 end
-
-
-function calc_HeG_interp(dad::Union{potencial,helmholtz}, b1, b2, npg=8, ninterp=3)
-  collocCoord = [dad.NOS; dad.pontos_internos][b1, :]
-  xmax = maximum(collocCoord, dims=1)
-  xmin = minimum(collocCoord, dims=1)
-
-  xs = criapontosinterp(ninterp)
-  fontes, L, ninterp1, ninterp2 = gera_interpolação(ninterp, collocCoord, xmax, xmin, xs)
-
-  H = zeros(ninterp1 * ninterp2, 0)
-  G = zeros(ninterp1 * ninterp2, 0)
-  n1, n2 = Nlinear(xs)
-  xks = n1 * xmin + n2 * xmax
-
-  qsi, w = gausslegendre(npg)    # Quadratura de gauss
-  for elem_j in dad.ELEM[b2]  #Laço dos elementos
-    x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
-
-    h1 = zeros(ninterp1 * ninterp2, size(elem_j))
-    g1 = zeros(ninterp1 * ninterp2, size(elem_j))
-    ci = 0
-    for i2 = 1:ninterp1
-      for i1 = 1:ninterp2
-        ci += 1
-
-        pf = [xks[i1, 1], xks[i2, 2]]   # Coordenada (x,y)  dos pontos fonte
-        Δelem = x[end, :] - x[1, :]     # Δx e Δy entre o primeiro e ultimo nó geometrico
-        eet = (elem_j.ξs[end] - elem_j.ξs[1]) * dot(Δelem, pf .- x[1, :]) / norm(Δelem)^2 + elem_j.ξs[1]
-        N_geo, ~ = calc_fforma(eet, elem_j)
-        ps = N_geo' * x
-        b = norm(ps' - pf) / norm(Δelem)
-        eta, Jt = sinhtrans(qsi, eet, b)
-        h, g = integraelem(pf, x, eta, w .* Jt, elem_j, dad)
-
-        h1[ci, :] += h
-        g1[ci, :] += g
-      end
-    end
-    H = [H h1]
-    G = [G g1]
-  end
-  L, H, G
-end
-
-function gera_interpolação(ninterp, NOS, xmax, xmin, xs, ϵ=1e-6)
-  if (abs(xmax[1] - xmin[1]) < ϵ)
-    fontes = (2.0 .* (NOS[:, 2] .- xmin[2]) ./ (xmax[2] - xmin[2]) .- 1)
-    L = lagrange(fontes, xs, ninterp)
-    ninterp2 = ninterp
-    ninterp1 = 1
-  elseif (abs(xmax[2] - xmin[2]) < ϵ)
-    fontes = (2.0 .* (NOS[:, 1] .- xmin[1]) ./ (xmax[1] - xmin[1]) .- 1)
-    L = lagrange(fontes, xs, ninterp)
-    ninterp2 = 1
-    ninterp1 = ninterp
-  else
-    fontes = [(2.0 .* (NOS[:, 1] .- xmin[1]) ./ (xmax[1] - xmin[1]) .- 1) (2.0 .* (NOS[:, 2] .- xmin[2]) ./ (xmax[2] - xmin[2]) .- 1)]
-    L = lagrange(fontes, xs, ninterp, xs, ninterp)
-    ninterp2 = ninterp
-    ninterp1 = ninterp
-  end
-  fontes, L, ninterp1, ninterp2
-end
-
-
-
-function calc_HeG(dad::potencial_iga, npg=8)
-  # nelem = size(dad.ELEM,1)    # Quantidade de elementos discretizados no contorno
-  nfonte = size(dad.NOS, 1)    # Quantidade de elementos discretizados no contorno
-  n = size(dad.NOS, 1)
-  H = zeros(n, n)
-  G = zeros(n, n)
-  qsi, w = gausslegendre(npg)    # Quadratura de gauss
-  for elem_j in dad.ELEM  #Laço dos elementos
-    xf = elem_j.limites[:, 2]
-    x0 = elem_j.limites[:, 1]     # Δx e Δy entre o primeiro e ultimo nó geometrico
-    Δelem = xf - x0     # Δx e Δy entre o primeiro e ultimo nó geometrico
-    pc = dad.pontos_controle[:, elem_j.indices]
-    # @infiltrate
-    cf = pc[1:2, :] ./ pc[4, :]'
-    for contafonte = 1:nfonte
-      pf = dad.NOS[contafonte, :]   # Coordenada (x,y)  dos pontos fonte
-      eet = 2 * dot(Δelem, pf .- x0) / norm(Δelem)^2 - 1
-      N, dN = calc_fforma(eet, elem_j, pc[4, :])
-      ps = cf * N
-      b = norm(ps - pf) / norm(Δelem)
-      eta, Jt = sinhtrans(qsi, eet, b)
-      h, g = integrabezier(pf, cf, pc[4, :], eta, w .* Jt, elem_j, dad)
-
-      H[contafonte, elem_j.indices] += h
-      G[contafonte, elem_j.indices] += g
-
-    end
-  end
-  H - dad.E / 2, G
-end
-function integrabezier(pf, cf, we, eta, w, elem::bezier, prob::potencial_iga)
-  h = zeros(Float64, size(elem))
-  g = zeros(Float64, size(elem))
-  for k = 1:size(w, 1)
-    N, dN = calc_fforma(eta[k], elem, we)
-    pg = cf * N    # Ponto de gauss interpolador
-    r = pg - pf      # Distancia entre ponto de gauss e ponto fonte
-    dxdqsi = cf * dN   # dx/dξ & dy/dξ
-    dgamadqsi = norm(dxdqsi)  # dΓ/dξ = J(ξ) Jacobiano
-    sx = dxdqsi[1] / dgamadqsi # vetor tangente dx/dΓ
-    sy = dxdqsi[2] / dgamadqsi # vetor tangente dy/dΓ
-    Qast, Tast = calsolfund(r, [sy, -sx], prob)
-    # h+=N*dgamadqsi*w[k]
-    # g+=N*dgamadqsi*w[k]
-    h += N * Qast * dgamadqsi * w[k] / 2
-    g += N * Tast * dgamadqsi * w[k] / 2
-
-  end
-  h, g
-end
-
-
-function calc_HeG_interp(dad::potencial_iga, b1, b2, npg=8, ninterp=3)
-  collocCoord = [dad.NOS; dad.pontos_internos][b1, :]
-  xmax = maximum(collocCoord, dims=1)
-  xmin = minimum(collocCoord, dims=1)
-
-  xs = criapontosinterp(ninterp)
-  fontes, L, ninterp1, ninterp2 = gera_interpolação(ninterp, collocCoord, xmax, xmin, xs)
-
-  H = zeros(ninterp1 * ninterp2, 0)
-  G = zeros(ninterp1 * ninterp2, 0)
-  n1, n2 = Nlinear(xs)
-  xks = n1 * xmin + n2 * xmax
-
-  qsi, w = gausslegendre(npg)    # Quadratura de gauss
-  for elem_j in dad.ELEM[b2]  #Laço dos elementos
-    xf = elem_j.limites[:, 2]
-    x0 = elem_j.limites[:, 1]     # Δx e Δy entre o primeiro e ultimo nó geometrico
-    Δelem = xf - x0     # Δx e Δy entre o primeiro e ultimo nó geometrico
-    pc = dad.pontos_controle[:, elem_j.indices]
-    # @infiltrate
-    cf = pc[1:2, :] ./ pc[4, :]'
-
-    h1 = zeros(ninterp1 * ninterp2, size(elem_j))
-    g1 = zeros(ninterp1 * ninterp2, size(elem_j))
-    ci = 0
-    for i2 = 1:ninterp1
-      for i1 = 1:ninterp2
-        ci += 1
-
-        pf = [xks[i1, 1], xks[i2, 2]]   # Coordenada (x,y)  dos pontos fonte
-        eet = 2 * dot(Δelem, pf .- x0) / norm(Δelem)^2 - 1
-        N, dN = calc_fforma(eet, elem_j, pc[4, :])
-        ps = cf * N
-        b = norm(ps - pf) / norm(Δelem)
-        eta, Jt = sinhtrans(qsi, eet, b)
-        h, g = integrabezier(pf, cf, pc[4, :], eta, w .* Jt, elem_j, dad)
-        h1[ci, :] += h
-        g1[ci, :] += g
-      end
-    end
-    H = [H h1]
-    G = [G g1]
-  end
-  L, H, G
-end
-
-function calc_HeG(dad::potencial_iga, b1, b2, npg=8)
-  n1 = size(b1, 1)
-  n2 = size(b2, 1)
-  H = zeros(n1, 0)
-  G = zeros(n1, 0)
-  qsi, w = gausslegendre(npg)    # Quadratura de gauss
-  for elem_j in dad.ELEM[b2]  #Laço dos elementos
-    xf = elem_j.limites[:, 2]
-    x0 = elem_j.limites[:, 1]     # Δx e Δy entre o primeiro e ultimo nó geometrico
-    Δelem = xf - x0     # Δx e Δy entre o primeiro e ultimo nó geometrico
-    pc = dad.pontos_controle[:, elem_j.indices]
-    # @infiltrate
-    cf = pc[1:2, :] ./ pc[4, :]'
-    h1 = zeros(n1, size(elem_j))
-    g1 = zeros(n1, size(elem_j))
-    for i = 1:n1
-      ind = b1[i]  #Laço dos pontos fontes
-      pf = [dad.NOS; dad.pontos_internos][ind, :]   # Coordenada (x,y)  dos pontos fonte
-      eet = 2 * dot(Δelem, pf .- x0) / norm(Δelem)^2 - 1
-      N, dN = calc_fforma(eet, elem_j, pc[4, :])
-      ps = cf * N
-      b = norm(ps - pf) / norm(Δelem)
-      eta, Jt = sinhtrans(qsi, eet, b)
-      h, g = integrabezier(pf, cf, pc[4, :], eta, w .* Jt, elem_j, dad)
-      if ind in elem_j.sing
-        h1[i, :] += h - 0.5 * dad.E[ind, elem_j.indices]
-      else
-        h1[i, :] += h
-      end
-
-      g1[i, :] += g
-    end
-    H = [H h1]
-    G = [G g1]
-  end
-  H, G
-end
-
-
 
 function calsolfund(r, n, prob::Union{potencial,potencial_iga})
   R = norm(r)
@@ -475,3 +394,4 @@ function calc_md(x, pf, k, qsi, w, elem)
   end
   return m_el, m_el1
 end
+

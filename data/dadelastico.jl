@@ -1,4 +1,4 @@
-function elastico1d(ne=15, tipo=2)
+function elastico1d(ne=15, tipo=2;nt=false)
     PONTOS = [1 0 0
         2 1 0
         3 1 1
@@ -25,15 +25,18 @@ function elastico1d(ne=15, tipo=2)
     # CCSeg = [N° do segmento, tipo da CDCx, valor da CDCx, tipo da CDCy, valor da CDCy]
     # tipo da CDC = 0 => deslocamento é conhecido
     # tipo da CDC = 1 => força é conhecida
+    if nt 
     CCSeg = [1 1 0 0 0
         2 1 1 1 0
         3 1 0 1 0
         4 0 0 1 0]
-    # CCSeg = [1 0 1
-    # 2 0 1
-    # 3 0 1
-    # 4 0 1]
-    # Condutividade Térmica do material
+    else
+        CCSeg = [1 1 0 0 0
+        2 1 1 1 0
+        3 1 0 1 0
+        4 0 0 1 0]
+    end
+
     E = 1
     v = 0.3
     # Malha de pontos internos
