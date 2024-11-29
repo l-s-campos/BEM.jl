@@ -23,14 +23,14 @@ function mostra_geometria(dad)
         # arrows!(pos, x[:, 1], x[:, 2], fill(s, size(x, 1)), fill(0, size(x, 1)), color=:blue)
       elseif el.tipoCDC[1] == 1 && el.valorCDC[1] != 0
         # scatter!(pos, x[:, 1], x[:, 2], color=:red)
-        arrows!(pos, x[:, 1], x[:, 2], fill(s, size(x, 1)), fill(0, size(x, 1)), color=:red)
+        arrows!(pos, x[:, 1], x[:, 2], sign(el.valorCDC[1]) * fill(s, size(x, 1)), fill(0, size(x, 1)), color=:red)
       end
       if el.tipoCDC[2] == 0
         scatter!(pos, x[:, 1], x[:, 2], color=:blue, marker=:utriangle, markersize=30)
         # arrows!(pos, x[:, 1], x[:, 2], fill(0, size(x, 1)), fill(s, size(x, 1)), color=:blue)
       elseif el.tipoCDC[2] == 1 && el.valorCDC[2] != 0
         # scatter!(pos, x[:, 1], x[:, 2], color=:red)
-        arrows!(pos, x[:, 1], x[:, 2], fill(0, size(x, 1)), fill(s, size(x, 1)), color=:red)
+        arrows!(pos, x[:, 1], x[:, 2], fill(0, size(x, 1)), sign(el.valorCDC[2]) * fill(s, size(x, 1)), color=:red)
       end
       if el.tipoCDC == 0
         scatter!(pos, x[:, 1], x[:, 2], color=:blue)

@@ -135,3 +135,86 @@ function regiao_NO(dad)
     end
     regs
 end
+
+function define_SubRegioes_contato(DISCRE, CDC, limite=[4, 8])
+    nlim = size(limite, 1)
+    nlinhas = size(CDC, 1)
+
+    SUBREGIAO = Vector{Vector{Int}}(undef, 1)
+    SUBREGIAO[1] = 1:limite[1]
+
+    for i = 1:nlim-1
+        push!(SUBREGIAO, limite[i]+1:limite[i+1])
+    end
+    interfaces = Vector{Vector{Int}}(undef, 0)
+    nreg = size(SUBREGIAO, 1)
+    #  interfaces = [num. da int., reg 1, reg 2, linha 1, linha 2];
+    indbool = CDC[:, 2] .== 2
+    inds = (1:nlinhas)[indbool]
+
+    for i = 1:Int(size(inds, 1) / 2)
+        push!(interfaces, [i, 2i - 1, 2i, inds[2i-1], inds[2i]])
+    end
+    nelem = [sum(DISCRE[s, 2]) for s in SUBREGIAO]
+    celem = cumsum(nelem)
+    cnnos = [0; cumsum(DISCRE[:, 2] .* DISCRE[:, 3])]
+    n_i = size(interfaces, 1)
+    equivale = zeros(Int64, 0, 5)
+
+    for i = 1:n_i
+        n1 = cnnos[interfaces[i][4]]+1:cnnos[interfaces[i][4]+1]
+        n2 = cnnos[interfaces[i][5]]+1:cnnos[interfaces[i][5]+1]
+        # @infiltrate
+        equivale = [equivale; [n1 n2[end:-1:1] repeat([i interfaces[i][2] interfaces[i][3]], length(n1))]]
+    end
+    elem_reg = ones(celem[end])
+    for i = 2:size(celem, 1)
+        elem_reg[celem[i-1]+1:celem[i]] .= i
+    end
+    Hc = compatibilidade(cnnos[end], equivale)
+    # @infiltrate
+    return subregioes(elem_reg, equivale, Hc)
+end
+
+function calc_gap(dad::DadosBEM)
+    if temsubregioes(dad)
+        inds = BEM.tipoCDC(dad)[1:2:2*nc(dad)] .== 2 .&& BEM.valorCDC(dad)[2:2:2*nc(dad)] .== 0
+        inds2 = BEM.tipoCDC(dad)[1:2:2*nc(dad)] .== 2 .&& BEM.valorCDC(dad)[2:2:2*nc(dad)] .== 1
+
+        nncont = sum(inds)
+        # h(número do nó,número do nó2, gap do contato,normal_média) 
+
+        h = (zeros(Int, nncont), zeros(Int, nncont), zeros(nncont), zeros(nncont, 2))  # Distância entre os nós que podem entrar em contato até o corpo rígido (obstáculo).
+        for i in 1:nncont
+            ino = (1:nc(dad))[inds][i]
+            ino2 = (1:nc(dad))[inds2][nncont+1-i]
+            x1 = dad.NOS[ino, :]
+            x2 = dad.NOS[ino2, :]
+            n1 = dad.normal[ino, :]
+            n2 = dad.normal[ino2, :]
+            nm = dad.k.E[1] * n1 - n2 * dad.k.E[2]
+            nm = nm / norm(nm)
+
+            d = dot(x1 - x2, nm)
+            # @infiltrate
+            h[1][i] = ino
+            h[2][i] = ino2
+            h[3][i] = d
+            h[4][i, :] = nm
+        end
+    else
+        inds = tipoCDC(dad)[1:2:2*nc(dad)] .== 2
+        nncont = sum(inds)
+        # h(número do nó, gap do contato) 
+        h = (zeros(Int, nncont), zeros(nncont))  # Distância entre os nós que podem entrar em contato até o corpo rígido (obstáculo).
+
+        for i in 1:nncont
+            ino = (1:nc(dad))[inds][i]
+            y = dad.NOS[ino, 2]
+            h[1][i] = ino
+            h[2][i] = y
+        end
+    end
+    return h
+end
+

@@ -319,43 +319,7 @@ function format_dad(entrada, NPX=2, NPY=2, afasta=1; canto=false)
     dad
 end
 
-
-function aplicaCDC(H, G, dad::Union{elastico,elastico_aniso})
-    # nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
-    # n = size(dad.NOS, 1)
-    A = deepcopy(H)
-    b = zeros(size(H, 1))
-    if typeof(dad) == elastico_aniso
-        scale = dad.k.A3[3, 3]
-    else
-        scale = 1
-    end
-    for elem_i in dad.ELEM, i in 1:2  # Laço dos pontos fontes
-        ind_elem = elem_i.indices
-        if elem_i.tipoCDC[i] == 0
-            A[:, 2ind_elem.+(i-2)] = -G[:, 2ind_elem.+(i-2)] * scale
-            b += -H[:, 2ind_elem.+(i-2)] * elem_i.valorCDC[i, :]
-        elseif elem_i.tipoCDC[i] == 1
-            # A[:, 2ind_elem.+(i-2)] = H[:, 2ind_elem.+(i-2)]
-            b += G[:, 2ind_elem.+(i-2)] * elem_i.valorCDC[i, :]
-        elseif elem_i.tipoCDC[i] == 2 # tem contato
-            if i == 1
-                inds = [(2ind_elem .- 1) 2ind_elem]'[:]
-                A = [A -G[:, inds]]
-            end
-        end
-    end
-    if temsubregioes(dad)
-        neq = size(dad.k.subregioes.equivale, 1)
-        indeq = [2 * dad.k.subregioes.equivale[:, 1] .- 1 dad.k.subregioes.equivale[:, 1] * 2 2 * dad.k.subregioes.equivale[:, 2] .- 1 dad.k.subregioes.equivale[:, 2] * 2]'[:]
-        @infiltrate
-        A = [A -G[:, indeq]; dad.k.subregioes.Hc]
-        b = [b; zeros(4neq)]
-    end
-
-    A, b
-end
-function aplicaCDC(H, G, dad::Union{elastico,elastico_aniso}, nosrestritos)
+function aplicaCDC(H, G, dad::Union{elastico,elastico_aniso}, nosrestritos=[])
     nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
     n = size(dad.NOS, 1)
     A = deepcopy(H)
@@ -375,11 +339,11 @@ function aplicaCDC(H, G, dad::Union{elastico,elastico_aniso}, nosrestritos)
         elseif elem_i.tipoCDC[i] == 1
             # A[:, 2ind_elem.+(i-2)] = H[:, 2ind_elem.+(i-2)]
             b += G[:, 2ind_elem.+(i-2)] * elem_i.valorCDC[i, :]
-        elseif elem_i.tipoCDC[i] == 2 # tem contato
-            if i == 1
-                inds = [(2ind_elem .- 1) 2ind_elem]'[:]
-                A = [A -G[:, inds]]
-            end
+            # elseif elem_i.tipoCDC[i] == 2 # tem contato
+            #     if i == 1
+            #         inds = [(2ind_elem .- 1) 2ind_elem]'[:]
+            #         # A = [A -G[:, inds]]
+            #     end
         end
     end
     for i = 1:size(nosrestritos, 1)
@@ -387,6 +351,13 @@ function aplicaCDC(H, G, dad::Union{elastico,elastico_aniso}, nosrestritos)
         tipo = nosrestritos[i, 2]
         # @infiltrate
         A[:, (no-1)*2+tipo] = -G[:, (no-1)*2+tipo]
+    end
+    if temsubregioes(dad)
+        neq = size(dad.k.subregioes.equivale, 1)
+        indeq = [2 * dad.k.subregioes.equivale[:, 1] .- 1 dad.k.subregioes.equivale[:, 1] * 2 2 * dad.k.subregioes.equivale[:, 2] .- 1 dad.k.subregioes.equivale[:, 2] * 2]'[:]
+        # @infiltrate
+        A = [A -G[:, indeq]; dad.k.subregioes.Hc]
+        b = [b; zeros(4neq)]
     end
     A, b
 end
@@ -449,6 +420,9 @@ end
 #     end
 # end
 
+
+
+
 function separa(dad::Union{elastico,elastico_aniso}, x, nosrestritos=[], h=[])
     # Separa fluxo e temperatura
 
@@ -491,6 +465,13 @@ function separa(dad::Union{elastico,elastico_aniso}, x, nosrestritos=[], h=[])
             q[2no-1] = x[2nc(dad)+2i-1]
             q[2no] = x[2nc(dad)+2i]
         end
+    elseif temsubregioes(dad)
+        neq = size(dad.k.subregioes.equivale, 1)
+        indeq = [2 * dad.k.subregioes.equivale[:, 1] .- 1 dad.k.subregioes.equivale[:, 1] * 2 2 * dad.k.subregioes.equivale[:, 2] .- 1 dad.k.subregioes.equivale[:, 2] * 2]'[:]
+        for i = 1:4neq
+            q[indeq[i]] = x[2nc(dad)+i]
+        end
+
     end
     [T[1:2:end] T[2:2:end]], [q[1:2:end] q[2:2:end]]
 end
@@ -887,24 +868,20 @@ function tipoCDC(dad::potencial)
     end
     tipos
 end
-function valorCDC(dad)
+function valorCDC(dad::potencial)
     valores = fill(0.0, nc(dad))
     for i in dad.ELEM
         valores[i.indices] = i.valorCDC
     end
     valores
 end
-function valoresCDC(dad)
-    valoresu = fill(0.0, ni(dad) + nc(dad))
-    valoresq = fill(0.0, ni(dad) + nc(dad))
+function valorCDC(dad::elastico)
+    valores = fill(0.0, 2 * nc(dad))
     for i in dad.ELEM
-        if i.tipoCDC == 0
-            valoresu[i.indices] = i.valorCDC
-        else
-            valoresq[i.indices] = i.valorCDC
-        end
+        valores[2*i.indices.-1] .= i.valorCDC[1]
+        valores[2*i.indices] .= i.valorCDC[2]
     end
-    valoresu, valoresq
+    valores
 end
 
 function potencial_correlato(dad::helmholtz)

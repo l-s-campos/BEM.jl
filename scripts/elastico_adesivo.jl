@@ -2,7 +2,7 @@
 using DrWatson
 @quickactivate "BEM"
 include(scriptsdir("includes.jl"))
-nelem = 1  #Numero de elementos
+nelem = 6  #Numero de elementos
 # NPX = 2 #pontos internos na direção x
 # NPY = 2 #pontos internos na direção y
 npi = 80
@@ -21,14 +21,13 @@ function solucaoAnalitica_adesivo(dad, P, t, ta, c)
     # Goland Reissner
     E, nu, Ecola, nucola = dad.k.E[1], dad.k.nu[1], dad.k.E[2], dad.k.nu[2]
     Gcola = Ecola / (2 * (1 + nucola))
-
     # P is the applied load per unit width
     # c is half the length of the bonded zone
     # t is the thickness of the adhesive, nu is the Poisson's ratio
     Ga = Gcola
     Ea = Ecola
     x = dad.pontos_internos[:, 1]
-    # x = range(-7.5 , 7.5 , length=100)
+    # x = range(-7.5, 7.5, length=100)
 
     beta = sqrt(8 * Ga * t / E / ta)
     u2 = 1 / t * sqrt(3 * (1 - nu^2) * P / 2 / t / E)
