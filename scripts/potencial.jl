@@ -23,10 +23,12 @@ H, G = calc_HeG(dad, npg)  #importante
 
 
 A, b = aplicaCDC(H, G, dad) # Calcula a matriz A e o vetor b
+#format 364
 println("3. Resolvendo o sistema linear")
 x = A \ b
 println("4. Separando fluxo e temperatura")
-T, q = separa(dad, x) #importante
+T, q = separa(dad, x) #format 479
+
 # A1, b1 = calc_Aeb(dad, npg)  #importante
 # x1 = A1 \ b1
 println("5. Calculando nos pontos internos")

@@ -1522,7 +1522,7 @@ function verifica_contato2(x, h, dad)
 
     end
   end
-  @show contato
+  # @show contato
   return contato
 end
 """
@@ -1574,7 +1574,7 @@ function aplica_contato2!(h, contato, A, b, dad)
       A[postx2, posuy2] = -h[4][k, 2]
       b[postx2] = h[3][k]  # un = gap
 
-      A[posty2, posux] = -h[4][k, 2]# ut = 0
+      A[posty2, posux] = -h[4][k, 2]#m
       A[posty2, posuy] = h[4][k, 1]
       A[posty2, posux2] = h[4][k, 2]
       A[posty2, posuy2] = -h[4][k, 1]
@@ -1622,7 +1622,7 @@ function Contato_NL_newton(dad, x0, A2, b2, h; maxiter=10, tol=1e-8)
     # y0 = A2 * x0 - b2
     # x = x0 - A2 \ y0
     x = A2 \ b2
-    @show e = norm(x - x0) / norm(x)
+    # @show e = norm(x - x0) / norm(x)
     x0 = x
     if e < tol
       return x0

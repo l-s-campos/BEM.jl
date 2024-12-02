@@ -48,3 +48,5 @@ function elastico1d_inclusao(ne=15, tipo=2)
     mult = 10
     return [[elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E=E, nu=v)], [elastico, PONTOSi, SEGMENTOS, MALHA, CCSegi, (E=mult * E - E, nu=mult * v - v)]]
 end
+
+

@@ -33,11 +33,10 @@ function calc_HeG(dad::potencial, npg=8; Pint=false)
     end
   end
   for i = 1:n                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
-    H[i, i] += -0.5
-
+    # H[i, i] += -0.5
     # G[i, i] = 0
-    # H[i, i] = 0
-    # H[i, i] = -sum(H[i, :])
+    H[i, i] = 0
+    H[i, i] = -sum(H[i, :])
   end
   # somaH = H * (dad.NOS[:, 1] + dad.NOS[:, 2])
   # somaG = G * (normal_fonte[:, 1] + normal_fonte[:, 2]) * dad.k

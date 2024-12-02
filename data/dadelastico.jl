@@ -1,4 +1,4 @@
-function elastico1d(ne=15, tipo=2;nt=false)
+function elastico1d(ne=15, tipo=2; nt=false)
     PONTOS = [1 0 0
         2 1 0
         3 1 1
@@ -25,16 +25,16 @@ function elastico1d(ne=15, tipo=2;nt=false)
     # CCSeg = [N° do segmento, tipo da CDCx, valor da CDCx, tipo da CDCy, valor da CDCy]
     # tipo da CDC = 0 => deslocamento é conhecido
     # tipo da CDC = 1 => força é conhecida
-    if nt 
-    CCSeg = [1 1 0 0 0
-        2 1 1 1 0
-        3 1 0 1 0
-        4 0 0 1 0]
+    if nt
+        CCSeg = [1 1 0 0 0
+            2 1 1 1 0
+            3 1 0 1 0
+            4 0 0 1 0]
     else
         CCSeg = [1 1 0 0 0
-        2 1 1 1 0
-        3 1 0 1 0
-        4 0 0 1 0]
+            2 1 1 1 0
+            3 1 0 1 0
+            4 0 0 1 0]
     end
 
     E = 1
@@ -627,4 +627,89 @@ function telasticobar(ne=15, tipo=2; planestress=true)
 
     # Malha de pontos internos
     return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E=E, nu=v, k=k)
+end
+
+
+function Turbina(ne=15, tipo=2)
+
+    PONTOS = [1.0000 0.0000 -23.2303 0
+        2.0000 0 0 0
+        3.0000 -8.1100 -0.0000 0
+        4.0000 -8.7042 -17.9864 0
+        5.0000 -11.7050 -22.0073 0
+        6.0000 -14.6650 -22.0058 0
+        7.0000 -14.6650 -23.2231 0
+        8.0000 -12.8085 -6.7101 0
+        9.0000 -22.1970 1.7552 0
+        10.0000 -14.6970 1.7552 0
+        11.0000 -13.4925 -4.8307 0
+        12.0000 -9.3883 -16.1070 0
+        13.0000 -13.1470 -21.4751 0
+        14.0000 -22.1970 -21.4751 0]
+
+    SEGMENTOS = [1 1 2 0
+        2 2 3 0
+        3 3 8 5
+        4 8 12 0
+        5 12 4 0
+        6 4 5 -3
+        7 5 6 0
+        8 6 7 0
+        9 7 1 0
+        10 9 14 0
+        11 14 13 0
+        12 13 12 4
+        13 12 8 0
+        14 8 11 0
+        15 11 10 -20
+        16 10 9 0]
+
+    CCSeg = [1 0 0 1 0
+        2 1 0 1 0
+        3 1 0 1 0
+        4 1 0 1 0
+        5 1 0 1 0
+        6 1 0 1 0
+        7 1 0 1 0
+        8 1 0 1 0
+        9 0 0 1 0
+        10 0 0 1 0
+        11 1 0 1 0
+        12 1 0 1 0
+        13 1 0 1 0
+        14 1 0 1 0
+        15 1 0 1 0
+        16 1 0 1 1]
+
+    ne = 5
+
+    MALHA = [1 ne tipo
+        2 ne tipo
+        3 ne tipo
+        4 ne tipo # interface de baixo
+        5 ne tipo
+        6 ne tipo
+        7 ne tipo
+        8 ne tipo
+        9 ne tipo
+        10 ne tipo
+        11 ne tipo
+        12 ne tipo
+        13 ne tipo # interface de baixo
+        14 ne tipo
+        15 ne tipo
+        16 ne tipo
+    ]
+
+    NPI = [1 1]
+
+    # Propriedades geométricas e do material
+    # Material = [E E G G G ni k h]
+    E = 73.1e3 # Módulo de elasticidade
+    ni = 0.3
+    # Malha de pontos internos
+    subregioes = define_SubRegioes(SEGMENTOS, MALHA)
+
+
+    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E=[E, E], nu=[ni, ni]), subregioes
 end
