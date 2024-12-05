@@ -630,7 +630,7 @@ function telasticobar(ne=15, tipo=2; planestress=true)
 end
 
 
-function Turbina(ne=15, tipo=2)
+function Turbina(ne=5, tipo=2)
 
     PONTOS = [1.0000 0.0000 -23.2303 0
         2.0000 0 0 0
@@ -672,7 +672,7 @@ function Turbina(ne=15, tipo=2)
         6 1 0 1 0
         7 1 0 1 0
         8 1 0 1 0
-        9 0 0 1 0
+        9 1 0 0 0
         10 0 0 1 0
         11 1 0 1 0
         12 1 0 1 0
@@ -681,7 +681,6 @@ function Turbina(ne=15, tipo=2)
         15 1 0 1 0
         16 1 0 1 1]
 
-    ne = 5
 
     MALHA = [1 ne tipo
         2 ne tipo
