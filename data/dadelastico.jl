@@ -240,7 +240,117 @@ function Subregiao1d(ne=15, tipo=2)
 
     return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E=[E, E], nu=[v, v]), subregioes
 end
+function dad_3PBT(ne=6, tipo=2)
 
+    hs = 1.08
+    L = 50
+    l = 25
+    e = 23
+    f = 22
+    ha = 4
+    d = 1
+
+    PONTOS = [1 -L/2 0 0
+        2 -e 0 0
+        3 -f 0 0
+        4 -l/2 0 0
+        5 l/2 0 0
+        6 f 0 0
+        7 e 0 0
+        8 L/2 0 0
+        9 L/2 hs 0
+        10 d/2 hs 0
+        11 -d/2 hs 0
+        12 -L/2 hs 0
+        13 -l/2 -(ha) 0
+        14 l/2 -(ha) 0]
+
+    # Segmentos que definem a geometria
+    # SEGMENTOS = [N° do segmento, N° do ponto inicial, N° do ponto final
+    #                                                  Raio, tipo do elemento]
+    # Raio do segmento: > 0 -> O centro é a esquerda do segmento (do ponto
+    #                          inicial para o ponto final)
+    #                   < 0 -> O centro é a direita do segmento (do ponto
+    #                          inicial para o ponto final)
+    #                   = 0 -> O segmento é uma linha reta
+    SEGMENTOS = [1 1 2 0
+        2 2 3 0
+        3 3 4 0
+        4 4 5 0# interface
+        5 5 6 0
+        6 6 7 0
+        7 7 8 0
+        8 8 9 0
+        9 9 10 0
+        10 10 11 0
+        11 11 12 0
+        12 12 1 0
+        13 13 14 0
+        14 14 5 0
+        15 5 4 0# interface
+        16 4 13 0]
+    # Matriz para definição da malha
+    # MALHA = [número do segmento, número de elementos no segmento]
+    MALHA = [1 2*ne tipo
+        2 ne tipo
+        3 4*ne tipo
+        4 20*ne tipo
+        5 4*ne tipo
+        6 ne tipo# interface de baixo
+        7 2*ne tipo
+        8 ne tipo
+        9 8*ne tipo# interface de cima
+        10 ne tipo
+        11 8*ne tipo# interface de baixo
+        12 ne tipo
+        13 8*ne tipo
+        14 4*ne tipo
+        15 20*ne tipo
+        16 4*ne tipo] # interface de cima
+    # Condições de contorno nos segmentos
+    # CCSeg = [N° do segmento, tipo da CDCx, valor da CDCx, tipo da CDCy, valor da CDCy]
+    # tipo da CDC = 0 => deslocamento é conhecido
+    # tipo da CDC = 1 => força é conhecida
+
+    carga = 1000 / 32
+
+
+    CCSeg = [1 1 0 1 0 0
+        2 0 0 0 0 0
+        3 1 0 1 0 0
+        4 1 0 1 0 0
+        5 1 0 1 0 0
+        6 0 0 0 0 0
+        7 1 0 1 0 0
+        8 0 0 0 0 0
+        9 1 0 1 0 0
+        10 1 0 1 -carga 0
+        11 1 0 1 0 0
+        12 1 0 1 0 0
+        13 1 0 1 0 0
+        14 1 0 1 0 0
+        15 1 0 1 0 0
+        16 1 0 1 0 0]
+
+
+    # CCSeg = [1 0 1
+    # 2 0 1
+    # 3 0 1
+    # 4 0 1]
+    # Condutividade Térmica do material
+    E = 73.1e3
+    v = 0.3
+    # Ecola = E
+    # vcola = 0.3
+    Ecola = 1.12e3
+    vcola = 0.34
+    # @show vcola
+    # Malha de pontos internos
+    subregioes = define_SubRegioes(SEGMENTOS, MALHA)
+
+
+    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E=[E, Ecola], nu=[v, vcola]), subregioes
+end
 function Subregiao(ne=15, tipo=2)
     hh = 0.2
     HH = 2

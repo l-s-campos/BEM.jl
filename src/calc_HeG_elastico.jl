@@ -7,7 +7,7 @@ function calc_HeG(dad::elastico, npg=8; interno=false, subcheia=false)
   if temsubregioes(dad)
     regs = regiao_NO(dad)
   end
-  for i = 1:n
+  @showprogress "Montando H e G" for i = 1:n
     pf = dad.NOS[i, :]   # Coordenada (x,y)  dos pontos fonte
     for elem_j in dad.ELEM  #Laço dos elementos
 
@@ -1622,7 +1622,7 @@ function Contato_NL_newton(dad, x0, A2, b2, h; maxiter=10, tol=1e-8)
     # y0 = A2 * x0 - b2
     # x = x0 - A2 \ y0
     x = A2 \ b2
-    # @show e = norm(x - x0) / norm(x)
+    @show e = norm(x - x0) / norm(x)
     x0 = x
     if e < tol
       return x0

@@ -8,9 +8,9 @@ NPX = 2 #pontos internos na direção x
 NPY = 2 #pontos internos na direção y
 npg = 16    #apenas números pares
 ## Formatação dos dados ________________________________________________
-# dad = format_dad(sapata_conforme(nelem, tipo), NPX, NPY) # dados
+dad = format_dad(sapata_conforme(nelem, tipo), NPX, NPY) # dados
 # dad = format_dad(sapata(nelem, tipo), NPX, NPY) # dados
-dad = format_dad(sapata_conforme_multicorpo(nelem, tipo), NPX, NPY) # dados
+# dad = format_dad(sapata_conforme_multicorpo(nelem, tipo), NPX, NPY) # dados
 
 H, G = calc_HeG(dad, npg)  #importante
 # muda_nt!(dad, H, G)
@@ -48,9 +48,15 @@ end
 # mostra_deformação(dad, u, escala=10)
 
 
-x0 = A2 \ b2
-x = BEM.Contato_NL_newton2(dad, x0, A2, b2, h, maxiter=100)
+# corpo elástico - corpo rígido
+x0 = 0 * b2
+x = BEM.Contato_NL_newton(dad, x0, A2, b2, h, maxiter=100)
 u, t = separa(dad, x, nosrestritos, h)
+
+# corpo elástico - corpo elástico)
+# x0 = A2 \ b2
+# x = BEM.Contato_NL_newton2(dad, x0, A2, b2, h, maxiter=100)
+# u, t = separa(dad, x, nosrestritos, h)
 
 # prob = NonlinearProblem(Contato_sem_atrito_NL, x0, (A2, b2, h, dad))
 

@@ -339,11 +339,11 @@ function aplicaCDC(H, G, dad::Union{elastico,elastico_aniso}, nosrestritos=[])
         elseif elem_i.tipoCDC[i] == 1
             # A[:, 2ind_elem.+(i-2)] = H[:, 2ind_elem.+(i-2)]
             b += G[:, 2ind_elem.+(i-2)] * elem_i.valorCDC[i, :]
-            # elseif elem_i.tipoCDC[i] == 2 # tem contato
-            #     if i == 1
-            #         inds = [(2ind_elem .- 1) 2ind_elem]'[:]
-            #         # A = [A -G[:, inds]]
-            #     end
+        elseif elem_i.tipoCDC[i] == 2 && !temsubregioes(dad)# tem contato
+            if i == 1
+                inds = [(2ind_elem .- 1) 2ind_elem]'[:]
+                A = [A -G[:, inds]]
+            end
         end
     end
     for i = 1:size(nosrestritos, 1)
