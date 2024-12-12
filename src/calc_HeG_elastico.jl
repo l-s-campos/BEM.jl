@@ -1420,12 +1420,14 @@ function verifica_contato(x, h, dad)
     tt = x[postx]
     un = -x[posuy]
     ut = x[posux]
+
     # tn = x[postx] * dad.normal[no_contato, 1] + x[posty] * dad.normal[no_contato, 2]
     # un = x[posux] * dad.normal[no_contato, 1] + x[posuy] * dad.normal[no_contato, 2]
-    # @infiltrate
     # Verifica se un é maior que o gap e se tn é de tração. Caso seja
     # verdade, o nó não se encontra em contato
-    if un < h[2][k] || tn > 0
+    # @infiltrate
+    # @show un, h[2][k], un - h[2][k]
+    if un < h[2][k] - 1e-10 || tn > 0
       # Se entrou aqui o nó não encontra-se em contato
       contato[k] = 1         # O nó está livre
     elseif dad.k.μ == 0 || (abs(tt / tn) - 1e-10 < dad.k.μ && ut * tt > 0)
@@ -1466,7 +1468,7 @@ function aplica_contato!(h, contato, A, b, dad)
     elseif tipocontato == 3  # Zona em contato e adesão ut=0 un=gap
       A[postx, posuy] = 1#
       A[posty, posux] = 1
-      b[postx] = h[2][k]  # un = gap
+      b[postx] = -h[2][k]  # uy = -gap
     else #escorregamento
       A[posty, posty] = -dad.k.μ * sign(tipocontato)
       A[posty, postx] = 1
@@ -1502,7 +1504,6 @@ function verifica_contato2(x, h, dad)
     # ty = x[posty]
     # ux = x[posux]
     # uy = x[posuy]
-
     un = (x[posux] - x[posux2]) * h[4][k, 1] + (x[posuy] - x[posuy2]) * h[4][k, 2]
     ut = -(x[posux] - x[posux2]) * h[4][k, 2] + (x[posuy] - x[posuy2]) * h[4][k, 1]
     tn = (x[postx]) * h[4][k, 1] + (x[posty]) * h[4][k, 2]
@@ -1592,10 +1593,13 @@ function aplica_contato2!(h, contato, A, b, dad)
       A[postx2, posuy2] = -h[4][k, 2]
       b[postx2] = h[3][k]  # un = gap
 
-      A[posty2, postx] = -h[4][k, 2]
-      A[posty2, posty] = h[4][k, 2]
-      A[posty2, postx] = -dad.k.μ * sign(tipocontato) * h[4][k, 1]
-      A[posty2, posty] = -dad.k.μ * sign(tipocontato) * h[4][k, 2]
+      # A[posty2, postx] = -h[4][k, 2]
+      # A[posty2, posty] = h[4][k, 2]
+      # A[posty2, postx] = -dad.k.μ * sign(tipocontato) * h[4][k, 1]
+      # A[posty2, posty] = -dad.k.μ * sign(tipocontato) * h[4][k, 2]
+
+      A[posty2, postx] = -h[4][k, 2] - dad.k.μ * sign(tipocontato) * h[4][k, 1]
+      A[posty2, posty] = h[4][k, 1] + dad.k.μ * sign(tipocontato) * h[4][k, 2]
 
     end
   end
@@ -1616,13 +1620,14 @@ function Contato_NL_newton(dad, x0, A2, b2, h; maxiter=10, tol=1e-8)
   for i in 1:maxiter
     # Verifica a condição de contato de cada nó
     contato = verifica_contato(x0, h, dad)
+    # @show contato
     # @infiltrate
     # Aplica a condição de contato em cada nó
     aplica_contato!(h, contato, A2, b2, dad)
     # y0 = A2 * x0 - b2
     # x = x0 - A2 \ y0
     x = A2 \ b2
-    @show e = norm(x - x0) / norm(x)
+    e = norm(x - x0) / norm(x)
     x0 = x
     if e < tol
       return x0
@@ -1663,4 +1668,338 @@ function Contato_NL_newton2(dad, x0, A2, b2, h; maxiter=10, tol=1e-8)
     end
   end
   x0
+end
+
+
+
+
+
+function Contato_NL_newton_incremental(dad, x0, A2, b2, h, maxiter, tol, npassos, nosrestritos)
+  #Tolerância para o erro para parar do método de Newton
+  nnos = size(dad.NOS)[1]
+  nelem = size(dad.ELEM)[1]
+  u = zeros(nnos, 2)
+  t = zeros(nnos, 2)
+  for i in 1:npassos
+
+    # Resolve a equação não linear usando o método de Newton
+
+
+    x = newton_passo_de_carga(dad, x0, A2, b2, h, u, t, maxiter, tol, i)
+
+    # Reordena deslocamentos e forças de superfície de acordo com as condições
+    # de contorno
+    u_dt, t_dt = separa(dad, x, nosrestritos, h)
+    u = u + u_dt
+    t = t + t_dt
+
+    x0 = deepcopy(x)
+
+  end
+  u, t
+end
+function newton_passo_de_carga(dad, x0, A2, b2, h, u, t, maxiter, tol, i)
+  #Tolerância para o erro para parar do método de Newton
+  x = deepcopy(x0)
+  print("\n newton_passo_de_carga\n")
+  for i in 1:maxiter
+    # Verifica a condição de contato de cada nó
+    contato = verifica_contato_incremental(x0, h, dad, u, t, i)
+
+    print("\n Contato = ", contato)
+
+    # Aplica a condição de contato em cada nó
+    aplica_contato_incremental!(h, contato, A2, b2, dad, u, t, i)
+    y0 = A2 * x0 - b2
+    x = x0 - A2 \ y0
+    e = norm(x - x0) / norm(x)
+    # x = A2 \ b2
+    x0 = x
+    if e < tol
+      return x0
+    end
+  end
+  x0
+end
+
+
+
+
+"""
+aplica contato com superfície rígida
+"""
+function aplica_contato_incremental!(h, contato, A, b, dad, u, t, i)
+  nnoscontato = size(contato, 1)  # Número de nós na região de possível contato
+  nlinhas = size(b, 1) - size(h[1], 1) * 2
+
+  # Imposição das condições de contato na matriz A2 e b2
+  for k in 1:nnoscontato  # Percorre todos os elementos que podem entrar
+    tipocontato = contato[k]  # tipo da condição de contato    
+    no_contato = h[1][k]         # número do nó em contato
+    posux = 2 * no_contato - 1    # Posição da coluxa da matriz A2 referente ao deslocamento na direção n
+    posuy = 2 * no_contato        # Posição da coluna da matriz A2 referente ao deslocamento na direção t
+    postx = nlinhas + 2 * k - 1   # Posição da coluna da matriz A2 referente à força de superfície na direção n
+    posty = nlinhas + 2 * k       # Posição da coluna da matriz A2 referente à força de superfície na direção t   
+
+    if (i == 2)
+      @show posux, posuy, postx, posty
+      # @infiltrate
+    end
+
+
+    A[[postx, posty], :] .= 0
+    b[[postx, posty]] .= 0
+
+    if tipocontato == 1  # Zona livre de contato
+      A[posty, posty] = 1
+      A[postx, postx] = 1
+
+    elseif tipocontato == 3  # Zona em contato e adesão ut=0 un=gap
+      A[postx, posuy] = 1#
+      A[posty, posux] = 1
+      b[postx] = -h[2][k] + u[no_contato, 2] # un = gap
+      b[posty] = u[no_contato, 1]  # un = gap
+    else #escorregamento
+      A[posty, posty] = -dad.k.μ * sign(tipocontato)
+      A[posty, postx] = 1
+      A[postx, posuy] = -1
+      b[postx] = -h[2][k] + u[no_contato, 2]
+      b[posty] = -t[no_contato, 2] * dad.k.μ * sign(tipocontato) - t[no_contato, 1]
+
+    end
+  end
+end
+
+
+"""
+verifica contato com superfície rígida
+"""
+function verifica_contato_incremental(x, h, dad, u, t, i)
+  # Verifica a condição de contato de cada nó
+  nnoscontato = size(h[1], 1)
+  contato = zeros(Int, nnoscontato)
+  nlinhas = size(x, 1) - size(h[1], 1) * 2#nlinhas = nc(dad) * 2
+
+  for k in 1:nnoscontato  # Percorre todos os elementos que podem entrar
+    no_contato = h[1][k]
+    posux = 2 * no_contato - 1    # Posição da coluxa da matriz A2 referente ao deslocamento na direção n
+    posuy = 2 * no_contato        # Posição da coluna da matriz A2 referente ao deslocamento na direção t
+    postx = nlinhas + 2 * k - 1   # Posição da coluna da matriz A2 referente à força de superfície na direção n
+    posty = nlinhas + 2 * k       # Posição da coluna da matriz A2 referente à força de superfície na direção t   
+    deltatn = -x[posty]
+    deltatt = x[postx]
+    deltaun = -x[posuy]
+    deltaut = x[posux]
+
+    tn = t[no_contato, 2] + deltatn
+    tt = t[no_contato, 1] + deltatt
+    un = u[no_contato, 2] + deltaun
+    ut = u[no_contato, 1] + deltaut
+
+
+
+    # tn = x[postx] * dad.normal[no_contato, 1] + x[posty] * dad.normal[no_contato, 2]
+    # un = x[posux] * dad.normal[no_contato, 1] + x[posuy] * dad.normal[no_contato, 2]
+    # @infiltrate
+    # Verifica se un é maior que o gap e se tn é de tração. Caso seja
+    # verdade, o nó não se encontra em contato
+    if un < h[2][k] || tn > 0
+      # Se entrou aqui o nó não encontra-se em contato
+      contato[k] = 1         # O nó está livre
+    elseif dad.k.μ == 0 || (abs(tt / tn) - 1e-10 < dad.k.μ && ut * tt > 0)
+      # Se entrou aqui o nó encontra-se em contato  e escorregamento     
+      contato[k] = sign(tt) * 2         # O nó está em contato
+    else
+      contato[k] = 3         # O nó está em contato e adesão
+
+    end
+  end
+
+  return contato
+end
+
+
+
+function Contato_NL_newton_incremental2(dad, x0, A2, b2, h, maxiter, tol, npassos, nosrestritos)
+  #Tolerância para o erro para parar do método de Newton
+  nnos = size(dad.NOS)[1]
+  nelem = size(dad.ELEM)[1]
+  u = zeros(nnos, 2)
+  t = zeros(nnos, 2)
+  for i in 1:npassos
+
+    # Resolve a equação não linear usando o método de Newton
+
+
+    x = newton_passo_de_carga2(dad, x0, A2, b2, h, u, t, maxiter, tol, i)
+
+    # Reordena deslocamentos e forças de superfície de acordo com as condições
+    # de contorno
+    u_dt, t_dt = separa(dad, x, nosrestritos, h)
+    u = u + u_dt
+    t = t + t_dt
+
+    x0 = deepcopy(x)
+
+  end
+  u, t
+end
+function newton_passo_de_carga2(dad, x0, A2, b2, h, u, t, maxiter, tol, i)
+  #Tolerância para o erro para parar do método de Newton
+  x = deepcopy(x0)
+  print("\n newton_passo_de_carga\n")
+  for i in 1:maxiter
+    # Verifica a condição de contato de cada nó
+    contato = verifica_contato_incremental2(x0, h, dad, u, t)
+
+    print("\n Contato = ", contato)
+
+    # Aplica a condição de contato em cada nó
+    aplica_contato_incremental2!(h, contato, A2, b2, dad, u, t)
+    y0 = A2 * x0 - b2
+    x = x0 - A2 \ y0
+    e = norm(x - x0) / norm(x)
+    # x = A2 \ b2
+    x0 = x
+    if e < tol
+      return x0
+    end
+  end
+  x0
+end
+
+
+
+
+"""
+aplica contato com superfície rígida
+"""
+function aplica_contato_incremental2!(h, contato, A, b, dad, u, t)
+  nnoscontato = size(contato, 1)  # Número de nós na região de possível contato
+  nlinhas = nc(dad) * 2
+  # Imposição das condições de contato na matriz A2 e b2
+  for k in 1:nnoscontato  # Percorre todos os elementos que podem entrar
+    tipocontato = contato[k]  # tipo da condição de contato    
+    no_contato = h[1][k]         # número do nó em contato
+    posux = 2 * no_contato - 1    # Posição da coluxa da matriz A2 referente ao deslocamento na direção n
+    posuy = 2 * no_contato        # Posição da coluna da matriz A2 referente ao deslocamento na direção t
+    postx = nlinhas + 4 * k - 3   # Posição da coluna da matriz A2 referente à força de superfície na direção n
+    posty = nlinhas + 4 * k - 2      # Posição da coluna da matriz A2 referente à força de superfície na direção t   
+    # @show posux, posuy, postx, posty
+
+    no_contato2 = h[2][k]         # número do nó em contato
+    posux2 = 2 * no_contato2 - 1    # Posição da coluxa da matriz A2 referente ao deslocamento na direção n
+    posuy2 = 2 * no_contato2        # Posição da coluna da matriz A2 referente ao deslocamento na direção t
+    postx2 = nlinhas + 4 * k - 1  # Posição da coluna da matriz A2 referente à força de superfície na direção n
+    posty2 = nlinhas + 4 * k       # Posição da coluna da matriz A2 referente à força de superfície na direção t   
+
+
+    A[[postx, posty, postx2, posty2], :] .= 0
+    b[[postx, posty, postx2, posty2]] .= 0
+
+
+    if tipocontato == 1  # Zona livre de contato
+      A[postx, postx] = 1
+
+      A[posty, posty] = 1
+
+      A[postx2, postx2] = 1
+
+      A[posty2, posty2] = 1
+
+    elseif tipocontato == 3  # Zona em contato e adesão ut=0 un=gap
+      A[postx, postx] = 1
+      A[postx, postx2] = 1
+
+      A[posty, posty] = 1
+      A[posty, posty2] = 1
+
+      A[postx2, posux] = h[4][k, 1]
+      A[postx2, posuy] = h[4][k, 2]
+      A[postx2, posux2] = -h[4][k, 1]
+      A[postx2, posuy2] = -h[4][k, 2]
+      b[postx2] = h[3][k] + u[no_contato, 2] # un = gap
+
+      A[posty2, posux] = -h[4][k, 2]#m
+      A[posty2, posuy] = h[4][k, 1]
+      A[posty2, posux2] = h[4][k, 2]
+      A[posty2, posuy2] = -h[4][k, 1]
+      b[posty2] = u[no_contato, 1]  # un = gap
+    else #escorregamento
+      A[postx, postx] = 1
+      A[postx, postx2] = 1
+
+      A[posty, posty] = 1
+      A[posty, posty2] = 1
+
+      A[postx2, posux] = h[4][k, 1]
+      A[postx2, posuy] = h[4][k, 2]
+      A[postx2, posux2] = -h[4][k, 1]
+      A[postx2, posuy2] = -h[4][k, 2]
+      b[postx2] = h[3][k] + u[no_contato, 2] # un = gap
+
+      A[posty2, postx] = -h[4][k, 2] - dad.k.μ * sign(tipocontato) * h[4][k, 1]
+      A[posty2, posty] = h[4][k, 1] + dad.k.μ * sign(tipocontato) * h[4][k, 2]
+
+      b[posty] = -t[no_contato, 2] * dad.k.μ * sign(tipocontato) - t[no_contato, 1]
+
+    end
+  end
+end
+
+
+"""
+verifica contato com superfície rígida
+"""
+function verifica_contato_incremental2(x, h, dad, u, t)
+  # Verifica a condição de contato de cada nó
+  nnoscontato = size(h[1], 1)
+  contato = zeros(Int, nnoscontato)
+  nlinhas = nc(dad) * 2
+
+  for k in 1:nnoscontato  # Percorre todos os elementos que podem entrar
+    no_contato = h[1][k]
+    no_contato2 = h[2][k]
+
+    posux = 2 * no_contato - 1    # Posição da coluxa da matriz A2 referente ao deslocamento na direção n
+    posuy = 2 * no_contato        # Posição da coluna da matriz A2 referente ao deslocamento na direção t
+    postx = nlinhas + 4 * k - 3   # Posição da coluna da matriz A2 referente à força de superfície na direção n
+    posty = nlinhas + 4 * k - 2      # Posição da coluna da matriz A2 referente à força de superfície na direção t   
+
+    posux2 = 2 * no_contato2 - 1    # Posição da coluxa da matriz A2 referente ao deslocamento na direção n
+    posuy2 = 2 * no_contato2        # Posição da coluna da matriz A2 referente ao deslocamento na direção t
+    # @infiltrate
+    # @show posux, posux2, posuy, posuy2, postx, posty
+
+    deltaun = (x[posux] - x[posux2]) * h[4][k, 1] + (x[posuy] - x[posuy2]) * h[4][k, 2]
+    deltaut = -(x[posux] - x[posux2]) * h[4][k, 2] + (x[posuy] - x[posuy2]) * h[4][k, 1]
+    deltatn = (x[postx]) * h[4][k, 1] + (x[posty]) * h[4][k, 2]
+    deltatt = -(x[postx]) * h[4][k, 2] + (x[posty]) * h[4][k, 1]
+
+    un0 = (u[no_contato, 1] - u[no_contato2, 1]) * h[4][k, 1] + (u[no_contato, 2] - u[no_contato2, 2]) * h[4][k, 2]
+    ut0 = -(u[no_contato, 1] - u[no_contato2, 1]) * h[4][k, 2] + (u[no_contato, 2] - u[no_contato2, 2]) * h[4][k, 1]
+    tn0 = (t[no_contato, 1]) * h[4][k, 1] + (t[no_contato, 2]) * h[4][k, 2]
+    tt0 = -(t[no_contato, 1]) * h[4][k, 2] + (t[no_contato, 2]) * h[4][k, 1]
+
+    tn = tn0 + deltatn
+    tt = tt0 + deltatt
+    un = un0 + deltaun
+    ut = ut0 + deltaut
+
+    # @infiltrate
+    # Verifica se un é maior que o gap e se tn é de tração. Caso seja
+    # verdade, o nó não se encontra em contato
+    if un < h[3][k] || tn > 0
+      # Se entrou aqui o nó não encontra-se em contato
+      contato[k] = 1         # O nó está livre
+    elseif dad.k.μ == 0 || (abs(tt / tn) - 1e-10 < dad.k.μ && ut * tt > 0)
+      # Se entrou aqui o nó encontra-se em contato  e escorregamento     
+      contato[k] = sign(tt) * 2         # O nó está em contato
+    else
+      contato[k] = 3         # O nó está em contato e adesão
+
+    end
+  end
+
+  return contato
 end

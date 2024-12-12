@@ -57,3 +57,11 @@ println("6. Gerando mapa de cor")
 @time include(scriptsdir("potencial_direto.jl"))
 
 =#
+# Ht, Gt = BEM.calc_HeGt(dad)
+# A, b = BEM.aplicaCDC(Ht, Gt, dad)
+
+# M = BEM.Monta_M_RIMd(dad, npg)
+# f=ones(nc(dad)+ni(dad))*10
+# x = A \ (b+M*u̇)
+# T, q = separa(dad, x) #format 479
+# Ti=x[nc(dad)+1:end]

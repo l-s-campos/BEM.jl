@@ -363,8 +363,8 @@ function aplicaCDC(H, G, dad::Union{elastico,elastico_aniso}, nosrestritos=[])
 end
 function aplicaCDC(H, G, dad::Union{potencial,helmholtz})
     # nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
-    n = size(dad.NOS, 1)
-    A = zeros(typeof(H[1]), n, n)
+    n = size(H, 1)
+    A = deepcopy(H)
     b = zeros(typeof(H[1]), n)
     for elem_i in dad.ELEM  # Laço dos pontos fontes
         ind_elem = elem_i.indices
@@ -373,7 +373,7 @@ function aplicaCDC(H, G, dad::Union{potencial,helmholtz})
             A[:, ind_elem] = -G[:, ind_elem]
             b += -H[:, ind_elem] * elem_i.valorCDC
         elseif elem_i.tipoCDC == 1
-            A[:, ind_elem] = H[:, ind_elem]
+            # A[:, ind_elem] = H[:, ind_elem]
             b += G[:, ind_elem] * elem_i.valorCDC
         end
     end
