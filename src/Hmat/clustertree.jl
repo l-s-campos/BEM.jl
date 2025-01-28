@@ -122,9 +122,9 @@ during the tree construction.
 """
 function ClusterTree(
     elements,
-    splitter=CardinalitySplitter();
-    copy_elements=true,
-    threads=false,
+    splitter = CardinalitySplitter();
+    copy_elements = true,
+    threads = false,
 )
     copy_elements && (elements = deepcopy(elements))
     bbox = bounding_box(elements)
@@ -145,13 +145,20 @@ function ClusterTree(
 end
 function ClusterTree(
     dad::DadosBEM,
-    splitter=CardinalitySplitter();
-    threads=false, dist=1e6
+    splitter = CardinalitySplitter();
+    threads = false,
+    dist = 1e6,
 )
-    elements = [[Point2D(dad.NOS[i, 1], dad.NOS[i, 2]) for i in 1:nc(dad)]; [Point2D(dad.pontos_internos[i, 1], dad.pontos_internos[i, 2]) for i in 1:ni(dad)]]
+    elements = [
+        [Point2D(dad.NOS[i, 1], dad.NOS[i, 2]) for i = 1:nc(dad)]
+        [Point2D(dad.pontos_internos[i, 1], dad.pontos_internos[i, 2]) for i = 1:ni(dad)]
+    ]
     tipoCDC = BEM.tipoCDC(dad)
-    elementsCDC = [[Point2D(dad.NOS[i, 1], dad.NOS[i, 2]) for i in 1:nc(dad)]; [Point2D(dad.pontos_internos[i, 1], dad.pontos_internos[i, 2]) for i in 1:ni(dad)]]
-    for i in 1:length(tipoCDC)
+    elementsCDC = [
+        [Point2D(dad.NOS[i, 1], dad.NOS[i, 2]) for i = 1:nc(dad)]
+        [Point2D(dad.pontos_internos[i, 1], dad.pontos_internos[i, 2]) for i = 1:ni(dad)]
+    ]
+    for i = 1:length(tipoCDC)
         if tipoCDC[i] == 1
             elementsCDC[i] = elementsCDC[i] .+ dist
         end
@@ -181,7 +188,7 @@ function ClusterTree(
     # return ClusterTree(elements, splitter), ClusterTree(elements, splitter)
     return ClusterTree(elements, splitter), yclt
 end
-function _build_cluster_tree!(current_node, splitter, threads, depth=0)
+function _build_cluster_tree!(current_node, splitter, threads, depth = 0)
     if should_split(current_node, depth, splitter)
         if depth == 0 && isleaf(current_node)
             split!(current_node, splitter)

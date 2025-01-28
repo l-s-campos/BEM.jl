@@ -1,4 +1,4 @@
-function sapata(ref=11, tipo=2)
+function sapata(ref = 11, tipo = 2)
     # Matriz para definição de pontos
     w = 6.5       # largura da sapata
     R = 70        # Raio da sapata
@@ -43,19 +43,21 @@ function sapata(ref=11, tipo=2)
     # tipo da CDC = 1 => a força de superfície é conhecida
     # tipo da CDC = 2 => tudo desconhecido
 
-    CCSeg = [1 2 0 2 0
+    CCSeg = [
+        1 2 0 2 0
         2 1 0 1 0
         3 1 0 1 -cargav
-        4 1 0 1 0]
+        4 1 0 1 0
+    ]
 
     E = 73.4e3  # Módulo de Elasticidade
     v = 0.33   # Coeficiente de Poisson
     μ = 0.1  # Coeficiente de atrito
 
-    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E=E, nu=v, μ=μ)
+    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E = E, nu = v, μ = μ)
 end
 
-function sapata_conforme(ref=11, tipo=2)
+function sapata_conforme(ref = 11, tipo = 2)
 
     # Matriz para definição de pontos
     w = 6.5  # largura da sapata
@@ -93,11 +95,11 @@ function sapata_conforme(ref=11, tipo=2)
     μ = 0.1  # Coeficiente de atrito
 
 
-    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E=E, nu=v, μ=μ)
+    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E = E, nu = v, μ = μ)
 
 end
 
-function sapata_conforme_multicorpo(ref=11, tipo=2)
+function sapata_conforme_multicorpo(ref = 11, tipo = 2)
 
     # Matriz para definição de pontos
     w = 6.5  # largura da sapata
@@ -114,7 +116,16 @@ function sapata_conforme_multicorpo(ref=11, tipo=2)
     SEGMENTOS = [1 1 2 0; 2 2 3 0; 3 3 4 0; 4 4 1 0; 5 5 6 0; 6 6 7 0; 7 7 8 0; 8 8 5 0]
 
     # Matriz para definição da malha
-    MALHA = [1 ref tipo; 2 ref tipo; 3 ref tipo; 4 ref tipo; 5 ref tipo; 6 ref tipo; 7 ref tipo; 8 ref tipo]
+    MALHA = [
+        1 ref tipo
+        2 ref tipo
+        3 ref tipo
+        4 ref tipo
+        5 ref tipo
+        6 ref tipo
+        7 ref tipo
+        8 ref tipo
+    ]
 
     cargav = 136.8551  # Carga vertical
 
@@ -140,11 +151,17 @@ function sapata_conforme_multicorpo(ref=11, tipo=2)
     μ = 0.1  # Coeficiente de atrito
     subregioes = BEM.define_SubRegioes_contato(MALHA, CCSeg, [4, 8])
 
-    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E=[E, 1.1E], nu=[v, v], μ=μ), subregioes
+    return elastico,
+    PONTOS,
+    SEGMENTOS,
+    MALHA,
+    CCSeg,
+    (E = [E, 1.1E], nu = [v, v], μ = μ),
+    subregioes
 end
 
 
-function sapata_multicorpo(ref=11, tipo=2)
+function sapata_multicorpo(ref = 11, tipo = 2)
     w = 6.5       # largura da sapata
     R = 70        # Raio da sapata
     theta = asin(w / R)
@@ -157,7 +174,11 @@ function sapata_multicorpo(ref=11, tipo=2)
         2 w y
         3 w 2*w
         4 -w 2*w
-        5 -w -2w; 6 w -2w; 7 w 0; 8 -w 0]
+        5 -w -2w
+        6 w -2w
+        7 w 0
+        8 -w 0
+    ]
 
 
     # Segmentos que definem a geometria
@@ -171,7 +192,16 @@ function sapata_multicorpo(ref=11, tipo=2)
     SEGMENTOS = [1 1 2 R; 2 2 3 0; 3 3 4 0; 4 4 1 0; 5 5 6 0; 6 6 7 0; 7 7 8 0; 8 8 5 0]
 
     # Matriz para definição da malha
-    MALHA = [1 ref tipo; 2 ref tipo; 3 ref tipo; 4 ref tipo; 5 ref tipo; 6 ref tipo; 7 ref tipo; 8 ref tipo]
+    MALHA = [
+        1 ref tipo
+        2 ref tipo
+        3 ref tipo
+        4 ref tipo
+        5 ref tipo
+        6 ref tipo
+        7 ref tipo
+        8 ref tipo
+    ]
 
     npassos = 2
     cargav = 136.8551 / npassos  # Carga vertical
@@ -198,5 +228,11 @@ function sapata_multicorpo(ref=11, tipo=2)
     μ = 0.1  # Coeficiente de atrito
     subregioes = BEM.define_SubRegioes_contato(MALHA, CCSeg, [4, 8])
 
-    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E=[E, 1.1E], nu=[v, v], μ=μ), subregioes
+    return elastico,
+    PONTOS,
+    SEGMENTOS,
+    MALHA,
+    CCSeg,
+    (E = [E, 1.1E], nu = [v, v], μ = μ),
+    subregioes
 end

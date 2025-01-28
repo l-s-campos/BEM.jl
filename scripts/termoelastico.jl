@@ -36,8 +36,9 @@ function testagao(i, metodo)
     #     dF[2i-1, :] = Fx[i, :]
     #     dF[2i, :] = Fy[i, :]
     # end
-    uana(y) = (c1 / 2 * (y^2 - 0.5^2) + c2 / 3 * (y^3 + 0.5^3) + c0 * (y + 0.5)) * 1.3 / 0.7 * k
-    tdad = @timed u, ss = termoelasticidade(dad, npg, θ=f, metodo=metodo)#função
+    uana(y) =
+        (c1 / 2 * (y^2 - 0.5^2) + c2 / 3 * (y^3 + 0.5^3) + c0 * (y + 0.5)) * 1.3 / 0.7 * k
+    tdad = @timed u, ss = termoelasticidade(dad, npg, θ = f, metodo = metodo)#função
 
     # x = [dad.NOS[:, 1]; dad.pontos_internos[:, 1]];
     y = [dad.NOS[:, 2]; dad.pontos_internos[:, 2]]
@@ -84,9 +85,14 @@ function testacil(i, metodo)
     k = 60
 
     # c = 0
-    g(x, y) = 1 / 2 * (Te * r(x, y)^2 - Ti * ri^2) + (Ti - Te) / (2 * log(ri / re)) * ((ri^2 - r(x, y)^2) / 2 + r(x, y)^2 * log(r(x, y) / re))
+    g(x, y) =
+        1 / 2 * (Te * r(x, y)^2 - Ti * ri^2) +
+        (Ti - Te) / (2 * log(ri / re)) *
+        ((ri^2 - r(x, y)^2) / 2 + r(x, y)^2 * log(r(x, y) / re))
 
-    ua(x, y) = ka * (1 + v) / (1 - v) / r(x, y) * (g(x, y) + ((1 - 2v) * r(x, y)^2 + ri^2) / (re^2 - ri^2) * g(0, re))
+    ua(x, y) =
+        ka * (1 + v) / (1 - v) / r(x, y) *
+        (g(x, y) + ((1 - 2v) * r(x, y)^2 + ri^2) / (re^2 - ri^2) * g(0, re))
     ta(x, y) = Te + (Ti - Te) / log(ri / re) * log(r(x, y) / re)
     function dta(x, y)
         r_xy = r(x, y)
@@ -104,8 +110,10 @@ function testacil(i, metodo)
 
 
     # ssa(x, y) = 2ka * EE * v / (1 - v) / (re^2 - ri^2) * g(0, re) - ka * EE * v / (1 - v) * ta(x, y)
-    ssa(x, y) = ka * EE * (Ti - Te) / (1 - v) / 2 / log(re / ri) * (v - 2 * ri^2 * v / (re^2 - ri^2) * log(re / ri) - 2 * log(re / r(x, y)))
-    tdad = @timed u, ss = termoelasticidade(dadel, npg, θ=ta, metodo=metodo)#função
+    ssa(x, y) =
+        ka * EE * (Ti - Te) / (1 - v) / 2 / log(re / ri) *
+        (v - 2 * ri^2 * v / (re^2 - ri^2) * log(re / ri) - 2 * log(re / r(x, y)))
+    tdad = @timed u, ss = termoelasticidade(dadel, npg, θ = ta, metodo = metodo)#função
 
     x = [dadpot.NOS[:, 1]; dadpot.pontos_internos[:, 1]]
     y = [dadpot.NOS[:, 2]; dadpot.pontos_internos[:, 2]]
@@ -133,7 +141,7 @@ function testapatch(i, metodo)
     # println("1. Formatando os dados")
     # dad = format_dad(telastico1d(nelem, 3), NPX, NPY) # dados
     dad1 = format_dad(telasticosquare(nelem, 3), NPX, NPY) # dados
-    dad2 = format_dad(telasticosquare(nelem, 3, planestress=true), NPX, NPY) # dados
+    dad2 = format_dad(telasticosquare(nelem, 3, planestress = true), NPX, NPY) # dados
     # dad = format_dad(placacomfuro(nelem),NPX,NPY) # dados
     # u, ss = termoelasticidade(dad, npg, k=2e-6, θ=1)#temperatura constante
     EE1 = dad1.k.E
@@ -152,8 +160,8 @@ function testapatch(i, metodo)
     #     dF[2i-1, :] = Fx[i, :]
     #     dF[2i, :] = Fy[i, :]
     # end
-    tdad = @timed u, ss1 = termoelasticidade(dad1, npg, θ=1, metodo=metodo)#função
-    u, ss2 = termoelasticidade(dad2, npg, θ=1, metodo=metodo)#função
+    tdad = @timed u, ss1 = termoelasticidade(dad1, npg, θ = 1, metodo = metodo)#função
+    u, ss2 = termoelasticidade(dad2, npg, θ = 1, metodo = metodo)#função
 
     # x = [dad.NOS[:, 1]; dad.pontos_internos[:, 1]];
     # y = [dad.NOS[:, 2]; dad.pontos_internos[:, 2]]
@@ -176,7 +184,7 @@ function testabar(i, metodo)
     ## Formatação dos dados ________________________________________________
     # println("1. Formatando os dados")
     # dad = format_dad(telastico1d(nelem, 3), NPX, NPY) # dados
-    dad = format_dad(telasticobar(nelem, 3, planestress=true), NPX, NPY) # dados
+    dad = format_dad(telasticobar(nelem, 3, planestress = true), NPX, NPY) # dados
     # dad = format_dad(placacomfuro(nelem),NPX,NPY) # dados
     # u, ss = termoelasticidade(dad, npg, k=2e-6, θ=1)#temperatura constante
     EE = 210e9
@@ -190,7 +198,7 @@ function testabar(i, metodo)
     sx(x) = (4^2 - x^2) / 2
     # end
     # end
-    tdad = @timed u, ss = termoelasticidade(dad, npg, θ=0, carga=carga, metodo=metodo)#função
+    tdad = @timed u, ss = termoelasticidade(dad, npg, θ = 0, carga = carga, metodo = metodo)#função
 
     x = [dad.NOS[:, 1]; dad.pontos_internos[:, 1]]
 
@@ -218,15 +226,12 @@ end
 # testagao(5, "DIBEM")
 # cliparray(resrim)
 
-resdibem = [testacil(i, "DIBEM") for i in 1:6]
+resdibem = [testacil(i, "DIBEM") for i = 1:6]
 resdibem = reduce(vcat, resdibem)
-resrim = [testacil(i, "RIM") for i in 1:3]
+resrim = [testacil(i, "RIM") for i = 1:3]
 resrim = reduce(vcat, resrim)
 
 # lines(y, -k / 0.7 * f.(0, y) * dad.k.E)
 # lines!(y, ss[:, 1])
 # lines(y, uana.(y) * 1e5)
 # lines!(y, u[:, 2] * 1e5)
-
-
-

@@ -51,7 +51,7 @@ println("1. Formatando os dados");
 dad = format_dad(dad_3PBT(nelem, 2), 1, 2) # dados
 
 println("2. Montando a matriz A e o vetor b")
-H, G = calc_HeG(dad, npg, subcheia=true)  #importante
+H, G = calc_HeG(dad, npg, subcheia = true)  #importante
 
 
 A, b = BEM.aplicaCDC(H, G, dad) # Calcula a matriz A e o vetor b
@@ -71,16 +71,13 @@ tens_int = calc_tens_int(dad, u, t, fill(2, size(dad.pontos_internos)), 30)
 # p2
 using LaTeXStrings
 f = BEM.Figure()
-ax = BEM.Axis(f[1, 1],
-    title="tensão normal na interface",
-    xlabel="x",
-    ylabel=L"σ_y",
-)
+ax = BEM.Axis(f[1, 1], title = "tensão normal na interface", xlabel = "x", ylabel = L"σ_y")
 lines!(ax, dad.NOS[781:1020, 1], t[781:1020, 2])
-ax2 = BEM.Axis(f[1, 2],
-    title="tensão tangencial na interface",
-    xlabel="x",
-    ylabel=L"σ_x",
+ax2 = BEM.Axis(
+    f[1, 2],
+    title = "tensão tangencial na interface",
+    xlabel = "x",
+    ylabel = L"σ_x",
 )
 lines!(ax2, dad.NOS[781:1020, 1], t[781:1020, 1])
 f

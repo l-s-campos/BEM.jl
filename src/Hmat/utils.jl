@@ -92,7 +92,7 @@ function hilbert_points(n::Integer)
     @assert ispow2(n)
     xx = Int[]
     yy = Int[]
-    for d in 0:(n^2-1)
+    for d = 0:(n^2-1)
         x, y = hilbert_linear_to_cartesian(n, d)
         push!(xx, x)
         push!(yy, y)
@@ -154,7 +154,7 @@ possible (see [`has_partition`](@ref)).
 """
 function build_sequence_partition(seq, np, cost, cmax)
     acc = 0
-    partition = [empty(seq) for _ in 1:np]
+    partition = [empty(seq) for _ = 1:np]
     k = 1
     for el in seq
         c = cost(el)

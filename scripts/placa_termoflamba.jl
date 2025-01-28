@@ -41,7 +41,7 @@ NPY = NPX
 entrada = getfield(Main, Symbol(problema))(nelem, 3)
 # entrada = getfield(Main, Symbol(problema))(nelem, 3, bc)
 
-tdad = @timed dad = format_dad(entrada[1], NPX, NPY, canto=true) # dados
+tdad = @timed dad = format_dad(entrada[1], NPX, NPY, canto = true) # dados
 tdadpe = @timed dadpe = format_dad(entrada[2], NPX, NPY) # dados
 tHeG = @timed H, G, q, It, dNs = calc_HeGeIt(dad, npg)  #importante
 tHeGpl = @timed Hpe, Gpe = calc_HeG(dadpe, npg)
@@ -63,10 +63,12 @@ tdMd = @timed dMd = BEM.Monta_dM_RIMd(dad, npg)
 # tM = @timed Md = BEM.Monta_M_RIM(dad, npg)
 # @infiltrate
 # @show dad.pontos_internos
-nosrestritos = [floor(Int, nelem / 2)+2 1
+nosrestritos = [
+    floor(Int, nelem / 2)+2 1
     floor(Int, nelem / 2)+2+nelem*3 2
     floor(Int, nelem / 2)+2+nelem*6 1
-    floor(Int, nelem / 2)+2+nelem*9 2]
+    floor(Int, nelem / 2)+2+nelem*9 2
+]
 
 # ddMit = BEM.aplicaT(G, It, tens_nt, dNs, dMd[6], [tens_cont; tens_int])
 dMit = BEM.aplicaT(dad, G, tens_nt, dNs, dMd[1], [tens_cont; tens_int])
@@ -94,4 +96,3 @@ k1 = a1 / dad.k.D / pi^2
 
 # [k k1 k2]
 # =#
-

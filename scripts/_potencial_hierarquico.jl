@@ -29,7 +29,7 @@ A, b = aplicaCDC(H, G, dad) # Calcula a matriz A e o vetor b
 x = A \ b
 println("4. Separando fluxo e temperatura")
 T, q = separa(dad, x) #importante
-xi, f = gmres(A1, b1, rtol=1e-5, itmax=100) #GMRES nas matrizes 
+xi, f = gmres(A1, b1, rtol = 1e-5, itmax = 100) #GMRES nas matrizes
 T1, q1 = separa(dad, xi) #importante
 T1i = xi[nc(dad)+1:end]
 println("5. Calculando nos pontos internos")

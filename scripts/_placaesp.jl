@@ -6,7 +6,7 @@ include(scriptsdir("includes.jl"))
 NPX = 3#pontos internos na direção x
 nelem = 3
 npg = 16 #apenas números pares
-## Formatação dos dados 
+## Formatação dos dados
 # problema = "sladek03"
 # problema = "large1"
 # metodo = "Monta_M_RIM"
@@ -17,7 +17,7 @@ NPY = NPX
 # entrada = plespex1(nelem, 3, "CCCC")
 entrada, entradaterm = termbuckl(nelem, 3, "SSSS")
 
-dad = format_dad(entrada, NPX, NPY, canto=true) # dados
+dad = format_dad(entrada, NPX, NPY, canto = true) # dados
 H, G, q = calc_HeG(dad, npg)
 
 # A, B, bc_val = BEM.aplicaCDC(H, G, dad) # Calcula a matriz A e o vetor b
@@ -32,7 +32,7 @@ np = nc(dad) + ni(dad)
 # tens = [-ones(np) -ones(np) zeros(np)];
 dadterm = format_dad(entradaterm, NPX, NPY); # dados
 α = 2e-6
-u, tens = termoelasticidade(dadterm, npg, θ=1);
+u, tens = termoelasticidade(dadterm, npg, θ = 1);
 
 tensa = [-ones(np) -ones(np) zeros(np)] * dad.k.h * dadterm.k.E * α / (1 - dadterm.k.nu);
 f1 = 1

@@ -2,13 +2,14 @@
 using DrWatson
 @quickactivate "BEM"
 include(scriptsdir("includes.jl"))
-nelem = 4  #Numero de elementos
+nelem = 10  #Numero de elementos
 NPX = 2 #pontos internos na direção x
 NPY = 2 #pontos internos na direção y
-npg = 10    #apenas números pares
+npg = 30    #apenas números pares
+tipo = 3
 ## Formatação dos dados ________________________________________________
 println("1. Formatando os dados");
-dad = format_dad(elastico1d(nelem, 3), NPX, NPY) # dados
+dad = format_dad(placa_furo(nelem, tipo), NPX, NPY) # dados
 
 println("2. Montando a matriz A e o vetor b")
 H, G = calc_HeG(dad, npg)  #importante
@@ -23,9 +24,9 @@ u, t = separa(dad, x) #importante
 tens_int = calc_tens_int(dad, u, t)
 tens_cont, tens_nt = calc_tens_cont(dad, u, t)
 
-S, D = calc_SeD(dad)
-fatorcontorno = [fill(2, nc(dad)); ones(ni(dad))]
-ss = reshape(D * t'[:] - S * u'[:], 3, :)' .* fatorcontorno
+# S, D = calc_SeD(dad)
+# fatorcontorno = [fill(2, nc(dad)); ones(ni(dad))]
+# ss = reshape(D * t'[:] - S * u'[:], 3, :)' .* fatorcontorno
 
 
 
@@ -34,4 +35,3 @@ ss = reshape(D * t'[:] - S * u'[:], 3, :)' .* fatorcontorno
 
 # # geo=mostra_geometria(dad)
 # # mapa=mostra_resultado(dad,[T;Ti])
-

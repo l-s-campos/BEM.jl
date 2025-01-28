@@ -1,17 +1,21 @@
 # Entrada de dados para análise do problemade helmholtz pelo
 # método dos elementos de contorno
-function helm1d(ne=15, tipo=2)
+function helm1d(ne = 15, tipo = 2)
     PONTOS = [1 0 0; 2 1 0; 3 1 1; 4 0 1]
     SEGMENTOS = [1 1 2 0; 2 2 3 0; 3 3 4 0; 4 4 1 0]
-    MALHA = [1 ne tipo
+    MALHA = [
+        1 ne tipo
         2 ne tipo
         3 ne tipo
-        4 ne tipo]
+        4 ne tipo
+    ]
 
-    CCSeg = [1 0 0 0
+    CCSeg = [
+        1 0 0 0
         2 1 0 0
         3 1 1 0
-        4 1 0 0]
+        4 1 0 0
+    ]
 
 
     # RGE=1.E6; # Módulo elástico do meio (RGE=1 no caso de acústica)
@@ -24,7 +28,7 @@ function helm1d(ne=15, tipo=2)
     FR = 0.1
 
     # Malha de pontos internos
-    return helmholtz, PONTOS, SEGMENTOS, MALHA, CCSeg, (FR=FR, CW=CW, GE=GE)
+    return helmholtz, PONTOS, SEGMENTOS, MALHA, CCSeg, (FR = FR, CW = CW, GE = GE)
 end
 
 function ANA_helm1d(dad)
@@ -34,17 +38,21 @@ end
 
 # Entrada de dados para análise do problemade helmholtz pelo
 # método dos elementos de contorno
-function helmdirechlet(ne=15, tipo=2)
+function helmdirechlet(ne = 15, tipo = 2)
     PONTOS = [1 0 0; 2 1 0; 3 1 1; 4 0 1]
     SEGMENTOS = [1 1 2 0; 2 2 3 0; 3 3 4 0; 4 4 1 0]
-    MALHA = [1 ne tipo
+    MALHA = [
+        1 ne tipo
         2 ne tipo
         3 ne tipo
-        4 ne tipo]
-    CCSeg = [1 0 0
+        4 ne tipo
+    ]
+    CCSeg = [
+        1 0 0
         2 0 0
         3 0 1
-        4 0 0]    # Condutividade Térmica do material
+        4 0 0
+    ]    # Condutividade Térmica do material
 
 
     # RGE=1.E6; # Módulo elástico do meio (RGE=1 no caso de acústica)
@@ -57,7 +65,7 @@ function helmdirechlet(ne=15, tipo=2)
     FR = 0.1
 
     # Malha de pontos internos
-    return helmholtz, PONTOS, SEGMENTOS, MALHA, CCSeg, (FR=FR, CW=CW, GE=GE)
+    return helmholtz, PONTOS, SEGMENTOS, MALHA, CCSeg, (FR = FR, CW = CW, GE = GE)
 end
 
 
@@ -78,23 +86,28 @@ function corrigeCDC_helmdirechlet(dad)
     end
 end
 function ANA_helmdirechlet(dad)
-    sin.(dad.NOS[:, 1] * √(dad.k.FR^2 - π^2)) .* sin(π * dad.NOS[:, 2]) / sin(√(dad.k.FR^2 - π^2))
+    sin.(dad.NOS[:, 1] * √(dad.k.FR^2 - π^2)) .* sin(π * dad.NOS[:, 2]) /
+    sin(√(dad.k.FR^2 - π^2))
 end
 
 # Entrada de dados para análise do problemade helmholtz pelo
 # método dos elementos de contorno
-function helmcirculo(ne=15, tipo=2, FR=1)
+function helmcirculo(ne = 15, tipo = 2, FR = 1)
     PONTOS = [1 -1 0; 2 0 -1; 3 1 0; 4 0 1]
     SEGMENTOS = [1 1 2 1; 2 2 3 1; 3 3 4 1; 4 4 1 1]
-    MALHA = [1 ne tipo
+    MALHA = [
+        1 ne tipo
         2 ne tipo
         3 ne tipo
-        4 ne tipo]
+        4 ne tipo
+    ]
 
-    CCSeg = [1 1 0 0
+    CCSeg = [
+        1 1 0 0
         2 1 1 0
         3 1 1 0
-        4 1 1 0]
+        4 1 1 0
+    ]
 
 
     # RGE=1.E6; # Módulo elástico do meio (RGE=1 no caso de acústica)
@@ -106,7 +119,7 @@ function helmcirculo(ne=15, tipo=2, FR=1)
     CW = sqrt(GE / RO) # Velocidade de propagação de onda
 
     # Malha de pontos internos
-    return helmholtz, PONTOS, SEGMENTOS, MALHA, CCSeg, (FR=FR, CW=CW, GE=GE)
+    return helmholtz, PONTOS, SEGMENTOS, MALHA, CCSeg, (FR = FR, CW = CW, GE = GE)
 end
 
 function ANA_helmcirculo(dad)
@@ -119,18 +132,22 @@ end
 
 # Entrada de dados para análise do problemade helmholtz pelo
 # método dos elementos de contorno
-function helmcirculoinfinito(ne=15, tipo=2, FR=1)
+function helmcirculoinfinito(ne = 15, tipo = 2, FR = 1)
     PONTOS = [1 -1 0; 2 0 -1; 3 1 0; 4 0 1]
     SEGMENTOS = [1 1 4 -1; 2 4 3 -1; 3 3 2 -1; 4 2 1 -1]
-    MALHA = [1 ne tipo
+    MALHA = [
+        1 ne tipo
         2 ne tipo
         3 ne tipo
-        4 ne tipo]
+        4 ne tipo
+    ]
 
-    CCSeg = [1 1 1 0
+    CCSeg = [
+        1 1 1 0
         2 1 1 0
         3 1 1 0
-        4 1 1 0]    # Condutividade Térmica do material
+        4 1 1 0
+    ]    # Condutividade Térmica do material
 
 
     # RGE=1.E6; # Módulo elástico do meio (RGE=1 no caso de acústica)
@@ -142,5 +159,5 @@ function helmcirculoinfinito(ne=15, tipo=2, FR=1)
     CW = sqrt(GE / RO) # Velocidade de propagação de onda
 
     # Malha de pontos internos
-    return helmholtz, PONTOS, SEGMENTOS, MALHA, CCSeg, (FR=FR, CW=CW, GE=GE)
+    return helmholtz, PONTOS, SEGMENTOS, MALHA, CCSeg, (FR = FR, CW = CW, GE = GE)
 end

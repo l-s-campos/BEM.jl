@@ -72,4 +72,3 @@ export ClusterTree,
     # functions
     compression_ratio,
     assemble_hmatrix
-

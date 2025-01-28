@@ -22,10 +22,10 @@ function LinearAlgebra.ldiv!(L::HUnitLowerTriangular, B::AbstractMatrix)
         chdH = children(H)
         m, n = size(chdH)
         @assert m === n
-        for i in 1:m
+        for i = 1:m
             irows = colrange(chdH[i, i]) .- shift[2]
             bi = view(B, irows, :)
-            for j in 1:(i-1)# j<i
+            for j = 1:(i-1)# j<i
                 jrows = colrange(chdH[i, j]) .- shift[2]
                 bj = view(B, jrows, :)
                 _mul131!(bi, chdH[i, j], bj, -1)
@@ -60,9 +60,9 @@ function LinearAlgebra.ldiv!(
         chdX = children(X)
         m, n = size(chdH)
         @assert m == n
-        for k in 1:size(chdX, 2)
-            for i in 1:m
-                for j in 1:(i-1)# j<i
+        for k = 1:size(chdX, 2)
+            for i = 1:m
+                for j = 1:(i-1)# j<i
                     hmul!(chdX[i, k], chdH[i, j], chdX[j, k], -1, 1, compressor, bufs)
                 end
                 ldiv!(UnitLowerTriangular(chdH[i, i]), chdX[i, k], compressor, bufs)
@@ -83,10 +83,10 @@ function LinearAlgebra.ldiv!(U::HUpperTriangular, B::AbstractMatrix)
         chdH = children(H)
         m, n = size(chdH)
         @assert m === n
-        for i in m:-1:1
+        for i = m:-1:1
             irows = colrange(chdH[i, i]) .- shift[2]
             bi = view(B, irows, :)
-            for j in (i+1):n # j>i
+            for j = (i+1):n # j>i
                 jrows = colrange(chdH[i, j]) .- shift[2]
                 bj = view(B, jrows, :)
                 _mul131!(bi, chdH[i, j], bj, -1)
@@ -110,10 +110,10 @@ function LinearAlgebra.rdiv!(B::StridedMatrix, U::HUpperTriangular)
         chdH = children(H)
         m, n = size(chdH)
         @assert m === n
-        for i in 1:m
+        for i = 1:m
             icols = rowrange(chdH[i, i]) .- shift[1]
             bi = view(B, :, icols)
-            for j in 1:(i-1)
+            for j = 1:(i-1)
                 jcols = rowrange(chdH[j, i]) .- shift[1]
                 bj = view(B, :, jcols)
                 _mul113!(bi, bj, chdH[j, i], -1)
@@ -145,9 +145,9 @@ function LinearAlgebra.rdiv!(X::HMatrix, U::HUpperTriangular, compressor, bufs =
         chdX = children(X)
         chdH = children(H)
         m, n = size(chdH)
-        for k in 1:size(chdX, 1)
-            for i in 1:m
-                for j in 1:(i-1)
+        for k = 1:size(chdX, 1)
+            for i = 1:m
+                for j = 1:(i-1)
                     hmul!(chdX[k, i], chdX[k, j], chdH[j, i], -1, 1, compressor, bufs)
                 end
                 rdiv!(chdX[k, i], UpperTriangular(chdH[i, i]), compressor, bufs)

@@ -1,5 +1,5 @@
-function termoelasticidade(dad, npg; θ=1, carga=0, metodo="dibem")
-    H, G = calc_HeG(dad, npg, interno=true)  #importante
+function termoelasticidade(dad, npg; θ = 1, carga = 0, metodo = "dibem")
+    H, G = calc_HeG(dad, npg, interno = true)  #importante
 
     A, b = BEM.aplicaCDC(H, G, dad) # Calcula a matriz A e o vetor b
 
@@ -15,7 +15,10 @@ function termoelasticidade(dad, npg; θ=1, carga=0, metodo="dibem")
     elseif θ isa Vector
         theta = θ
     elseif θ isa Function
-        theta = [θ.(dad.NOS[:, 1], dad.NOS[:, 2]); θ.(dad.pontos_internos[:, 1], dad.pontos_internos[:, 2])]
+        theta = [
+            θ.(dad.NOS[:, 1], dad.NOS[:, 2])
+            θ.(dad.pontos_internos[:, 1], dad.pontos_internos[:, 2])
+        ]
     end
 
     F, Fx, Fy = BEM.montaFs([dad.NOS; dad.pontos_internos], [dad.NOS; dad.pontos_internos])
@@ -54,7 +57,8 @@ function termoelasticidade(dad, npg; θ=1, carga=0, metodo="dibem")
             carga_nodal[2i-1:2i] = carga(dad.NOS[i, 1], dad.NOS[i, 2])
         end
         for i = nc(dad)+1:np
-            carga_nodal[2i-1:2i] = carga(dad.pontos_internos[i-nc(dad), 1], dad.pontos_internos[i-nc(dad), 2])
+            carga_nodal[2i-1:2i] =
+                carga(dad.pontos_internos[i-nc(dad), 1], dad.pontos_internos[i-nc(dad), 2])
         end
         qc = Mpe * carga_nodal
         dqc = dMpe * carga_nodal
@@ -92,4 +96,3 @@ function termoelasticidade(dad, npg; θ=1, carga=0, metodo="dibem")
     #
     [u; uint], sigma
 end
-

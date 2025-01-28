@@ -33,9 +33,9 @@ function _plan_dict!(dict, C::T, A::T, B::T) where {T<:HMatrix}
         A_children = children(A)
         B_children = children(B)
         C_children = children(C)
-        for i in 1:ni
-            for j in 1:nj
-                for k in 1:nk
+        for i = 1:ni
+            for j = 1:nj
+                for k = 1:nk
                     _plan_dict!(dict, C_children[i, j], A_children[i, k], B_children[k, j])
                 end
             end
@@ -50,8 +50,8 @@ function _hmul!(C::HMatrix, compressor, dict, a, R, bufs)
     for chd in children(C)
         irange = rowrange(chd) .- shift[1]
         jrange = colrange(chd) .- shift[2]
-        Rp     = data(C)
-        Rv     = hasdata(C) ? RkMatrix(Rp.A[irange, :], Rp.B[jrange, :]) : nothing
+        Rp = data(C)
+        Rv = hasdata(C) ? RkMatrix(Rp.A[irange, :], Rp.B[jrange, :]) : nothing
         # Rv = hasdata(C) ? view(Rp,irange,jrange) : nothing
         _hmul!(chd, compressor, dict, a, Rv, bufs)
     end
@@ -425,7 +425,7 @@ function LinearAlgebra.mul!(
     kwargs...,
 )
     size(Y, 2) == size(X, 2) || Throw(DimensionMismatch("size(Y,2) != size(X,2)"))
-    for k in 1:size(Y, 2)
+    for k = 1:size(Y, 2)
         mul!(view(Y, :, k), A, view(X, :, k), a, b; kwargs...)
     end
     return Y
@@ -486,8 +486,8 @@ function _hgemv_static_partition!(C::AbstractVector, B::AbstractVector, partitio
     T = eltype(C)
     mutex = ReentrantLock()
     np = length(partition)
-    buffers = [zero(C) for _ in 1:np]
-    @sync for n in 1:np
+    buffers = [zero(C) for _ = 1:np]
+    @sync for n = 1:np
         Threads.@spawn begin
             leaves = partition[n]
             Cloc = buffers[n]

@@ -1,5 +1,52 @@
 function calcd2(pg, pf, n, nf, dad::Union{placa_fina}, pre)
-    d2Rdx2, d2Rdxdy, d2Rdy2, d2Sdx2, d2Sdxdy, d2Sdy2, d3Rdx2dy, d3Rdx3, d3Rdxdy2, d3Rdy3, d3Sdx2dy, d3Sdx3, d3Sdxdy2, d3Sdy3, d4Rdx2dy2, d4Rdx3dy, d4Rdx4, d4Rdxdy3, d4Rdy4, d4Sdx2dy2, d4Sdx3dy, d4Sdx4, d4Sdxdy3, d4Sdy4, dRdx, dRdy, dSdx, dSdy, d5Sdx2dy3, d5Sdx3dy2, d5Sdx4dy, d5Sdx5, d5Sdxdy4, d5Sdy5, d3Rdx2dy, d3Rdx3, d3Rdxdy2, d3Rdy3, d4Rdx2dy2, d4Rdx3dy, d4Rdx4, d4Rdxdy3, d5Rdx2dy3, d5Rdx3dy2, d5Rdx4dy, d5Rdx5, d5Rdy5, d5Rdxdy4 = pre
+    d2Rdx2,
+    d2Rdxdy,
+    d2Rdy2,
+    d2Sdx2,
+    d2Sdxdy,
+    d2Sdy2,
+    d3Rdx2dy,
+    d3Rdx3,
+    d3Rdxdy2,
+    d3Rdy3,
+    d3Sdx2dy,
+    d3Sdx3,
+    d3Sdxdy2,
+    d3Sdy3,
+    d4Rdx2dy2,
+    d4Rdx3dy,
+    d4Rdx4,
+    d4Rdxdy3,
+    d4Rdy4,
+    d4Sdx2dy2,
+    d4Sdx3dy,
+    d4Sdx4,
+    d4Sdxdy3,
+    d4Sdy4,
+    dRdx,
+    dRdy,
+    dSdx,
+    dSdy,
+    d5Sdx2dy3,
+    d5Sdx3dy2,
+    d5Sdx4dy,
+    d5Sdx5,
+    d5Sdxdy4,
+    d5Sdy5,
+    d3Rdx2dy,
+    d3Rdx3,
+    d3Rdxdy2,
+    d3Rdy3,
+    d4Rdx2dy2,
+    d4Rdx3dy,
+    d4Rdx4,
+    d4Rdxdy3,
+    d5Rdx2dy3,
+    d5Rdx3dy2,
+    d5Rdx4dy,
+    d5Rdx5,
+    d5Rdy5,
+    d5Rdxdy4 = pre
     rs = pg - pf
     nx = n[1]
     ny = n[2]
@@ -16,9 +63,11 @@ function calcd2(pg, pf, n, nf, dad::Union{placa_fina}, pre)
 
     H = (dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1] - dad.k.e[2])^2
 
-    C1 = ((dad.k.d[1] - dad.k.d[2])^2 - (dad.k.e[1]^2 - dad.k.e[1]^2)) / (G * H * dad.k.e[1])
+    C1 =
+        ((dad.k.d[1] - dad.k.d[2])^2 - (dad.k.e[1]^2 - dad.k.e[1]^2)) / (G * H * dad.k.e[1])
 
-    C2 = ((dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1]^2 - dad.k.e[1]^2)) / (G * H * dad.k.e[2])
+    C2 =
+        ((dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1]^2 - dad.k.e[1]^2)) / (G * H * dad.k.e[2])
 
     C3 = 4 * (dad.k.d[1] - dad.k.d[2]) / (G * H)
 
@@ -29,11 +78,40 @@ function calcd2(pg, pf, n, nf, dad::Union{placa_fina}, pre)
         constA = (cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2
         constB = atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        d2Rdx2[i] = 2 * log(r .^ 2 / a^2 .* ((cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 + dad.k.e[i]^2 * sin(theta) .^ 2))
+        d2Rdx2[i] =
+            2 * log(
+                r .^ 2 / a^2 .* (
+                    (cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 +
+                    dad.k.e[i]^2 * sin(theta) .^ 2
+                ),
+            )
 
-        d2Rdxdy[i] = 2 * dad.k.d[i] * log(r .^ 2 / a^2 .* ((cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 + dad.k.e[i]^2 * sin(theta) .^ 2)) - 4 * dad.k.e[i] * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        d2Rdxdy[i] =
+            2 *
+            dad.k.d[i] *
+            log(
+                r .^ 2 / a^2 .* (
+                    (cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 +
+                    dad.k.e[i]^2 * sin(theta) .^ 2
+                ),
+            ) -
+            4 *
+            dad.k.e[i] *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        d2Rdy2[i] = 2 * (dad.k.d[i]^2 - dad.k.e[i]^2) * log(r .^ 2 / a^2 .* ((cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 + dad.k.e[i]^2 * sin(theta) .^ 2)) - 8 * dad.k.d[i] * dad.k.e[i] * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        d2Rdy2[i] =
+            2 *
+            (dad.k.d[i]^2 - dad.k.e[i]^2) *
+            log(
+                r .^ 2 / a^2 .* (
+                    (cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 +
+                    dad.k.e[i]^2 * sin(theta) .^ 2
+                ),
+            ) -
+            8 *
+            dad.k.d[i] *
+            dad.k.e[i] *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
         #--------------------------------------------------------------------------------
         # Cálculo das derivadas terceiras de R
@@ -44,59 +122,252 @@ function calcd2(pg, pf, n, nf, dad::Union{placa_fina}, pre)
         d3Rdx3[i] = 4 * (cos(theta) + dad.k.d[i] * sin(theta)) / (r * constA)
 
         # Cálculo da derivada terceira de R1 e R2 em relação a x e y conforme Shi e Bezine
-        d3Rdx2dy[i] = 4 * (dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) + dad.k.e[i]^2 * sin(theta)) / (r * constA)
+        d3Rdx2dy[i] =
+            4 * (
+                dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) +
+                dad.k.e[i]^2 * sin(theta)
+            ) / (r * constA)
 
         # Cálculo da derivada terceira de R1 e R2 em relação a x e y conforme Shi e Bezine
-        d3Rdxdy2[i] = 4 * ((dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) + (dad.k.d[i]^2 + dad.k.e[i]^2) * dad.k.d[i] * sin(theta)) / (r * constA)
+        d3Rdxdy2[i] =
+            4 * (
+                (dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) +
+                (dad.k.d[i]^2 + dad.k.e[i]^2) * dad.k.d[i] * sin(theta)
+            ) / (r * constA)
 
         # Cálculo da derivada terceira de R1 e R2 em relação a y conforme Shi e Bezine
-        d3Rdy3[i] = 4 * (dad.k.d[i] * (dad.k.d[i]^2 - 3 * dad.k.e[i]^2) * cos(theta) + (dad.k.d[i]^4 - dad.k.e[i]^4) * sin(theta)) / (r * constA)
+        d3Rdy3[i] =
+            4 * (
+                dad.k.d[i] * (dad.k.d[i]^2 - 3 * dad.k.e[i]^2) * cos(theta) +
+                (dad.k.d[i]^4 - dad.k.e[i]^4) * sin(theta)
+            ) / (r * constA)
 
         #--------------------------------------------------------------------------------
         # Cálculo das derivadas quartas de R
         #--------------------------------------------------------------------------------
 
         # Cálculo da derivada quarta de R1 e R2 em relação a x conforme Shi e Bezine
-        d4Rdx4[i] = -4 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 - dad.k.e[i]^2 * sin(theta)^2) / (r^2 * constA^2)
+        d4Rdx4[i] =
+            -4 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 - dad.k.e[i]^2 * sin(theta)^2) /
+            (r^2 * constA^2)
 
         # Cálculo da derivada quarta de R1 e R2 em relação a x e y conforme Shi e Bezine
-        d4Rdx3dy[i] = -4 / r^2 * (dad.k.d[i] / constA + 2 * dad.k.e[i]^2 * sin(theta) * cos(theta) / ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)^2)
+        d4Rdx3dy[i] =
+            -4 / r^2 * (
+                dad.k.d[i] / constA +
+                2 * dad.k.e[i]^2 * sin(theta) * cos(theta) /
+                ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)^2
+            )
 
         # Cálculo da derivada quarta de R1 e R2 em relação a x e y conforme Shi e Bezine
-        d4Rdx2dy2[i] = -4 / r^2 * ((dad.k.d[i]^2 + dad.k.e[i]^2) / ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2) - 2 * dad.k.e[i]^2 * cos(theta)^2 / constA^2)
+        d4Rdx2dy2[i] =
+            -4 / r^2 * (
+                (dad.k.d[i]^2 + dad.k.e[i]^2) /
+                ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2) -
+                2 * dad.k.e[i]^2 * cos(theta)^2 / constA^2
+            )
 
         # Cálculo da derivada quarta de R1 e R2 em relação a x e y conforme Shi e Bezine
-        d4Rdxdy3[i] = -4 / r^2 * (dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) / ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2) - 2 * dad.k.e[i]^2 * cos(theta) * (2 * dad.k.d[i] * cos(theta) + (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)) / ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)^2)
+        d4Rdxdy3[i] =
+            -4 / r^2 * (
+                dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) /
+                ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2) -
+                2 *
+                dad.k.e[i]^2 *
+                cos(theta) *
+                (2 * dad.k.d[i] * cos(theta) + (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)) /
+                ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)^2
+            )
 
         # Cálculo da derivada quarta de R1 e R2 em relação a y conforme Shi e Bezine
-        d4Rdy4[i] = -4 / r^2 * ((dad.k.d[i]^4 - dad.k.e[i]^4) / constA - 2 * dad.k.e[i]^2 * cos(theta) * ((3 * dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) + 2 * dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)) / constA^2)
+        d4Rdy4[i] =
+            -4 / r^2 * (
+                (dad.k.d[i]^4 - dad.k.e[i]^4) / constA -
+                2 *
+                dad.k.e[i]^2 *
+                cos(theta) *
+                (
+                    (3 * dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) +
+                    2 * dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)
+                ) / constA^2
+            )
 
-        # Cálculo da derivada quinta de R1 e R2 em relação a x 
-        d5Rdx5[i] = (-4 * (cos(theta) + dad.k.d[i] * sin(theta)) * (-1 - dad.k.d[i]^2 + 3 * dad.k.e[i]^2 + (-1 + dad.k.d[i]^2 - 3 * dad.k.e[i]^2) * cos(2 * theta) - 2 * dad.k.d[i] * sin(2 * theta))) / (r^3 * (cos(theta)^2 + (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2 + dad.k.d[i] * sin(2 * theta))^3)
+        # Cálculo da derivada quinta de R1 e R2 em relação a x
+        d5Rdx5[i] =
+            (
+                -4 *
+                (cos(theta) + dad.k.d[i] * sin(theta)) *
+                (
+                    -1 - dad.k.d[i]^2 +
+                    3 * dad.k.e[i]^2 +
+                    (-1 + dad.k.d[i]^2 - 3 * dad.k.e[i]^2) * cos(2 * theta) -
+                    2 * dad.k.d[i] * sin(2 * theta)
+                )
+            ) / (
+                r^3 *
+                (
+                    cos(theta)^2 +
+                    (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2 +
+                    dad.k.d[i] * sin(2 * theta)
+                )^3
+            )
 
         # Cálculo da derivada quinta de R1 e R2 em relação a x e y
-        d5Rdx4dy[i] = (8 * (dad.k.d[i] * cos(theta)^3 + 3 * (dad.k.d[i]^2 + dad.k.e[i]^2) * cos(theta)^2 * sin(theta) + 3 * dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) * cos(theta) * sin(theta)^2 + (dad.k.d[i]^4 - dad.k.e[i]^4) * sin(theta)^3)) / (r^3 * (cos(theta)^2 + (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2 + dad.k.d[i] * sin(2 * theta))^3)
+        d5Rdx4dy[i] =
+            (
+                8 * (
+                    dad.k.d[i] * cos(theta)^3 +
+                    3 * (dad.k.d[i]^2 + dad.k.e[i]^2) * cos(theta)^2 * sin(theta) +
+                    3 *
+                    dad.k.d[i] *
+                    (dad.k.d[i]^2 + dad.k.e[i]^2) *
+                    cos(theta) *
+                    sin(theta)^2 +
+                    (dad.k.d[i]^4 - dad.k.e[i]^4) * sin(theta)^3
+                )
+            ) / (
+                r^3 *
+                (
+                    cos(theta)^2 +
+                    (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2 +
+                    dad.k.d[i] * sin(2 * theta)
+                )^3
+            )
 
         # Cálculo da derivada quinta de R1 e R2 em relação a x e y
-        d5Rdx3dy2[i] = (8 * ((dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta)^3 + 3 * dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) * cos(theta)^2 * sin(theta) + 3 * (dad.k.d[i]^2 + dad.k.e[i]^2)^2 * cos(theta) * sin(theta)^2 + dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2)^2 * sin(theta)^3)) / (r^3 * (cos(theta)^2 + (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2 + dad.k.d[i] * sin(2 * theta))^3)
+        d5Rdx3dy2[i] =
+            (
+                8 * (
+                    (dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta)^3 +
+                    3 *
+                    dad.k.d[i] *
+                    (dad.k.d[i]^2 + dad.k.e[i]^2) *
+                    cos(theta)^2 *
+                    sin(theta) +
+                    3 * (dad.k.d[i]^2 + dad.k.e[i]^2)^2 * cos(theta) * sin(theta)^2 +
+                    dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2)^2 * sin(theta)^3
+                )
+            ) / (
+                r^3 *
+                (
+                    cos(theta)^2 +
+                    (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2 +
+                    dad.k.d[i] * sin(2 * theta)
+                )^3
+            )
 
         # Cálculo da derivada quinta de R1 e R2 em relação a x e y
-        d5Rdx2dy3[i] = (8 * (dad.k.d[i] * (dad.k.d[i]^2 - 3 * dad.k.e[i]^2) * cos(theta)^3 + 3 * (dad.k.d[i]^4 - dad.k.e[i]^4) * cos(theta)^2 * sin(theta) + 3 * dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2)^2 * cos(theta) * sin(theta)^2 + (dad.k.d[i]^2 + dad.k.e[i]^2)^3 * sin(theta)^3)) / (r^3 * (cos(theta)^2 + (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2 + dad.k.d[i] * sin(2 * theta))^3)
+        d5Rdx2dy3[i] =
+            (
+                8 * (
+                    dad.k.d[i] * (dad.k.d[i]^2 - 3 * dad.k.e[i]^2) * cos(theta)^3 +
+                    3 * (dad.k.d[i]^4 - dad.k.e[i]^4) * cos(theta)^2 * sin(theta) +
+                    3 *
+                    dad.k.d[i] *
+                    (dad.k.d[i]^2 + dad.k.e[i]^2)^2 *
+                    cos(theta) *
+                    sin(theta)^2 +
+                    (dad.k.d[i]^2 + dad.k.e[i]^2)^3 * sin(theta)^3
+                )
+            ) / (
+                r^3 *
+                (
+                    cos(theta)^2 +
+                    (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2 +
+                    dad.k.d[i] * sin(2 * theta)
+                )^3
+            )
 
         # Cálculo da derivada quinta de R1 e R2 em relação a x e y
-        d5Rdxdy4[i] = (8 * ((dad.k.d[i]^4 - 6 * dad.k.d[i]^2 * dad.k.e[i]^2 + dad.k.e[i]^4) * cos(theta)^3 + 3 * dad.k.d[i] * (dad.k.d[i]^4 - 2 * dad.k.d[i]^2 * dad.k.e[i]^2 - 3 * dad.k.e[i]^4) * cos(theta)^2 * sin(theta) + 3 * (dad.k.d[i]^2 - dad.k.e[i]^2) * (dad.k.d[i]^2 + dad.k.e[i]^2)^2 * cos(theta) * sin(theta)^2 + dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2)^3 * sin(theta)^3)) / (r^3 * (cos(theta)^2 + (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2 + dad.k.d[i] * sin(2 * theta))^3)
+        d5Rdxdy4[i] =
+            (
+                8 * (
+                    (dad.k.d[i]^4 - 6 * dad.k.d[i]^2 * dad.k.e[i]^2 + dad.k.e[i]^4) *
+                    cos(theta)^3 +
+                    3 *
+                    dad.k.d[i] *
+                    (dad.k.d[i]^4 - 2 * dad.k.d[i]^2 * dad.k.e[i]^2 - 3 * dad.k.e[i]^4) *
+                    cos(theta)^2 *
+                    sin(theta) +
+                    3 *
+                    (dad.k.d[i]^2 - dad.k.e[i]^2) *
+                    (dad.k.d[i]^2 + dad.k.e[i]^2)^2 *
+                    cos(theta) *
+                    sin(theta)^2 +
+                    dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2)^3 * sin(theta)^3
+                )
+            ) / (
+                r^3 *
+                (
+                    cos(theta)^2 +
+                    (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2 +
+                    dad.k.d[i] * sin(2 * theta)
+                )^3
+            )
 
         # Cálculo da derivada quinta de R1 e R2 em relação a y
-        d5Rdy5[i] = (8 * (dad.k.d[i] * (dad.k.d[i]^4 - 10 * dad.k.d[i]^2 * dad.k.e[i]^2 + 5 * dad.k.e[i]^4) * cos(theta)^3 + 3 * (dad.k.d[i]^6 - 5 * dad.k.d[i]^4 * dad.k.e[i]^2 - 5 * dad.k.d[i]^2 * dad.k.e[i]^4 + dad.k.e[i]^6) * cos(theta)^2 * sin(theta) + 3 * dad.k.d[i] * (dad.k.d[i]^2 - 3 * dad.k.e[i]^2) * (dad.k.d[i]^2 + dad.k.e[i]^2)^2 * cos(theta) * sin(theta)^2 + (dad.k.d[i]^2 - dad.k.e[i]^2) * (dad.k.d[i]^2 + dad.k.e[i]^2)^3 * sin(theta)^3)) / (r^3 * (cos(theta)^2 + (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2 + dad.k.d[i] * sin(2 * theta))^3)
+        d5Rdy5[i] =
+            (
+                8 * (
+                    dad.k.d[i] *
+                    (dad.k.d[i]^4 - 10 * dad.k.d[i]^2 * dad.k.e[i]^2 + 5 * dad.k.e[i]^4) *
+                    cos(theta)^3 +
+                    3 *
+                    (
+                        dad.k.d[i]^6 - 5 * dad.k.d[i]^4 * dad.k.e[i]^2 -
+                        5 * dad.k.d[i]^2 * dad.k.e[i]^4 + dad.k.e[i]^6
+                    ) *
+                    cos(theta)^2 *
+                    sin(theta) +
+                    3 *
+                    dad.k.d[i] *
+                    (dad.k.d[i]^2 - 3 * dad.k.e[i]^2) *
+                    (dad.k.d[i]^2 + dad.k.e[i]^2)^2 *
+                    cos(theta) *
+                    sin(theta)^2 +
+                    (dad.k.d[i]^2 - dad.k.e[i]^2) *
+                    (dad.k.d[i]^2 + dad.k.e[i]^2)^3 *
+                    sin(theta)^3
+                )
+            ) / (
+                r^3 *
+                (
+                    cos(theta)^2 +
+                    (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2 +
+                    dad.k.d[i] * sin(2 * theta)
+                )^3
+            )
 
         #--------------------------------------------------------------------------------
         # Cálculo das derivadas segundas de S
         #--------------------------------------------------------------------------------
-        d2Sdx2[i] = 2 * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        d2Sdx2[i] =
+            2 * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        d2Sdxdy[i] = dad.k.e[i] * (log(r .^ 2 / a^2 .* ((cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 + dad.k.e[i]^2 * sin(theta) .^ 2))) + 2 * dad.k.d[i] * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        d2Sdxdy[i] =
+            dad.k.e[i] * (log(
+                r .^ 2 / a^2 .* (
+                    (cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 +
+                    dad.k.e[i]^2 * sin(theta) .^ 2
+                ),
+            )) +
+            2 *
+            dad.k.d[i] *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        d2Sdy2[i] = 2 * dad.k.d[i] * dad.k.e[i] * log(r .^ 2 / a^2 .* ((cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 + dad.k.e[i]^2 * sin(theta) .^ 2)) + 2 * (dad.k.d[i]^2 - dad.k.e[i]^2) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        d2Sdy2[i] =
+            2 *
+            dad.k.d[i] *
+            dad.k.e[i] *
+            log(
+                r .^ 2 / a^2 .* (
+                    (cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 +
+                    dad.k.e[i]^2 * sin(theta) .^ 2
+                ),
+            ) +
+            2 *
+            (dad.k.d[i]^2 - dad.k.e[i]^2) *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
         # Cálculo da derivada terceira de S1 e S2 em relação a x conforme Shi e Bezine
         d3Sdx3[i] = -2 * dad.k.e[i] * sin(theta) / (r * constA)
@@ -105,80 +376,277 @@ function calcd2(pg, pf, n, nf, dad::Union{placa_fina}, pre)
         d3Sdx2dy[i] = 2 * dad.k.e[i] * cos(theta) / (r * constA)
 
         # Cálculo da derivada terceira de S1 e S2 em relação a x e y conforme Shi e Bezine
-        d3Sdxdy2[i] = 2 * dad.k.e[i] * (2 * dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) - (dad.k.d[i]^2 - dad.k.e[i]^2) * sin(theta)) / (r * constA)
+        d3Sdxdy2[i] =
+            2 *
+            dad.k.e[i] *
+            (
+                2 * dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) -
+                (dad.k.d[i]^2 - dad.k.e[i]^2) * sin(theta)
+            ) / (r * constA)
 
         # Cálculo da derivada terceira de S1 e S2 em relação a y conforme Shi e Bezine
-        d3Sdy3[i] = 2 * dad.k.e[i] * ((3 * dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) + 2 * dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)) / (r * constA)
+        d3Sdy3[i] =
+            2 *
+            dad.k.e[i] *
+            (
+                (3 * dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) +
+                2 * dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)
+            ) / (r * constA)
 
         #--------------------------------------------------------------------------------
         # Cálculo das derivadas quartas de S
         #--------------------------------------------------------------------------------
 
         # Cálculo da derivada quarta de S1 e S2 em relação a x conforme Shi e Bezine
-        d4Sdx4[i] = 4 * dad.k.e[i] * sin(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) / (r^2 * constA^2)
+        d4Sdx4[i] =
+            4 * dad.k.e[i] * sin(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) /
+            (r^2 * constA^2)
 
         # Cálculo da derivada quarta de S1 e S2 em relação a x e y conforme Shi e Bezine
-        d4Sdx3dy[i] = 2 * dad.k.e[i] / r^2 * (1 / constA - 2 * cos(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) / constA^2)
+        d4Sdx3dy[i] =
+            2 * dad.k.e[i] / r^2 * (
+                1 / constA -
+                2 * cos(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) / constA^2
+            )
 
         # Cálculo da derivada quarta de S1 e S2 em relação a x e y conforme Shi e Bezine
-        d4Sdx2dy2[i] = -4 * dad.k.e[i] * cos(theta) * (dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) + dad.k.e[i]^2 * sin(theta)) / (r^2 * constA^2)
+        d4Sdx2dy2[i] =
+            -4 *
+            dad.k.e[i] *
+            cos(theta) *
+            (
+                dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) +
+                dad.k.e[i]^2 * sin(theta)
+            ) / (r^2 * constA^2)
 
         # Cálculo da derivada quarta de S1 e S2 em relação a x e y conforme Shi e Bezine
-        d4Sdxdy3[i] = -2 * dad.k.e[i] / r^2 * ((dad.k.d[i]^2 + dad.k.e[i]^2) / constA + (2 * (dad.k.d[i]^2 + dad.k.e[i]^2) * cos(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) - 4 * dad.k.e[i]^2 * cos(theta)^2) / constA^2)
+        d4Sdxdy3[i] =
+            -2 * dad.k.e[i] / r^2 * (
+                (dad.k.d[i]^2 + dad.k.e[i]^2) / constA +
+                (
+                    2 *
+                    (dad.k.d[i]^2 + dad.k.e[i]^2) *
+                    cos(theta) *
+                    (cos(theta) + dad.k.d[i] * sin(theta)) -
+                    4 * dad.k.e[i]^2 * cos(theta)^2
+                ) / constA^2
+            )
 
         # Cálculo da derivada quarta de S1 e S2 em relação a y conforme Shi e Bezine
-        d4Sdy4[i] = -4 * dad.k.e[i] / r^2 * (dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) / constA + cos(theta) * (dad.k.d[i] * (dad.k.d[i]^2 - 3 * dad.k.e[i]^2) * cos(theta) + (dad.k.d[i]^4 - dad.k.e[i]^4) * sin(theta)) / constA^2)
+        d4Sdy4[i] =
+            -4 * dad.k.e[i] / r^2 * (
+                dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) / constA +
+                cos(theta) * (
+                    dad.k.d[i] * (dad.k.d[i]^2 - 3 * dad.k.e[i]^2) * cos(theta) +
+                    (dad.k.d[i]^4 - dad.k.e[i]^4) * sin(theta)
+                ) / constA^2
+            )
 
         #--------------------------------------------------------------------------------
         # Cálculo das derivadas quintas de S
         #--------------------------------------------------------------------------------
 
         # Cálculo da derivada quinta de S1 e S2 em relação a x
-        d5Sdx5[i] = (4 * dad.k.e[i] * sin(theta) * (-3 * cos(theta)^2 - 6 * dad.k.d[i] * cos(theta) * sin(theta) + (-3 * dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2)) / (r^3 * (cos(theta)^2 + (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2 + dad.k.d[i] * sin(2 * theta))^3)
+        d5Sdx5[i] =
+            (
+                4 *
+                dad.k.e[i] *
+                sin(theta) *
+                (
+                    -3 * cos(theta)^2 - 6 * dad.k.d[i] * cos(theta) * sin(theta) +
+                    (-3 * dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2
+                )
+            ) / (
+                r^3 *
+                (
+                    cos(theta)^2 +
+                    (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2 +
+                    dad.k.d[i] * sin(2 * theta)
+                )^3
+            )
 
         # Cálculo da derivada quinta de S1 e S2 em relação a x e y
-        d5Sdx4dy[i] = (-4 * dad.k.e[i] * (-cos(theta)^3 + 3 * (dad.k.d[i]^2 + dad.k.e[i]^2) * cos(theta) * sin(theta)^2 + 2 * dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^3)) / (r^3 * (cos(theta)^2 + (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2 + dad.k.d[i] * sin(2 * theta))^3)
+        d5Sdx4dy[i] =
+            (
+                -4 *
+                dad.k.e[i] *
+                (
+                    -cos(theta)^3 +
+                    3 * (dad.k.d[i]^2 + dad.k.e[i]^2) * cos(theta) * sin(theta)^2 +
+                    2 * dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^3
+                )
+            ) / (
+                r^3 *
+                (
+                    cos(theta)^2 +
+                    (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2 +
+                    dad.k.d[i] * sin(2 * theta)
+                )^3
+            )
 
         # Cálculo da derivada quinta de S1 e S2 em relação a x e y
-        d5Sdx3dy2[i] = (-4 * dad.k.e[i] * (-2 * dad.k.d[i] * cos(theta)^3 - 3 * (dad.k.d[i]^2 + dad.k.e[i]^2) * cos(theta)^2 * sin(theta) + (dad.k.d[i]^2 + dad.k.e[i]^2)^2 * sin(theta)^3)) / (r^3 * (cos(theta)^2 + (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2 + dad.k.d[i] * sin(2 * theta))^3)
+        d5Sdx3dy2[i] =
+            (
+                -4 *
+                dad.k.e[i] *
+                (
+                    -2 * dad.k.d[i] * cos(theta)^3 -
+                    3 * (dad.k.d[i]^2 + dad.k.e[i]^2) * cos(theta)^2 * sin(theta) +
+                    (dad.k.d[i]^2 + dad.k.e[i]^2)^2 * sin(theta)^3
+                )
+            ) / (
+                r^3 *
+                (
+                    cos(theta)^2 +
+                    (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2 +
+                    dad.k.d[i] * sin(2 * theta)
+                )^3
+            )
 
         # Cálculo da derivada quinta de S1 e S2 em relação a x e y
-        d5Sdx2dy3[i] = (4 * dad.k.e[i] * cos(theta) * ((3 * dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta)^2 + 3 * (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta) * (2 * dad.k.d[i] * cos(theta) + (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)))) / (r^3 * (cos(theta)^2 + (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2 + dad.k.d[i] * sin(2 * theta))^3)
+        d5Sdx2dy3[i] =
+            (
+                4 *
+                dad.k.e[i] *
+                cos(theta) *
+                (
+                    (3 * dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta)^2 +
+                    3 *
+                    (dad.k.d[i]^2 + dad.k.e[i]^2) *
+                    sin(theta) *
+                    (
+                        2 * dad.k.d[i] * cos(theta) +
+                        (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)
+                    )
+                )
+            ) / (
+                r^3 *
+                (
+                    cos(theta)^2 +
+                    (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2 +
+                    dad.k.d[i] * sin(2 * theta)
+                )^3
+            )
 
         # Cálculo da derivada quinta de S1 e S2 em relação a x e y
-        d5Sdxdy4[i] = (4 * dad.k.e[i] * (4 * dad.k.d[i] * (dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta)^3 + 3 * (3 * dad.k.d[i]^4 + 2 * dad.k.d[i]^2 * dad.k.e[i]^2 - dad.k.e[i]^4) * cos(theta)^2 * sin(theta) + 6 * dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2)^2 * cos(theta) * sin(theta)^2 + (dad.k.d[i]^2 + dad.k.e[i]^2)^3 * sin(theta)^3)) / (r^3 * (cos(theta)^2 + (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2 + dad.k.d[i] * sin(2 * theta))^3)
+        d5Sdxdy4[i] =
+            (
+                4 *
+                dad.k.e[i] *
+                (
+                    4 * dad.k.d[i] * (dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta)^3 +
+                    3 *
+                    (3 * dad.k.d[i]^4 + 2 * dad.k.d[i]^2 * dad.k.e[i]^2 - dad.k.e[i]^4) *
+                    cos(theta)^2 *
+                    sin(theta) +
+                    6 *
+                    dad.k.d[i] *
+                    (dad.k.d[i]^2 + dad.k.e[i]^2)^2 *
+                    cos(theta) *
+                    sin(theta)^2 +
+                    (dad.k.d[i]^2 + dad.k.e[i]^2)^3 * sin(theta)^3
+                )
+            ) / (
+                r^3 *
+                (
+                    cos(theta)^2 +
+                    (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2 +
+                    dad.k.d[i] * sin(2 * theta)
+                )^3
+            )
 
         # Cálculo da derivada quinta de S1 e S2 em relação a y
-        d5Sdy5[i] = (4 * dad.k.e[i] * ((5 * dad.k.d[i]^4 - 10 * dad.k.d[i]^2 * dad.k.e[i]^2 + dad.k.e[i]^4) * cos(theta)^3 + 12 * dad.k.d[i] * (dad.k.d[i]^4 - dad.k.e[i]^4) * cos(theta)^2 * sin(theta) +
-                                       3 * (3 * dad.k.d[i]^2 - dad.k.e[i]^2) * (dad.k.d[i]^2 + dad.k.e[i]^2)^2 * cos(theta) * sin(theta)^2 + 2 * dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2)^3 * sin(theta)^3)) / (r^3 * (cos(theta)^2 + (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2 + dad.k.d[i] * sin(2 * theta))^3)
+        d5Sdy5[i] =
+            (
+                4 *
+                dad.k.e[i] *
+                (
+                    (5 * dad.k.d[i]^4 - 10 * dad.k.d[i]^2 * dad.k.e[i]^2 + dad.k.e[i]^4) *
+                    cos(theta)^3 +
+                    12 *
+                    dad.k.d[i] *
+                    (dad.k.d[i]^4 - dad.k.e[i]^4) *
+                    cos(theta)^2 *
+                    sin(theta) +
+                    3 *
+                    (3 * dad.k.d[i]^2 - dad.k.e[i]^2) *
+                    (dad.k.d[i]^2 + dad.k.e[i]^2)^2 *
+                    cos(theta) *
+                    sin(theta)^2 +
+                    2 * dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2)^3 * sin(theta)^3
+                )
+            ) / (
+                r^3 *
+                (
+                    cos(theta)^2 +
+                    (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)^2 +
+                    dad.k.d[i] * sin(2 * theta)
+                )^3
+            )
 
     end
 
     #dad.k.Derivadas segundas da solução fundamental
-    d2wdx2 = 1 / (8 * pi * dad.k.D22) * (C1 * d2Rdx2[1] + C2 * d2Rdx2[2] + C3 * (d2Sdx2[1] - d2Sdx2[2]))
-    d2wdxdy = 1 / (8 * pi * dad.k.D22) * (C1 * d2Rdxdy[1] + C2 * d2Rdxdy[2] + C3 * (d2Sdxdy[1] - d2Sdxdy[2]))
-    d2wdy2 = 1 / (8 * pi * dad.k.D22) * (C1 * d2Rdy2[1] + C2 * d2Rdy2[2] + C3 * (d2Sdy2[1] - d2Sdy2[2]))
+    d2wdx2 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d2Rdx2[1] + C2 * d2Rdx2[2] + C3 * (d2Sdx2[1] - d2Sdx2[2]))
+    d2wdxdy =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d2Rdxdy[1] + C2 * d2Rdxdy[2] + C3 * (d2Sdxdy[1] - d2Sdxdy[2]))
+    d2wdy2 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d2Rdy2[1] + C2 * d2Rdy2[2] + C3 * (d2Sdy2[1] - d2Sdy2[2]))
 
     #dad.k.Derivadas terceiras da solução fundamental
-    d3wdx3 = 1 / (8 * pi * dad.k.D22) * (C1 * d3Rdx3[1] + C2 * d3Rdx3[2] + C3 * (d3Sdx3[1] - d3Sdx3[2]))
-    d3wdx2dy = 1 / (8 * pi * dad.k.D22) * (C1 * d3Rdx2dy[1] + C2 * d3Rdx2dy[2] + C3 * (d3Sdx2dy[1] - d3Sdx2dy[2]))
-    d3wdxdy2 = 1 / (8 * pi * dad.k.D22) * (C1 * d3Rdxdy2[1] + C2 * d3Rdxdy2[2] + C3 * (d3Sdxdy2[1] - d3Sdxdy2[2]))
-    d3wdy3 = 1 / (8 * pi * dad.k.D22) * (C1 * d3Rdy3[1] + C2 * d3Rdy3[2] + C3 * (d3Sdy3[1] - d3Sdy3[2]))
+    d3wdx3 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d3Rdx3[1] + C2 * d3Rdx3[2] + C3 * (d3Sdx3[1] - d3Sdx3[2]))
+    d3wdx2dy =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d3Rdx2dy[1] + C2 * d3Rdx2dy[2] + C3 * (d3Sdx2dy[1] - d3Sdx2dy[2]))
+    d3wdxdy2 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d3Rdxdy2[1] + C2 * d3Rdxdy2[2] + C3 * (d3Sdxdy2[1] - d3Sdxdy2[2]))
+    d3wdy3 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d3Rdy3[1] + C2 * d3Rdy3[2] + C3 * (d3Sdy3[1] - d3Sdy3[2]))
 
     #dad.k.Derivadas quartas da solução fundamental
-    d4wdx4 = 1 / (8 * pi * dad.k.D22) * (C1 * d4Rdx4[1] + C2 * d4Rdx4[2] + C3 * (d4Sdx4[1] - d4Sdx4[2]))
-    d4wdx3dy = 1 / (8 * pi * dad.k.D22) * (C1 * d4Rdx3dy[1] + C2 * d4Rdx3dy[2] + C3 * (d4Sdx3dy[1] - d4Sdx3dy[2]))
-    d4wdx2dy2 = 1 / (8 * pi * dad.k.D22) * (C1 * d4Rdx2dy2[1] + C2 * d4Rdx2dy2[2] + C3 * (d4Sdx2dy2[1] - d4Sdx2dy2[2]))
-    d4wdxdy3 = 1 / (8 * pi * dad.k.D22) * (C1 * d4Rdxdy3[1] + C2 * d4Rdxdy3[2] + C3 * (d4Sdxdy3[1] - d4Sdxdy3[2]))
-    d4wdy4 = 1 / (8 * pi * dad.k.D22) * (C1 * d4Rdy4[1] + C2 * d4Rdy4[2] + C3 * (d4Sdy4[1] - d4Sdy4[2]))
+    d4wdx4 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d4Rdx4[1] + C2 * d4Rdx4[2] + C3 * (d4Sdx4[1] - d4Sdx4[2]))
+    d4wdx3dy =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d4Rdx3dy[1] + C2 * d4Rdx3dy[2] + C3 * (d4Sdx3dy[1] - d4Sdx3dy[2]))
+    d4wdx2dy2 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d4Rdx2dy2[1] + C2 * d4Rdx2dy2[2] + C3 * (d4Sdx2dy2[1] - d4Sdx2dy2[2]))
+    d4wdxdy3 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d4Rdxdy3[1] + C2 * d4Rdxdy3[2] + C3 * (d4Sdxdy3[1] - d4Sdxdy3[2]))
+    d4wdy4 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d4Rdy4[1] + C2 * d4Rdy4[2] + C3 * (d4Sdy4[1] - d4Sdy4[2]))
 
     #dad.k.Derivadas quintas da soluçao fundamental
-    d5wdx5 = 1 / (8 * pi * dad.k.D22) * (C1 * d5Rdx5[1] + C2 * d5Rdx5[2] + C3 * (d5Sdx5[1] - d5Sdx5[2]))
-    d5wdx4dy = 1 / (8 * pi * dad.k.D22) * (C1 * d5Rdx4dy[1] + C2 * d5Rdx4dy[2] + C3 * (d5Sdx4dy[1] - d5Sdx4dy[2]))
-    d5wdx3dy2 = 1 / (8 * pi * dad.k.D22) * (C1 * d5Rdx3dy2[1] + C2 * d5Rdx3dy2[2] + C3 * (d5Sdx3dy2[1] - d5Sdx3dy2[2]))
-    d5wdx2dy3 = 1 / (8 * pi * dad.k.D22) * (C1 * d5Rdx2dy3[1] + C2 * d5Rdx2dy3[2] + C3 * (d5Sdx2dy3[1] - d5Sdx2dy3[2]))
-    d5wdxdy4 = 1 / (8 * pi * dad.k.D22) * (C1 * d5Rdxdy4[1] + C2 * d5Rdxdy4[2] + C3 * (d5Sdxdy4[1] - d5Sdxdy4[2]))
-    d5wdy5 = 1 / (8 * pi * dad.k.D22) * (C1 * d5Rdy5[1] + C2 * d5Rdy5[2] + C3 * (d5Sdy5[1] - d5Sdy5[2]))
+    d5wdx5 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d5Rdx5[1] + C2 * d5Rdx5[2] + C3 * (d5Sdx5[1] - d5Sdx5[2]))
+    d5wdx4dy =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d5Rdx4dy[1] + C2 * d5Rdx4dy[2] + C3 * (d5Sdx4dy[1] - d5Sdx4dy[2]))
+    d5wdx3dy2 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d5Rdx3dy2[1] + C2 * d5Rdx3dy2[2] + C3 * (d5Sdx3dy2[1] - d5Sdx3dy2[2]))
+    d5wdx2dy3 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d5Rdx2dy3[1] + C2 * d5Rdx2dy3[2] + C3 * (d5Sdx2dy3[1] - d5Sdx2dy3[2]))
+    d5wdxdy4 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d5Rdxdy4[1] + C2 * d5Rdxdy4[2] + C3 * (d5Sdxdy4[1] - d5Sdxdy4[2]))
+    d5wdy5 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d5Rdy5[1] + C2 * d5Rdy5[2] + C3 * (d5Sdy5[1] - d5Sdy5[2]))
 
     # Cálculo de f1; f2 e f3 conforme Shi e Bezine
     f1 = dad.k.D11 * nx^2 + 2 * dad.k.D16 * nx * ny + dad.k.D12 * ny^2
@@ -187,8 +655,12 @@ function calcd2(pg, pf, n, nf, dad::Union{placa_fina}, pre)
 
     # Cálculo de h1; h2; h3 e h4 conforme Shi e Bezine
     h1 = dad.k.D11 * nx * (1 + ny^2) + 2 * dad.k.D16 * ny^3 - dad.k.D12 * nx * ny^2
-    h2 = 4 * dad.k.D16 * nx + dad.k.D12 * ny * (1 + nx^2) + 4 * dad.k.D66 * ny^3 - dad.k.D11 * nx^2 * ny - 2 * dad.k.D26 * nx * ny^2
-    h3 = 4 * dad.k.D26 * ny + dad.k.D12 * nx * (1 + ny^2) + 4 * dad.k.D66 * nx^3 - dad.k.D22 * nx * ny^2 - 2 * dad.k.D16 * nx^2 * ny
+    h2 =
+        4 * dad.k.D16 * nx + dad.k.D12 * ny * (1 + nx^2) + 4 * dad.k.D66 * ny^3 -
+        dad.k.D11 * nx^2 * ny - 2 * dad.k.D26 * nx * ny^2
+    h3 =
+        4 * dad.k.D26 * ny + dad.k.D12 * nx * (1 + ny^2) + 4 * dad.k.D66 * nx^3 -
+        dad.k.D22 * nx * ny^2 - 2 * dad.k.D16 * nx^2 * ny
     h4 = dad.k.D22 * ny * (1 + nx^2) + 2 * dad.k.D26 * nx^3 - dad.k.D12 * nx^2 * ny
 
 
@@ -214,23 +686,57 @@ function calcd2(pg, pf, n, nf, dad::Union{placa_fina}, pre)
     d3wdndxdy = (d3wdx2dy * nx + d3wdxdy2 * ny)
 
 
-    # Atribuição das variáveis da solução fundamental - atribuição de w_ij à variável 
+    # Atribuição das variáveis da solução fundamental - atribuição de w_ij à variável
     # de saída w_est
-    d2w = [d2wdx2 -d3wdndx2
+    d2w = [
+        d2wdx2 -d3wdndx2
         d2wdy2 -d3wdndy2
-        d2wdxdy -d3wdndxdy]
+        d2wdxdy -d3wdndxdy
+    ]
 
 
-    # Atribuição das variáveis da derivada solução fundamental - atribuição de Vn_ij 
+    # Atribuição das variáveis da derivada solução fundamental - atribuição de Vn_ij
     # à variável de saída Vn_est
-    d2Vn = [d2vndx2 -d2mndx2
+    d2Vn = [
+        d2vndx2 -d2mndx2
         d2vndy2 -d2mndy2
-        d2vndxdy -d2mndxdy]
+        d2vndxdy -d2mndxdy
+    ]
     d2w, d2Vn
 end
 
 function calcdt(pg, pf, n, nf, dad::Union{placa_fina}, pre)
-    R, S, d2Rdx2, d2Rdxdy, d2Rdy2, d2Sdx2, d2Sdxdy, d2Sdy2, d3Rdx2dy, d3Rdx3, d3Rdxdy2, d3Rdy3, d3Sdx2dy, d3Sdx3, d3Sdxdy2, d3Sdy3, d4Rdx2dy2, d4Rdx3dy, d4Rdx4, d4Rdxdy3, d4Rdy4, d4Sdx2dy2, d4Sdx3dy, d4Sdx4, d4Sdxdy3, d4Sdy4, dRdx, dRdy, dSdx, dSdy, extra = pre
+    R,
+    S,
+    d2Rdx2,
+    d2Rdxdy,
+    d2Rdy2,
+    d2Sdx2,
+    d2Sdxdy,
+    d2Sdy2,
+    d3Rdx2dy,
+    d3Rdx3,
+    d3Rdxdy2,
+    d3Rdy3,
+    d3Sdx2dy,
+    d3Sdx3,
+    d3Sdxdy2,
+    d3Sdy3,
+    d4Rdx2dy2,
+    d4Rdx3dy,
+    d4Rdx4,
+    d4Rdxdy3,
+    d4Rdy4,
+    d4Sdx2dy2,
+    d4Sdx3dy,
+    d4Sdx4,
+    d4Sdxdy3,
+    d4Sdy4,
+    dRdx,
+    dRdy,
+    dSdx,
+    dSdy,
+    extra = pre
     rs = pg - pf
     nx = n[1]
     ny = n[2]
@@ -249,9 +755,11 @@ function calcdt(pg, pf, n, nf, dad::Union{placa_fina}, pre)
 
     H = (dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1] - dad.k.e[2])^2
 
-    C1 = ((dad.k.d[1] - dad.k.d[2])^2 - (dad.k.e[1]^2 - dad.k.e[1]^2)) / (G * H * dad.k.e[1])
+    C1 =
+        ((dad.k.d[1] - dad.k.d[2])^2 - (dad.k.e[1]^2 - dad.k.e[1]^2)) / (G * H * dad.k.e[1])
 
-    C2 = ((dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1]^2 - dad.k.e[1]^2)) / (G * H * dad.k.e[2])
+    C2 =
+        ((dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1]^2 - dad.k.e[1]^2)) / (G * H * dad.k.e[2])
 
     C3 = 4 * (dad.k.d[1] - dad.k.d[2]) / (G * H)
 
@@ -262,41 +770,203 @@ function calcdt(pg, pf, n, nf, dad::Union{placa_fina}, pre)
         constA = (cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2
         constB = atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        R[i] = r^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 - dad.k.e[i]^2 * sin(theta)^2) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 3) - 4 * r^2 * dad.k.e[i] * sin(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        R[i] =
+            r^2 *
+            ((cos(theta) + dad.k.d[i] * sin(theta))^2 - dad.k.e[i]^2 * sin(theta)^2) *
+            (
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) - 3
+            ) -
+            4 *
+            r^2 *
+            dad.k.e[i] *
+            sin(theta) *
+            (cos(theta) + dad.k.d[i] * sin(theta)) *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        S[i] = r^2 * dad.k.e[i] * sin(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 3) + r^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 - dad.k.e[i]^2 * sin(theta)^2) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        S[i] =
+            r^2 *
+            dad.k.e[i] *
+            sin(theta) *
+            (cos(theta) + dad.k.d[i] * sin(theta)) *
+            (
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) - 3
+            ) +
+            r^2 *
+            ((cos(theta) + dad.k.d[i] * sin(theta))^2 - dad.k.e[i]^2 * sin(theta)^2) *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        dRdx[i] = 2 * r * (cos(theta) + dad.k.d[i] * sin(theta)) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 2) - 4 * r * dad.k.e[i] * sin(theta) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        dRdx[i] =
+            2 *
+            r *
+            (cos(theta) + dad.k.d[i] * sin(theta)) *
+            (
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) - 2
+            ) -
+            4 *
+            r *
+            dad.k.e[i] *
+            sin(theta) *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        dRdy[i] = 2 * r * (dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) - dad.k.e[i]^2 * sin(theta)) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 2) - 4 * r * dad.k.e[i] * (cos(theta) + 2 * dad.k.d[i] * sin(theta)) * atan((dad.k.e[i] * sin(theta)), (cos(theta) + dad.k.d[i] * sin(theta)))
+        dRdy[i] =
+            2 *
+            r *
+            (
+                dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) -
+                dad.k.e[i]^2 * sin(theta)
+            ) *
+            (
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) - 2
+            ) -
+            4 *
+            r *
+            dad.k.e[i] *
+            (cos(theta) + 2 * dad.k.d[i] * sin(theta)) *
+            atan((dad.k.e[i] * sin(theta)), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        dSdx[i] = r * dad.k.e[i] * sin(theta) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 2) + 2 * r * (cos(theta) + dad.k.d[i] * sin(theta)) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        dSdx[i] =
+            r *
+            dad.k.e[i] *
+            sin(theta) *
+            (
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) - 2
+            ) +
+            2 *
+            r *
+            (cos(theta) + dad.k.d[i] * sin(theta)) *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        dSdy[i] = r * dad.k.e[i] * (cos(theta) + 2 * dad.k.d[i] * sin(theta)) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 2) + 2 * r * (dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) - dad.k.e[i]^2 * sin(theta)) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        dSdy[i] =
+            r *
+            dad.k.e[i] *
+            (cos(theta) + 2 * dad.k.d[i] * sin(theta)) *
+            (
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) - 2
+            ) +
+            2 *
+            r *
+            (
+                dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) -
+                dad.k.e[i]^2 * sin(theta)
+            ) *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
 
-        d2Rdx2[i] = 2 * log(r .^ 2 / a^2 .* ((cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 + dad.k.e[i]^2 * sin(theta) .^ 2))
+        d2Rdx2[i] =
+            2 * log(
+                r .^ 2 / a^2 .* (
+                    (cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 +
+                    dad.k.e[i]^2 * sin(theta) .^ 2
+                ),
+            )
 
-        d2Rdxdy[i] = 2 * dad.k.d[i] * log(r .^ 2 / a^2 .* ((cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 + dad.k.e[i]^2 * sin(theta) .^ 2)) - 4 * dad.k.e[i] * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        d2Rdxdy[i] =
+            2 *
+            dad.k.d[i] *
+            log(
+                r .^ 2 / a^2 .* (
+                    (cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 +
+                    dad.k.e[i]^2 * sin(theta) .^ 2
+                ),
+            ) -
+            4 *
+            dad.k.e[i] *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        d2Rdy2[i] = 2 * (dad.k.d[i]^2 - dad.k.e[i]^2) * log(r .^ 2 / a^2 .* ((cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 + dad.k.e[i]^2 * sin(theta) .^ 2)) - 8 * dad.k.d[i] * dad.k.e[i] * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        d2Rdy2[i] =
+            2 *
+            (dad.k.d[i]^2 - dad.k.e[i]^2) *
+            log(
+                r .^ 2 / a^2 .* (
+                    (cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 +
+                    dad.k.e[i]^2 * sin(theta) .^ 2
+                ),
+            ) -
+            8 *
+            dad.k.d[i] *
+            dad.k.e[i] *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        d2Sdx2[i] = 2 * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        d2Sdx2[i] =
+            2 * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        d2Sdxdy[i] = dad.k.e[i] * (log(r .^ 2 / a^2 .* ((cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 + dad.k.e[i]^2 * sin(theta) .^ 2))) + 2 * dad.k.d[i] * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        d2Sdxdy[i] =
+            dad.k.e[i] * (log(
+                r .^ 2 / a^2 .* (
+                    (cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 +
+                    dad.k.e[i]^2 * sin(theta) .^ 2
+                ),
+            )) +
+            2 *
+            dad.k.d[i] *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        d2Sdy2[i] = 2 * dad.k.d[i] * dad.k.e[i] * log(r .^ 2 / a^2 .* ((cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 + dad.k.e[i]^2 * sin(theta) .^ 2)) + 2 * (dad.k.d[i]^2 - dad.k.e[i]^2) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        d2Sdy2[i] =
+            2 *
+            dad.k.d[i] *
+            dad.k.e[i] *
+            log(
+                r .^ 2 / a^2 .* (
+                    (cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 +
+                    dad.k.e[i]^2 * sin(theta) .^ 2
+                ),
+            ) +
+            2 *
+            (dad.k.d[i]^2 - dad.k.e[i]^2) *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
         d3Rdx3[i] = 4 * (cos(theta) + dad.k.d[i] * sin(theta)) / (r * constA)
 
         # Cálculo da derivada terceira de R1 e R2 em relação a x e y conforme Shi e Bezine
-        d3Rdx2dy[i] = 4 * (dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) + dad.k.e[i]^2 * sin(theta)) / (r * constA)
+        d3Rdx2dy[i] =
+            4 * (
+                dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) +
+                dad.k.e[i]^2 * sin(theta)
+            ) / (r * constA)
 
         # Cálculo da derivada terceira de R1 e R2 em relação a x e y conforme Shi e Bezine
-        d3Rdxdy2[i] = 4 * ((dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) + (dad.k.d[i]^2 + dad.k.e[i]^2) * dad.k.d[i] * sin(theta)) / (r * constA)
+        d3Rdxdy2[i] =
+            4 * (
+                (dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) +
+                (dad.k.d[i]^2 + dad.k.e[i]^2) * dad.k.d[i] * sin(theta)
+            ) / (r * constA)
 
         # Cálculo da derivada terceira de R1 e R2 em relação a y conforme Shi e Bezine
-        d3Rdy3[i] = 4 * (dad.k.d[i] * (dad.k.d[i]^2 - 3 * dad.k.e[i]^2) * cos(theta) + (dad.k.d[i]^4 - dad.k.e[i]^4) * sin(theta)) / (r * constA)
+        d3Rdy3[i] =
+            4 * (
+                dad.k.d[i] * (dad.k.d[i]^2 - 3 * dad.k.e[i]^2) * cos(theta) +
+                (dad.k.d[i]^4 - dad.k.e[i]^4) * sin(theta)
+            ) / (r * constA)
         # Cálculo da derivada terceira de S1 e S2 em relação a x conforme Shi e Bezine
         d3Sdx3[i] = -2 * dad.k.e[i] * sin(theta) / (r * constA)
 
@@ -304,52 +974,120 @@ function calcdt(pg, pf, n, nf, dad::Union{placa_fina}, pre)
         d3Sdx2dy[i] = 2 * dad.k.e[i] * cos(theta) / (r * constA)
 
         # Cálculo da derivada terceira de S1 e S2 em relação a x e y conforme Shi e Bezine
-        d3Sdxdy2[i] = 2 * dad.k.e[i] * (2 * dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) - (dad.k.d[i]^2 - dad.k.e[i]^2) * sin(theta)) / (r * constA)
+        d3Sdxdy2[i] =
+            2 *
+            dad.k.e[i] *
+            (
+                2 * dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) -
+                (dad.k.d[i]^2 - dad.k.e[i]^2) * sin(theta)
+            ) / (r * constA)
 
         # Cálculo da derivada terceira de S1 e S2 em relação a y conforme Shi e Bezine
-        d3Sdy3[i] = 2 * dad.k.e[i] * ((3 * dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) + 2 * dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)) / (r * constA)
+        d3Sdy3[i] =
+            2 *
+            dad.k.e[i] *
+            (
+                (3 * dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) +
+                2 * dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)
+            ) / (r * constA)
 
         #--------------------------------------------------------------------------------
         # Cálculo das derivadas quartas de S
         #--------------------------------------------------------------------------------
 
         # Cálculo da derivada quarta de S1 e S2 em relação a x conforme Shi e Bezine
-        d4Sdx4[i] = 4 * dad.k.e[i] * sin(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) / (r^2 * constA^2)
+        d4Sdx4[i] =
+            4 * dad.k.e[i] * sin(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) /
+            (r^2 * constA^2)
 
         # Cálculo da derivada quarta de S1 e S2 em relação a x e y conforme Shi e Bezine
-        d4Sdx3dy[i] = 2 * dad.k.e[i] / r^2 * (1 / constA - 2 * cos(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) / constA^2)
+        d4Sdx3dy[i] =
+            2 * dad.k.e[i] / r^2 * (
+                1 / constA -
+                2 * cos(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) / constA^2
+            )
 
         # Cálculo da derivada quarta de S1 e S2 em relação a x e y conforme Shi e Bezine
-        d4Sdx2dy2[i] = -4 * dad.k.e[i] * cos(theta) * (dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) + dad.k.e[i]^2 * sin(theta)) / (r^2 * constA^2)
+        d4Sdx2dy2[i] =
+            -4 *
+            dad.k.e[i] *
+            cos(theta) *
+            (
+                dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) +
+                dad.k.e[i]^2 * sin(theta)
+            ) / (r^2 * constA^2)
 
         # Cálculo da derivada quarta de S1 e S2 em relação a x e y conforme Shi e Bezine
-        d4Sdxdy3[i] = -2 * dad.k.e[i] / r^2 * ((dad.k.d[i]^2 + dad.k.e[i]^2) / constA + (2 * (dad.k.d[i]^2 + dad.k.e[i]^2) * cos(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) - 4 * dad.k.e[i]^2 * cos(theta)^2) / constA^2)
+        d4Sdxdy3[i] =
+            -2 * dad.k.e[i] / r^2 * (
+                (dad.k.d[i]^2 + dad.k.e[i]^2) / constA +
+                (
+                    2 *
+                    (dad.k.d[i]^2 + dad.k.e[i]^2) *
+                    cos(theta) *
+                    (cos(theta) + dad.k.d[i] * sin(theta)) -
+                    4 * dad.k.e[i]^2 * cos(theta)^2
+                ) / constA^2
+            )
 
         # Cálculo da derivada quarta de S1 e S2 em relação a y conforme Shi e Bezine
-        d4Sdy4[i] = -4 * dad.k.e[i] / r^2 * (dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) / constA + cos(theta) * (dad.k.d[i] * (dad.k.d[i]^2 - 3 * dad.k.e[i]^2) * cos(theta) + (dad.k.d[i]^4 - dad.k.e[i]^4) * sin(theta)) / constA^2)
+        d4Sdy4[i] =
+            -4 * dad.k.e[i] / r^2 * (
+                dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) / constA +
+                cos(theta) * (
+                    dad.k.d[i] * (dad.k.d[i]^2 - 3 * dad.k.e[i]^2) * cos(theta) +
+                    (dad.k.d[i]^4 - dad.k.e[i]^4) * sin(theta)
+                ) / constA^2
+            )
 
 
     end
-    dwdx = 1 / (8 * pi * dad.k.D22) * (C1 * dRdx[1] + C2 * dRdx[2] + C3 * (dSdx[1] - dSdx[2]))
-    dwdy = 1 / (8 * pi * dad.k.D22) * (C1 * dRdy[1] + C2 * dRdy[2] + C3 * (dSdy[1] - dSdy[2]))
+    dwdx =
+        1 / (8 * pi * dad.k.D22) * (C1 * dRdx[1] + C2 * dRdx[2] + C3 * (dSdx[1] - dSdx[2]))
+    dwdy =
+        1 / (8 * pi * dad.k.D22) * (C1 * dRdy[1] + C2 * dRdy[2] + C3 * (dSdy[1] - dSdy[2]))
 
     #dad.k.Derivadas segundas da solução fundamental
-    d2wdx2 = 1 / (8 * pi * dad.k.D22) * (C1 * d2Rdx2[1] + C2 * d2Rdx2[2] + C3 * (d2Sdx2[1] - d2Sdx2[2]))
-    d2wdxdy = 1 / (8 * pi * dad.k.D22) * (C1 * d2Rdxdy[1] + C2 * d2Rdxdy[2] + C3 * (d2Sdxdy[1] - d2Sdxdy[2]))
-    d2wdy2 = 1 / (8 * pi * dad.k.D22) * (C1 * d2Rdy2[1] + C2 * d2Rdy2[2] + C3 * (d2Sdy2[1] - d2Sdy2[2]))
+    d2wdx2 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d2Rdx2[1] + C2 * d2Rdx2[2] + C3 * (d2Sdx2[1] - d2Sdx2[2]))
+    d2wdxdy =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d2Rdxdy[1] + C2 * d2Rdxdy[2] + C3 * (d2Sdxdy[1] - d2Sdxdy[2]))
+    d2wdy2 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d2Rdy2[1] + C2 * d2Rdy2[2] + C3 * (d2Sdy2[1] - d2Sdy2[2]))
 
     #dad.k.Derivadas terceiras da solução fundamental
-    d3wdx3 = 1 / (8 * pi * dad.k.D22) * (C1 * d3Rdx3[1] + C2 * d3Rdx3[2] + C3 * (d3Sdx3[1] - d3Sdx3[2]))
-    d3wdx2dy = 1 / (8 * pi * dad.k.D22) * (C1 * d3Rdx2dy[1] + C2 * d3Rdx2dy[2] + C3 * (d3Sdx2dy[1] - d3Sdx2dy[2]))
-    d3wdxdy2 = 1 / (8 * pi * dad.k.D22) * (C1 * d3Rdxdy2[1] + C2 * d3Rdxdy2[2] + C3 * (d3Sdxdy2[1] - d3Sdxdy2[2]))
-    d3wdy3 = 1 / (8 * pi * dad.k.D22) * (C1 * d3Rdy3[1] + C2 * d3Rdy3[2] + C3 * (d3Sdy3[1] - d3Sdy3[2]))
+    d3wdx3 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d3Rdx3[1] + C2 * d3Rdx3[2] + C3 * (d3Sdx3[1] - d3Sdx3[2]))
+    d3wdx2dy =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d3Rdx2dy[1] + C2 * d3Rdx2dy[2] + C3 * (d3Sdx2dy[1] - d3Sdx2dy[2]))
+    d3wdxdy2 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d3Rdxdy2[1] + C2 * d3Rdxdy2[2] + C3 * (d3Sdxdy2[1] - d3Sdxdy2[2]))
+    d3wdy3 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d3Rdy3[1] + C2 * d3Rdy3[2] + C3 * (d3Sdy3[1] - d3Sdy3[2]))
 
     #dad.k.Derivadas quartas da solução fundamental
-    d4wdx4 = 1 / (8 * pi * dad.k.D22) * (C1 * d4Rdx4[1] + C2 * d4Rdx4[2] + C3 * (d4Sdx4[1] - d4Sdx4[2]))
-    d4wdx3dy = 1 / (8 * pi * dad.k.D22) * (C1 * d4Rdx3dy[1] + C2 * d4Rdx3dy[2] + C3 * (d4Sdx3dy[1] - d4Sdx3dy[2]))
-    d4wdx2dy2 = 1 / (8 * pi * dad.k.D22) * (C1 * d4Rdx2dy2[1] + C2 * d4Rdx2dy2[2] + C3 * (d4Sdx2dy2[1] - d4Sdx2dy2[2]))
-    d4wdxdy3 = 1 / (8 * pi * dad.k.D22) * (C1 * d4Rdxdy3[1] + C2 * d4Rdxdy3[2] + C3 * (d4Sdxdy3[1] - d4Sdxdy3[2]))
-    d4wdy4 = 1 / (8 * pi * dad.k.D22) * (C1 * d4Rdy4[1] + C2 * d4Rdy4[2] + C3 * (d4Sdy4[1] - d4Sdy4[2]))
+    d4wdx4 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d4Rdx4[1] + C2 * d4Rdx4[2] + C3 * (d4Sdx4[1] - d4Sdx4[2]))
+    d4wdx3dy =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d4Rdx3dy[1] + C2 * d4Rdx3dy[2] + C3 * (d4Sdx3dy[1] - d4Sdx3dy[2]))
+    d4wdx2dy2 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d4Rdx2dy2[1] + C2 * d4Rdx2dy2[2] + C3 * (d4Sdx2dy2[1] - d4Sdx2dy2[2]))
+    d4wdxdy3 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d4Rdxdy3[1] + C2 * d4Rdxdy3[2] + C3 * (d4Sdxdy3[1] - d4Sdxdy3[2]))
+    d4wdy4 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d4Rdy4[1] + C2 * d4Rdy4[2] + C3 * (d4Sdy4[1] - d4Sdy4[2]))
 
 
     # Cálculo de f1; f2 e f3 conforme Shi e Bezine
@@ -359,8 +1097,12 @@ function calcdt(pg, pf, n, nf, dad::Union{placa_fina}, pre)
 
     # Cálculo de h1; h2; h3 e h4 conforme Shi e Bezine
     h1 = dad.k.D11 * nx * (1 + ny^2) + 2 * dad.k.D16 * ny^3 - dad.k.D12 * nx * ny^2
-    h2 = 4 * dad.k.D16 * nx + dad.k.D12 * ny * (1 + nx^2) + 4 * dad.k.D66 * ny^3 - dad.k.D11 * nx^2 * ny - 2 * dad.k.D26 * nx * ny^2
-    h3 = 4 * dad.k.D26 * ny + dad.k.D12 * nx * (1 + ny^2) + 4 * dad.k.D66 * nx^3 - dad.k.D22 * nx * ny^2 - 2 * dad.k.D16 * nx^2 * ny
+    h2 =
+        4 * dad.k.D16 * nx + dad.k.D12 * ny * (1 + nx^2) + 4 * dad.k.D66 * ny^3 -
+        dad.k.D11 * nx^2 * ny - 2 * dad.k.D26 * nx * ny^2
+    h3 =
+        4 * dad.k.D26 * ny + dad.k.D12 * nx * (1 + ny^2) + 4 * dad.k.D66 * nx^3 -
+        dad.k.D22 * nx * ny^2 - 2 * dad.k.D16 * nx^2 * ny
     h4 = dad.k.D22 * ny * (1 + nx^2) + 2 * dad.k.D26 * nx^3 - dad.k.D12 * nx^2 * ny
 
     dmndx = -(f1 * d3wdx3 + f2 * d3wdx2dy + f3 * d3wdxdy2)
@@ -390,14 +1132,16 @@ function int_dt_sing(x, dad, g_el, xi0)
     theta = atan(dy, dx)
     G = (dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1] + dad.k.e[2])^2
     H = (dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1] - dad.k.e[2])^2
-    C1 = ((dad.k.d[1] - dad.k.d[2])^2 - (dad.k.e[1]^2 - dad.k.e[1]^2)) / (G * H * dad.k.e[1])
-    C2 = ((dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1]^2 - dad.k.e[1]^2)) / (G * H * dad.k.e[2])
+    C1 =
+        ((dad.k.d[1] - dad.k.d[2])^2 - (dad.k.e[1]^2 - dad.k.e[1]^2)) / (G * H * dad.k.e[1])
+    C2 =
+        ((dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1]^2 - dad.k.e[1]^2)) / (G * H * dad.k.e[2])
     C3 = 4 * (dad.k.d[1] - dad.k.d[2]) / (G * H)
     a = 1
     h_el = zeros(6)
     # g_el = zeros(6)
     # Integrate[N1d,(qsi,-1,1)]
-    for x = [:NlogLqqo, :intNsr2, :intNsr, :intN]
+    for x in [:NlogLqqo, :intNsr2, :intNsr, :intN]
         @eval $x = zeros(3)
     end
     intN[1] = 3 / 4
@@ -438,7 +1182,44 @@ function int_dt_sing(x, dad, g_el, xi0)
         intNsr2[2] = 0
         intNsr2[3] = 0
     end
-    for x = [:d2Rdx2, :d2Rdx2ns, :d2Rdxdy, :d2Rdxdyns, :d2Rdxdys, :d2Rdy2, :d2Rdy2ns, :d2Rdy2s, :d2Sdx2, :d2Sdx2ns, :d2Sdx2s, :d2Sdxdy, :d2Sdxdyns, :d2Sdxdys, :d2Sdy2, :d2Sdy2ns, :d2Sdy2s, :d3Rdx2dy, :d3Rdx3, :d3Rdxdy2, :d3Rdy3, :d3Sdx2dy, :d3Sdx3, :d3Sdxdy2, :d3Sdy3, :d4Rdx2dy2, :d4Rdx3dy, :d4Rdx4, :d4Rdxdy3, :d4Rdy4, :d4Sdx2dy2, :d4Sdx3dy, :d4Sdx4, :d4Sdxdy3, :d4Sdy4, :d2Rdx2s]
+    for x in [
+        :d2Rdx2,
+        :d2Rdx2ns,
+        :d2Rdxdy,
+        :d2Rdxdyns,
+        :d2Rdxdys,
+        :d2Rdy2,
+        :d2Rdy2ns,
+        :d2Rdy2s,
+        :d2Sdx2,
+        :d2Sdx2ns,
+        :d2Sdx2s,
+        :d2Sdxdy,
+        :d2Sdxdyns,
+        :d2Sdxdys,
+        :d2Sdy2,
+        :d2Sdy2ns,
+        :d2Sdy2s,
+        :d3Rdx2dy,
+        :d3Rdx3,
+        :d3Rdxdy2,
+        :d3Rdy3,
+        :d3Sdx2dy,
+        :d3Sdx3,
+        :d3Sdxdy2,
+        :d3Sdy3,
+        :d4Rdx2dy2,
+        :d4Rdx3dy,
+        :d4Rdx4,
+        :d4Rdxdy3,
+        :d4Rdy4,
+        :d4Sdx2dy2,
+        :d4Sdx3dy,
+        :d4Sdx4,
+        :d4Sdxdy3,
+        :d4Sdy4,
+        :d2Rdx2s,
+    ]
         @eval $x = zeros(2)
     end
     for j = 1:3
@@ -456,11 +1237,20 @@ function int_dt_sing(x, dad, g_el, xi0)
             d2Rdx2[i] = d2Rdx2s[i] + d2Rdx2ns[i]
             # Cálculo das integrais da derivada segunda de R1 e R2 em relação a x e y conforme Shi e Bezine
             d2Rdxdys[i] = 4 * dad.k.d[i] * NlogLqqo[j]
-            d2Rdxdyns[i] = (2 * dad.k.d[i] * log(constA / a^2) - 4 * dad.k.e[i] * constB) * intN[j] * L / 2
+            d2Rdxdyns[i] =
+                (2 * dad.k.d[i] * log(constA / a^2) - 4 * dad.k.e[i] * constB) *
+                intN[j] *
+                L / 2
             d2Rdxdy[i] = d2Rdxdys[i] + d2Rdxdyns[i]
             # Cálculo das integrais da derivada segunda de R1 e R2 em relação a y conforme Shi e Bezine
             d2Rdy2s[i] = 4 * (dad.k.d[i]^2 - dad.k.e[i]^2) * NlogLqqo[j]
-            d2Rdy2ns[i] = (2 * (dad.k.d[i]^2 - dad.k.e[i]^2) * log(a^2 * constA) - 8 * dad.k.d[i] * dad.k.e[i] * constB) * intN[j] * L / 2
+            d2Rdy2ns[i] =
+                (
+                    2 * (dad.k.d[i]^2 - dad.k.e[i]^2) * log(a^2 * constA) -
+                    8 * dad.k.d[i] * dad.k.e[i] * constB
+                ) *
+                intN[j] *
+                L / 2
             d2Rdy2[i] = d2Rdy2s[i] + d2Rdy2ns[i]
 
             #--------------------------------------------------------------------------------
@@ -472,85 +1262,222 @@ function int_dt_sing(x, dad, g_el, xi0)
             d2Sdx2[i] = d2Sdx2s[i] + d2Sdx2ns[i]
             # Cálculo das integrais da derivada segunda de S1 e S2 em relação a x e y conforme Shi e Bezine
             d2Sdxdys[i] = 2 * dad.k.e[i] * NlogLqqo[j]
-            d2Sdxdyns[i] = (dad.k.e[i] * log(constA / a^2) + 2 * dad.k.d[i] * constB) * intN[j] * L / 2
+            d2Sdxdyns[i] =
+                (dad.k.e[i] * log(constA / a^2) + 2 * dad.k.d[i] * constB) * intN[j] * L / 2
             d2Sdxdy[i] = d2Sdxdys[i] + d2Sdxdyns[i]
             # Cálculo das integrais da derivada segunda de S1 e S2 em relação a y conforme Shi e Bezine
             d2Sdy2s[i] = 4 * dad.k.d[i] * dad.k.e[i] * NlogLqqo[j]
-            d2Sdy2ns[i] = (2 * dad.k.d[i] * dad.k.e[i] * log(constA / a^2) + 2 * (dad.k.d[i]^2 - dad.k.e[i]^2) * constB) * intN[j] * L / 2
+            d2Sdy2ns[i] =
+                (
+                    2 * dad.k.d[i] * dad.k.e[i] * log(constA / a^2) +
+                    2 * (dad.k.d[i]^2 - dad.k.e[i]^2) * constB
+                ) *
+                intN[j] *
+                L / 2
             d2Sdy2[i] = d2Sdy2s[i] + d2Sdy2ns[i]
             #--------------------------------------------------------------------------------
             # Cálculo das integrais das derivadas terceiras de R
             #--------------------------------------------------------------------------------
             # Cálculo das integrais da derivada terceira de R1 e R2 em relação a x conforme Shi e Bezine
-            d3Rdx3[i] = 4 * (2 * intNsr[j] / L) * L / 2 * (cos(theta) + dad.k.d[i] * sin(theta)) / (constA)
+            d3Rdx3[i] =
+                4 * (2 * intNsr[j] / L) * L / 2 * (cos(theta) + dad.k.d[i] * sin(theta)) /
+                (constA)
             # Cálculo das integrais da derivada terceira de R1 e R2 em relação a x e y conforme Shi e Bezine
-            d3Rdx2dy[i] = 4 * (2 * intNsr[j] / L) * L / 2 * (dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) + dad.k.e[i]^2 * sin(theta)) / (constA)
+            d3Rdx2dy[i] =
+                4 * (2 * intNsr[j] / L) * L / 2 * (
+                    dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) +
+                    dad.k.e[i]^2 * sin(theta)
+                ) / (constA)
             # Cálculo das integrais da derivada terceira de R1 e R2 em relação a x e y conforme Shi e Bezine
-            d3Rdxdy2[i] = 4 * (2 * intNsr[j] / L) * L / 2 * ((dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) + (dad.k.d[i]^2 + dad.k.e[i]^2) * dad.k.d[i] * sin(theta)) / (constA)
+            d3Rdxdy2[i] =
+                4 * (2 * intNsr[j] / L) * L / 2 * (
+                    (dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) +
+                    (dad.k.d[i]^2 + dad.k.e[i]^2) * dad.k.d[i] * sin(theta)
+                ) / (constA)
             # Cálculo das integrais da derivada terceira de R1 e R2 em relação a y conforme Shi e Bezine
-            d3Rdy3[i] = 4 * (2 * intNsr[j] / L) * L / 2 * (dad.k.d[i] * (dad.k.d[i]^2 - 3 * dad.k.e[i]^2) * cos(theta) + (dad.k.d[i]^4 - dad.k.e[i]^4) * sin(theta)) / (constA)
+            d3Rdy3[i] =
+                4 * (2 * intNsr[j] / L) * L / 2 * (
+                    dad.k.d[i] * (dad.k.d[i]^2 - 3 * dad.k.e[i]^2) * cos(theta) +
+                    (dad.k.d[i]^4 - dad.k.e[i]^4) * sin(theta)
+                ) / (constA)
             #--------------------------------------------------------------------------------
             # Cálculo das derivadas quartas de R
             #--------------------------------------------------------------------------------
             # Cálculo das integrais da derivada quarta de R1 e R2 em relação a x conforme Shi e Bezine
-            d4Rdx4[i] = -4 * (4 * intNsr2[j] / L^2) * L / 2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 - dad.k.e[i]^2 * sin(theta)^2) / (constA^2)
+            d4Rdx4[i] =
+                -4 * (4 * intNsr2[j] / L^2) * L / 2 *
+                ((cos(theta) + dad.k.d[i] * sin(theta))^2 - dad.k.e[i]^2 * sin(theta)^2) /
+                (constA^2)
             # Cálculo das integrais da derivada quarta de R1 e R2 em relação a x e y conforme Shi e Bezine
-            d4Rdx3dy[i] = -4 * (4 * intNsr2[j] / L^2) * L / 2 * (dad.k.d[i] / constA + 2 * dad.k.e[i]^2 * sin(theta) * cos(theta) / ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)^2)
+            d4Rdx3dy[i] =
+                -4 * (4 * intNsr2[j] / L^2) * L / 2 * (
+                    dad.k.d[i] / constA +
+                    2 * dad.k.e[i]^2 * sin(theta) * cos(theta) /
+                    (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    )^2
+                )
             # Cálculo das integrais da derivada quarta de R1 e R2 em relação a x e y conforme Shi e Bezine
-            d4Rdx2dy2[i] = -4 * (4 * intNsr2[j] / L^2) * L / 2 * ((dad.k.d[i]^2 + dad.k.e[i]^2) / ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2) - 2 * dad.k.e[i]^2 * cos(theta)^2 / constA^2)
+            d4Rdx2dy2[i] =
+                -4 * (4 * intNsr2[j] / L^2) * L / 2 * (
+                    (dad.k.d[i]^2 + dad.k.e[i]^2) / (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ) - 2 * dad.k.e[i]^2 * cos(theta)^2 / constA^2
+                )
             # Cálculo das integrais da derivada quarta de R1 e R2 em relação a x e y conforme Shi e Bezine
-            d4Rdxdy3[i] = -4 * (4 * intNsr2[j] / L^2) * L / 2 * (dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) / ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2) - 2 * dad.k.e[i]^2 * cos(theta) * (2 * dad.k.d[i] * cos(theta) + (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)) / ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)^2)
+            d4Rdxdy3[i] =
+                -4 * (4 * intNsr2[j] / L^2) * L / 2 * (
+                    dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) / (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ) -
+                    2 *
+                    dad.k.e[i]^2 *
+                    cos(theta) *
+                    (
+                        2 * dad.k.d[i] * cos(theta) +
+                        (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)
+                    ) /
+                    (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    )^2
+                )
             # Cálculo das integrais da derivada quarta de R1 e R2 em relação a y conforme Shi e Bezine
-            d4Rdy4[i] = -4 * (4 * intNsr2[j] / L^2) * L / 2 * ((dad.k.d[i]^4 - dad.k.e[i]^4) / constA - 2 * dad.k.e[i]^2 * cos(theta) * ((3 * dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) + 2 * dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)) / constA^2)
+            d4Rdy4[i] =
+                -4 * (4 * intNsr2[j] / L^2) * L / 2 * (
+                    (dad.k.d[i]^4 - dad.k.e[i]^4) / constA -
+                    2 *
+                    dad.k.e[i]^2 *
+                    cos(theta) *
+                    (
+                        (3 * dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) +
+                        2 * dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)
+                    ) / constA^2
+                )
 
             #--------------------------------------------------------------------------------
             # Cálculo das das integrais derivadas terceiras de S
             #--------------------------------------------------------------------------------
             # Cálculo das integrais da derivada terceira de S1 e S2 em relação a x conforme Shi e Bezine
-            d3Sdx3[i] = -2 * (2 * intNsr[j] / L) * L / 2 * dad.k.e[i] * sin(theta) / (constA)
+            d3Sdx3[i] =
+                -2 * (2 * intNsr[j] / L) * L / 2 * dad.k.e[i] * sin(theta) / (constA)
             # Cálculo das integrais da derivada terceira de S1 e S2 em relação a x e y conforme Shi e Bezine
-            d3Sdx2dy[i] = 2 * (2 * intNsr[j] / L) * L / 2 * dad.k.e[i] * cos(theta) / (constA)
+            d3Sdx2dy[i] =
+                2 * (2 * intNsr[j] / L) * L / 2 * dad.k.e[i] * cos(theta) / (constA)
             # Cálculo das integrais da derivada terceira de S1 e S2 em relação a x e y conforme Shi e Bezine
-            d3Sdxdy2[i] = 2 * (2 * intNsr[j] / L) * L / 2 * dad.k.e[i] * (2 * dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) - (dad.k.d[i]^2 - dad.k.e[i]^2) * sin(theta)) / (constA)
+            d3Sdxdy2[i] =
+                2 * (2 * intNsr[j] / L) * L / 2 *
+                dad.k.e[i] *
+                (
+                    2 * dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) -
+                    (dad.k.d[i]^2 - dad.k.e[i]^2) * sin(theta)
+                ) / (constA)
             # Cálculo das integrais da derivada terceira de S1 e S2 em relação a y conforme Shi e Bezine
-            d3Sdy3[i] = 2 * (2 * intNsr[j] / L) * L / 2 * dad.k.e[i] * ((3 * dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) + 2 * dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)) / (constA)
+            d3Sdy3[i] =
+                2 * (2 * intNsr[j] / L) * L / 2 *
+                dad.k.e[i] *
+                (
+                    (3 * dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) +
+                    2 * dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)
+                ) / (constA)
             #--------------------------------------------------------------------------------
             # Cálculo das derivadas quartas de S
             #--------------------------------------------------------------------------------
             # Cálculo das integrais da derivada quarta de S1 e S2 em relação a x conforme Shi e Bezine
-            d4Sdx4[i] = 4 * (4 * intNsr2[j] / L^2) * L / 2 * dad.k.e[i] * sin(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) / (constA^2)
+            d4Sdx4[i] =
+                4 * (4 * intNsr2[j] / L^2) * L / 2 *
+                dad.k.e[i] *
+                sin(theta) *
+                (cos(theta) + dad.k.d[i] * sin(theta)) / (constA^2)
             # Cálculo das integrais da derivada quarta de S1 e S2 em relação a x e y conforme Shi e Bezine
-            d4Sdx3dy[i] = 2 * (4 * intNsr2[j] / L^2) * L / 2 * dad.k.e[i] * (1 / constA - 2 * cos(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) / constA^2)
+            d4Sdx3dy[i] =
+                2 * (4 * intNsr2[j] / L^2) * L / 2 *
+                dad.k.e[i] *
+                (
+                    1 / constA -
+                    2 * cos(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) / constA^2
+                )
             # Cálculo das integrais da derivada quarta de S1 e S2 em relação a x e y conforme Shi e Bezine
-            d4Sdx2dy2[i] = -4 * (4 * intNsr2[j] / L^2) * L / 2 * dad.k.e[i] * cos(theta) * (dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) + dad.k.e[i]^2 * sin(theta)) / (constA^2)
+            d4Sdx2dy2[i] =
+                -4 * (4 * intNsr2[j] / L^2) * L / 2 *
+                dad.k.e[i] *
+                cos(theta) *
+                (
+                    dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) +
+                    dad.k.e[i]^2 * sin(theta)
+                ) / (constA^2)
             # Cálculo das integrais da derivada quarta de S1 e S2 em relação a x e y conforme Shi e Bezine
-            d4Sdxdy3[i] = -2 * dad.k.e[i] * (4 * intNsr2[j] / L^2) * L / 2 * ((dad.k.d[i]^2 + dad.k.e[i]^2) / constA + (2 * (dad.k.d[i]^2 + dad.k.e[i]^2) * cos(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) - 4 * dad.k.e[i]^2 * cos(theta)^2) / constA^2)
+            d4Sdxdy3[i] =
+                -2 * dad.k.e[i] * (4 * intNsr2[j] / L^2) * L / 2 * (
+                    (dad.k.d[i]^2 + dad.k.e[i]^2) / constA +
+                    (
+                        2 *
+                        (dad.k.d[i]^2 + dad.k.e[i]^2) *
+                        cos(theta) *
+                        (cos(theta) + dad.k.d[i] * sin(theta)) -
+                        4 * dad.k.e[i]^2 * cos(theta)^2
+                    ) / constA^2
+                )
             # Cálculo das integrais da derivada quarta de S1 e S2 em relação a y conforme Shi e Bezine
-            d4Sdy4[i] = -4 * (4 * intNsr2[j] / L^2) * L / 2 * dad.k.e[i] * (dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) / constA + cos(theta) * (dad.k.d[i] * (dad.k.d[i]^2 - 3 * dad.k.e[i]^2) * cos(theta) + (dad.k.d[i]^4 - dad.k.e[i]^4) * sin(theta)) / constA^2)
+            d4Sdy4[i] =
+                -4 * (4 * intNsr2[j] / L^2) * L / 2 *
+                dad.k.e[i] *
+                (
+                    dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) / constA +
+                    cos(theta) * (
+                        dad.k.d[i] * (dad.k.d[i]^2 - 3 * dad.k.e[i]^2) * cos(theta) +
+                        (dad.k.d[i]^4 - dad.k.e[i]^4) * sin(theta)
+                    ) / constA^2
+                )
         end
         # Integrais das derivadas segundas da solução fundamental
-        d2wdx2 = 1 / (8 * pi) * (C1 * d2Rdx2[1] + C2 * d2Rdx2[2] + C3 * (d2Sdx2[1] - d2Sdx2[2]))
-        d2wdxdy = 1 / (8 * pi) * (C1 * d2Rdxdy[1] + C2 * d2Rdxdy[2] + C3 * (d2Sdxdy[1] - d2Sdxdy[2]))
-        d2wdy2 = 1 / (8 * pi) * (C1 * d2Rdy2[1] + C2 * d2Rdy2[2] + C3 * (d2Sdy2[1] - d2Sdy2[2]))
+        d2wdx2 =
+            1 / (8 * pi) * (C1 * d2Rdx2[1] + C2 * d2Rdx2[2] + C3 * (d2Sdx2[1] - d2Sdx2[2]))
+        d2wdxdy =
+            1 / (8 * pi) *
+            (C1 * d2Rdxdy[1] + C2 * d2Rdxdy[2] + C3 * (d2Sdxdy[1] - d2Sdxdy[2]))
+        d2wdy2 =
+            1 / (8 * pi) * (C1 * d2Rdy2[1] + C2 * d2Rdy2[2] + C3 * (d2Sdy2[1] - d2Sdy2[2]))
         # Integrais das derivadas terceira da solução fundamental
-        d3wdx3 = 1 / (8 * pi) * (C1 * d3Rdx3[1] + C2 * d3Rdx3[2] + C3 * (d3Sdx3[1] - d3Sdx3[2]))
-        d3wdx2dy = 1 / (8 * pi) * (C1 * d3Rdx2dy[1] + C2 * d3Rdx2dy[2] + C3 * (d3Sdx2dy[1] - d3Sdx2dy[2]))
-        d3wdxdy2 = 1 / (8 * pi) * (C1 * d3Rdxdy2[1] + C2 * d3Rdxdy2[2] + C3 * (d3Sdxdy2[1] - d3Sdxdy2[2]))
-        d3wdy3 = 1 / (8 * pi) * (C1 * d3Rdy3[1] + C2 * d3Rdy3[2] + C3 * (d3Sdy3[1] - d3Sdy3[2]))
+        d3wdx3 =
+            1 / (8 * pi) * (C1 * d3Rdx3[1] + C2 * d3Rdx3[2] + C3 * (d3Sdx3[1] - d3Sdx3[2]))
+        d3wdx2dy =
+            1 / (8 * pi) *
+            (C1 * d3Rdx2dy[1] + C2 * d3Rdx2dy[2] + C3 * (d3Sdx2dy[1] - d3Sdx2dy[2]))
+        d3wdxdy2 =
+            1 / (8 * pi) *
+            (C1 * d3Rdxdy2[1] + C2 * d3Rdxdy2[2] + C3 * (d3Sdxdy2[1] - d3Sdxdy2[2]))
+        d3wdy3 =
+            1 / (8 * pi) * (C1 * d3Rdy3[1] + C2 * d3Rdy3[2] + C3 * (d3Sdy3[1] - d3Sdy3[2]))
         # Integrais das derivadas quarta da solução fundamental
-        d4wdx4 = 1 / (8 * pi) * (C1 * d4Rdx4[1] + C2 * d4Rdx4[2] + C3 * (d4Sdx4[1] - d4Sdx4[2]))
-        d4wdx3dy = 1 / (8 * pi) * (C1 * d4Rdx3dy[1] + C2 * d4Rdx3dy[2] + C3 * (d4Sdx3dy[1] - d4Sdx3dy[2]))
-        d4wdx2dy2 = 1 / (8 * pi) * (C1 * d4Rdx2dy2[1] + C2 * d4Rdx2dy2[2] + C3 * (d4Sdx2dy2[1] - d4Sdx2dy2[2]))
-        d4wdxdy3 = 1 / (8 * pi) * (C1 * d4Rdxdy3[1] + C2 * d4Rdxdy3[2] + C3 * (d4Sdxdy3[1] - d4Sdxdy3[2]))
-        d4wdy4 = 1 / (8 * pi) * (C1 * d4Rdy4[1] + C2 * d4Rdy4[2] + C3 * (d4Sdy4[1] - d4Sdy4[2]))
+        d4wdx4 =
+            1 / (8 * pi) * (C1 * d4Rdx4[1] + C2 * d4Rdx4[2] + C3 * (d4Sdx4[1] - d4Sdx4[2]))
+        d4wdx3dy =
+            1 / (8 * pi) *
+            (C1 * d4Rdx3dy[1] + C2 * d4Rdx3dy[2] + C3 * (d4Sdx3dy[1] - d4Sdx3dy[2]))
+        d4wdx2dy2 =
+            1 / (8 * pi) *
+            (C1 * d4Rdx2dy2[1] + C2 * d4Rdx2dy2[2] + C3 * (d4Sdx2dy2[1] - d4Sdx2dy2[2]))
+        d4wdxdy3 =
+            1 / (8 * pi) *
+            (C1 * d4Rdxdy3[1] + C2 * d4Rdxdy3[2] + C3 * (d4Sdxdy3[1] - d4Sdxdy3[2]))
+        d4wdy4 =
+            1 / (8 * pi) * (C1 * d4Rdy4[1] + C2 * d4Rdy4[2] + C3 * (d4Sdy4[1] - d4Sdy4[2]))
         # Cálculo de f1; f2 e f3 conforme Shi e Bezine
         f1 = dad.k.D11 * nx^2 + 2 * dad.k.D16 * nx * ny + dad.k.D12 * ny^2
         f2 = 2 * (dad.k.D16 * nx^2 + 2 * dad.k.D66 * nx * ny + dad.k.D26 * ny^2)
         f3 = dad.k.D12 * nx^2 + 2 * dad.k.D26 * nx * ny + dad.k.D22 * ny^2
         # Cálculo de h1; h2; h3 e h4 conforme Shi e Bezine
         h1 = dad.k.D11 * nx * (1 + ny^2) + 2 * dad.k.D16 * ny^3 - dad.k.D12 * nx * ny^2
-        h2 = 4 * dad.k.D16 * nx + dad.k.D12 * ny * (1 + nx^2) + 4 * dad.k.D66 * ny^3 - dad.k.D11 * nx^2 * ny - 2 * dad.k.D26 * nx * ny^2
-        h3 = 4 * dad.k.D26 * ny + dad.k.D12 * nx * (1 + ny^2) + 4 * dad.k.D66 * nx^3 - dad.k.D22 * nx * ny^2 - 2 * dad.k.D16 * nx^2 * ny
+        h2 =
+            4 * dad.k.D16 * nx + dad.k.D12 * ny * (1 + nx^2) + 4 * dad.k.D66 * ny^3 -
+            dad.k.D11 * nx^2 * ny - 2 * dad.k.D26 * nx * ny^2
+        h3 =
+            4 * dad.k.D26 * ny + dad.k.D12 * nx * (1 + ny^2) + 4 * dad.k.D66 * nx^3 -
+            dad.k.D22 * nx * ny^2 - 2 * dad.k.D16 * nx^2 * ny
         h4 = dad.k.D22 * ny * (1 + nx^2) + 2 * dad.k.D26 * nx^3 - dad.k.D12 * nx^2 * ny
         #--------------------------------------------------------------------------------
         # Cálculo das demais variáveis da solução fundamental
@@ -574,7 +1501,9 @@ function int_dt_sing(x, dad, g_el, xi0)
         t2 = sy
 
 
-        d2wdndt = -(d2wdx2 * nx * t1 + d2wdxdy * (nx * t2 + ny * t1) + d2wdy2 * ny * t2) / dad.k.D22
+        d2wdndt =
+            -(d2wdx2 * nx * t1 + d2wdxdy * (nx * t2 + ny * t1) + d2wdy2 * ny * t2) /
+            dad.k.D22
         dmndt = -(dmndx * t1 + dmndy * t2) / dad.k.D22
         dvndt = -(dvndx * t1 + dvndy * t2) / dad.k.D22
 
@@ -601,7 +1530,7 @@ function int_dt_sing(x, dad, g_el, xi0)
     return g_el, h_el
 end
 
-function calc_dw_int(dad::placa_fina, forcas, desloc, npg=8)
+function calc_dw_int(dad::placa_fina, forcas, desloc, npg = 8)
     nelem = size(dad.ELEM, 1)# Quantidade de elementos discretizados no contorno
     n_fis = size(dad.NOS, 1)
     n_internos = size(dad.pontos_internos, 1)
@@ -612,7 +1541,7 @@ function calc_dw_int(dad::placa_fina, forcas, desloc, npg=8)
     qsi, w = gausslegendre(npg)# Quadratura de gauss
     # qsi2, w2 = gausslegendre(2npg)# Quadratura de gauss
     # normal_fonte = calc_normais(dad)
-    pre = [zeros(2) for idx in 1:50]
+    pre = [zeros(2) for idx = 1:50]
 
     d2w_int = zeros(n_internos, 3)
 
@@ -621,11 +1550,13 @@ function calc_dw_int(dad::placa_fina, forcas, desloc, npg=8)
         pf = dad.pontos_internos[i, :] # Coordenada (x,y)
         d2w = zeros(3)
         nf = zeros(2)
-        for j in 1:length(dad.ELEM)#Laço dos elementos
+        for j = 1:length(dad.ELEM)#Laço dos elementos
             elem_j = dad.ELEM[j]#Laço dos elementos
             x = dad.NOS[elem_j.indices, :] # Coordenada (x,y) dos nós geométricos
             Δelem = (x[end, :] - x[1, :]) # Δx e Δy entre o primeiro e ultimo nó geometrico
-            eet = (elem_j.ξs[end] - elem_j.ξs[1]) * dot(Δelem, pf .- x[1, :]) / norm(Δelem)^2 + elem_j.ξs[1]
+            eet =
+                (elem_j.ξs[end] - elem_j.ξs[1]) * dot(Δelem, pf .- x[1, :]) /
+                norm(Δelem)^2 + elem_j.ξs[1]
             N_geo, dN = calc_fforma(eet, elem_j)
             ps = N_geo' * x
             b = norm(ps' - pf) / norm(Δelem)
@@ -644,12 +1575,14 @@ function calc_dw_int(dad::placa_fina, forcas, desloc, npg=8)
 
         d2Rc, d2wc = compute_d2Rw(pf, nf, dad, pre)
 
-        d2w = d2w + d2wc * forcas[1+2n_fis+n_internos:end] - d2Rc * desloc[1+2n_fis+n_internos:end]
+        d2w =
+            d2w + d2wc * forcas[1+2n_fis+n_internos:end] -
+            d2Rc * desloc[1+2n_fis+n_internos:end]
         d2w_int[i, :] = d2w
     end
     d2w_int
 end
-function calc_dwdt_cont(dad::placa_fina, forcas, desloc, npg=8)
+function calc_dwdt_cont(dad::placa_fina, forcas, desloc, npg = 8)
     nelem = size(dad.ELEM, 1)# Quantidade de elementos discretizados no contorno
     n_fis = size(dad.NOS, 1)
     n_internos = size(dad.pontos_internos, 1)
@@ -660,7 +1593,7 @@ function calc_dwdt_cont(dad::placa_fina, forcas, desloc, npg=8)
     qsi, w = gausslegendre(npg)# Quadratura de gauss
     # qsi2, w2 = gausslegendre(2npg)# Quadratura de gauss
     normal_fonte = calc_normais(dad)
-    pre = [zeros(2) for idx in 1:50]
+    pre = [zeros(2) for idx = 1:50]
 
     dwdt_cont = zeros(n_fis)
 
@@ -671,11 +1604,13 @@ function calc_dwdt_cont(dad::placa_fina, forcas, desloc, npg=8)
         nf = normal_fonte[i, :]
         caso = "contorno"
 
-        for j in 1:length(dad.ELEM)#Laço dos elementos
+        for j = 1:length(dad.ELEM)#Laço dos elementos
             elem_j = dad.ELEM[j]#Laço dos elementos
             x = dad.NOS[elem_j.indices, :] # Coordenada (x,y) dos nós geométricos
             Δelem = (x[end, :] - x[1, :]) # Δx e Δy entre o primeiro e ultimo nó geometrico
-            eet = (elem_j.ξs[end] - elem_j.ξs[1]) * dot(Δelem, pf .- x[1, :]) / norm(Δelem)^2 + elem_j.ξs[1]
+            eet =
+                (elem_j.ξs[end] - elem_j.ξs[1]) * dot(Δelem, pf .- x[1, :]) /
+                norm(Δelem)^2 + elem_j.ξs[1]
             N_geo, dN = calc_fforma(eet, elem_j)
             ps = N_geo' * x
             b = norm(ps' - pf) / norm(Δelem)
@@ -710,7 +1645,9 @@ function calc_dwdt_cont(dad::placa_fina, forcas, desloc, npg=8)
         end
 
         Rt, wt = compute_dtRw(pf, nf, dad, pre)
-        d_c = d_c + wt' * forcas[1+2n_fis+n_internos:end] - Rt' * desloc[1+2n_fis+n_internos:end]
+        d_c =
+            d_c + wt' * forcas[1+2n_fis+n_internos:end] -
+            Rt' * desloc[1+2n_fis+n_internos:end]
         # @infiltrate
         dwdt_cont[i] = 2d_c
     end
@@ -795,31 +1732,81 @@ function compute_q_d2(pf, nf, x, eta, Gauss_w, elem, dad, pre)
 
         G = (dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1] + dad.k.e[2])^2
         H = (dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1] - dad.k.e[2])^2
-        C1 = ((dad.k.d[1] - dad.k.d[2])^2 - (dad.k.e[1]^2 - dad.k.e[2]^2)) / (G * H * dad.k.e[1])
-        C2 = ((dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1]^2 - dad.k.e[2]^2)) / (G * H * dad.k.e[2])
+        C1 =
+            ((dad.k.d[1] - dad.k.d[2])^2 - (dad.k.e[1]^2 - dad.k.e[2]^2)) /
+            (G * H * dad.k.e[1])
+        C2 =
+            ((dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1]^2 - dad.k.e[2]^2)) /
+            (G * H * dad.k.e[2])
         C3 = 4 * (dad.k.d[1] - dad.k.d[2]) / (G * H)
         a = 1
         A = dad.k.carga[1]
         B = dad.k.carga[2]
         C = dad.k.carga[3]
         Clocal = A * xf + B * yf + C
-        intd2Rdx2rdr, intd2Rdy2rdr, intd2Rdxdyrdr, intd2Rdx2ABrdr, intd2Rdy2ABrdr, intd2RdxdyABrdr, intd2Sdx2rdr, intd2Sdy2rdr, intd2Sdxdyrdr, intd2Sdx2ABrdr, intd2Sdy2ABrdr, intd2SdxdyABrdr, extra = pre
+        intd2Rdx2rdr,
+        intd2Rdy2rdr,
+        intd2Rdxdyrdr,
+        intd2Rdx2ABrdr,
+        intd2Rdy2ABrdr,
+        intd2RdxdyABrdr,
+        intd2Sdx2rdr,
+        intd2Sdy2rdr,
+        intd2Sdxdyrdr,
+        intd2Sdx2ABrdr,
+        intd2Sdy2ABrdr,
+        intd2SdxdyABrdr,
+        extra = pre
 
         for i = 1:2
             constA = (cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2
             constB = atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
             intd2Rdx2rdr[i] = Clocal * (r^2 * (-1 + log((constA * r^2) / a^2)))
-            intd2Rdy2rdr[i] = Clocal * (r^2 * (-dad.k.d[i]^2 - 4 * constB * dad.k.d[i] * dad.k.e[i] + dad.k.e[i]^2 + (dad.k.d[i]^2 - dad.k.e[i]^2) * log((constA * r^2) / a^2)))
-            intd2Rdxdyrdr[i] = Clocal * (r^2 * (-dad.k.d[i] - 2 * constB * dad.k.e[i] + dad.k.d[i] * log((constA * r^2) / a^2)))
+            intd2Rdy2rdr[i] =
+                Clocal * (
+                    r^2 * (
+                        -dad.k.d[i]^2 - 4 * constB * dad.k.d[i] * dad.k.e[i] +
+                        dad.k.e[i]^2 +
+                        (dad.k.d[i]^2 - dad.k.e[i]^2) * log((constA * r^2) / a^2)
+                    )
+                )
+            intd2Rdxdyrdr[i] =
+                Clocal * (
+                    r^2 * (
+                        -dad.k.d[i] - 2 * constB * dad.k.e[i] +
+                        dad.k.d[i] * log((constA * r^2) / a^2)
+                    )
+                )
 
-            intd2Rdx2ABrdr[i] = (2 * r^3 * (-2 + 3 * log((constA * r^2) / a^2)) * (A * cos(theta) + B * sin(theta))) / 9
+            intd2Rdx2ABrdr[i] =
+                (
+                    2 *
+                    r^3 *
+                    (-2 + 3 * log((constA * r^2) / a^2)) *
+                    (A * cos(theta) + B * sin(theta))
+                ) / 9
             intd2Rdy2ABrdr[i] = 0
             intd2RdxdyABrdr[i] = 0
 
             intd2Sdx2rdr[i] = Clocal * (constB * r^2)
-            intd2Sdy2rdr[i] = Clocal * (r^2 * (-(dad.k.d[i] * dad.k.e[i]) + constB * (dad.k.d[i]^2 - dad.k.e[i]^2) + dad.k.d[i] * dad.k.e[i] * log((constA * r^2) / a^2)))
-            intd2Sdxdyrdr[i] = Clocal * ((r^2 * (2 * constB * dad.k.d[i] - dad.k.e[i] + dad.k.e[i] * log((constA * r^2) / a^2))) / 2)
+            intd2Sdy2rdr[i] =
+                Clocal * (
+                    r^2 * (
+                        -(dad.k.d[i] * dad.k.e[i]) +
+                        constB * (dad.k.d[i]^2 - dad.k.e[i]^2) +
+                        dad.k.d[i] * dad.k.e[i] * log((constA * r^2) / a^2)
+                    )
+                )
+            intd2Sdxdyrdr[i] =
+                Clocal * (
+                    (
+                        r^2 * (
+                            2 * constB * dad.k.d[i] - dad.k.e[i] +
+                            dad.k.e[i] * log((constA * r^2) / a^2)
+                        )
+                    ) / 2
+                )
 
 
             intd2Sdx2ABrdr[i] = 0
@@ -827,15 +1814,41 @@ function compute_q_d2(pf, nf, x, eta, Gauss_w, elem, dad, pre)
             intd2SdxdyABrdr[i] = 0
 
         end
-        int_d2Fnrrdx2 = 1 / (8 * pi * dad.k.D22) * (C1 * (intd2Rdx2rdr[1] + intd2Rdx2ABrdr[1]) + C2 * (intd2Rdx2rdr[2] + intd2Rdx2ABrdr[2]) + C3 * ((intd2Sdx2rdr[1] + intd2Sdx2ABrdr[1]) - (intd2Sdx2rdr[2] + intd2Sdx2ABrdr[2])))
+        int_d2Fnrrdx2 =
+            1 / (8 * pi * dad.k.D22) * (
+                C1 * (intd2Rdx2rdr[1] + intd2Rdx2ABrdr[1]) +
+                C2 * (intd2Rdx2rdr[2] + intd2Rdx2ABrdr[2]) +
+                C3 * (
+                    (intd2Sdx2rdr[1] + intd2Sdx2ABrdr[1]) -
+                    (intd2Sdx2rdr[2] + intd2Sdx2ABrdr[2])
+                )
+            )
 
-        int_d2Fnrrdy2 = 1 / (8 * pi * dad.k.D22) * (C1 * (intd2Rdy2rdr[1] + intd2Rdy2ABrdr[1]) + C2 * (intd2Rdy2rdr[2] + intd2Rdy2ABrdr[2]) + C3 * ((intd2Sdy2rdr[1] + intd2Sdy2ABrdr[1]) - (intd2Sdy2rdr[2] + intd2Sdy2ABrdr[2])))
+        int_d2Fnrrdy2 =
+            1 / (8 * pi * dad.k.D22) * (
+                C1 * (intd2Rdy2rdr[1] + intd2Rdy2ABrdr[1]) +
+                C2 * (intd2Rdy2rdr[2] + intd2Rdy2ABrdr[2]) +
+                C3 * (
+                    (intd2Sdy2rdr[1] + intd2Sdy2ABrdr[1]) -
+                    (intd2Sdy2rdr[2] + intd2Sdy2ABrdr[2])
+                )
+            )
 
-        int_d2Fnrrdxdy = 1 / (8 * pi * dad.k.D22) * (C1 * (intd2Rdxdyrdr[1] + intd2RdxdyABrdr[1]) + C2 * (intd2Rdxdyrdr[2] + intd2RdxdyABrdr[2]) + C3 * ((intd2Sdxdyrdr[1] + intd2SdxdyABrdr[1]) - (intd2Sdxdyrdr[2] + intd2SdxdyABrdr[2])))
+        int_d2Fnrrdxdy =
+            1 / (8 * pi * dad.k.D22) * (
+                C1 * (intd2Rdxdyrdr[1] + intd2RdxdyABrdr[1]) +
+                C2 * (intd2Rdxdyrdr[2] + intd2RdxdyABrdr[2]) +
+                C3 * (
+                    (intd2Sdxdyrdr[1] + intd2SdxdyABrdr[1]) -
+                    (intd2Sdxdyrdr[2] + intd2SdxdyABrdr[2])
+                )
+            )
         # Solução fundamental de deslocamento
-        int_d2q = nr / r * [int_d2Fnrrdx2
+        int_d2q = nr / r * [
+            int_d2Fnrrdx2
             int_d2Fnrrdy2
-            int_d2Fnrrdxdy]
+            int_d2Fnrrdxdy
+        ]
         # Cálculo dos componentes de q_el [2 X 2]
         q_el = q_el + int_d2q * dgamadqsi * Gauss_w[k]
     end
@@ -874,50 +1887,400 @@ function compute_q_dt(pf, nf, x, eta, Gauss_w, elem, dad, pre)
 
         G = (dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1] + dad.k.e[2])^2
         H = (dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1] - dad.k.e[2])^2
-        C1 = ((dad.k.d[1] - dad.k.d[2])^2 - (dad.k.e[1]^2 - dad.k.e[2]^2)) / (G * H * dad.k.e[1])
-        C2 = ((dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1]^2 - dad.k.e[2]^2)) / (G * H * dad.k.e[2])
+        C1 =
+            ((dad.k.d[1] - dad.k.d[2])^2 - (dad.k.e[1]^2 - dad.k.e[2]^2)) /
+            (G * H * dad.k.e[1])
+        C2 =
+            ((dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1]^2 - dad.k.e[2]^2)) /
+            (G * H * dad.k.e[2])
         C3 = 4 * (dad.k.d[1] - dad.k.d[2]) / (G * H)
         a = 1
         A = dad.k.carga[1]
         B = dad.k.carga[2]
         C = dad.k.carga[3]
         Clocal = A * xf + B * yf + C
-        intdRdxABrdr, intdRdxrdr, intdRdyABrdr, intdRdyrdr, intdSdxABrdr, intdSdxrdr, intdSdyABrdr, intdSdyrdr, intRABrdr, intRkrdr, intSABrdr, intSkrdr, extra = pre
+        intdRdxABrdr,
+        intdRdxrdr,
+        intdRdyABrdr,
+        intdRdyrdr,
+        intdSdxABrdr,
+        intdSdxrdr,
+        intdSdyABrdr,
+        intdSdyrdr,
+        intRABrdr,
+        intRkrdr,
+        intSABrdr,
+        intSkrdr,
+        extra = pre
 
         for i = 1:2
 
 
-            intRkrdr[i] = Clocal * (r^3 * (-16 * dad.k.e[i] * atan((dad.k.e[i] * sin(theta)), (cos(theta) + dad.k.d[i] * sin(theta))) * sin(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) - (-7 + 2 * log((r^2 * (dad.k.e[i]^2 * sin(theta)^2 + (cos(theta) + dad.k.d[i] * sin(theta))^2)) / a^2)) * (-1 - dad.k.d[i]^2 + dad.k.e[i]^2 + (-1 + dad.k.d[i]^2 - dad.k.e[i]^2) * cos(2 * theta) - 2 * dad.k.d[i] * sin(2 * theta)))) / 16
+            intRkrdr[i] =
+                Clocal * (
+                    r^3 * (
+                        -16 *
+                        dad.k.e[i] *
+                        atan(
+                            (dad.k.e[i] * sin(theta)),
+                            (cos(theta) + dad.k.d[i] * sin(theta)),
+                        ) *
+                        sin(theta) *
+                        (cos(theta) + dad.k.d[i] * sin(theta)) -
+                        (
+                            -7 +
+                            2 * log(
+                                (
+                                    r^2 * (
+                                        dad.k.e[i]^2 * sin(theta)^2 +
+                                        (cos(theta) + dad.k.d[i] * sin(theta))^2
+                                    )
+                                ) / a^2,
+                            )
+                        ) * (
+                            -1 - dad.k.d[i]^2 +
+                            dad.k.e[i]^2 +
+                            (-1 + dad.k.d[i]^2 - dad.k.e[i]^2) * cos(2 * theta) -
+                            2 * dad.k.d[i] * sin(2 * theta)
+                        )
+                    )
+                ) / 16
 
-            intSkrdr[i] = Clocal * (r^3 * (2 * dad.k.e[i] * (-7 + 2 * log((r^2 * (dad.k.e[i]^2 * sin(theta)^2 + (cos(theta) + dad.k.d[i] * sin(theta))^2)) / a^2)) * sin(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) + 2 * atan((dad.k.e[i] * sin(theta)), (cos(theta) + dad.k.d[i] * sin(theta))) * (1 + dad.k.d[i]^2 - dad.k.e[i]^2 + (1 - dad.k.d[i]^2 + dad.k.e[i]^2) * cos(2 * theta) + 2 * dad.k.d[i] * sin(2 * theta)))) / 16
+            intSkrdr[i] =
+                Clocal * (
+                    r^3 * (
+                        2 *
+                        dad.k.e[i] *
+                        (
+                            -7 +
+                            2 * log(
+                                (
+                                    r^2 * (
+                                        dad.k.e[i]^2 * sin(theta)^2 +
+                                        (cos(theta) + dad.k.d[i] * sin(theta))^2
+                                    )
+                                ) / a^2,
+                            )
+                        ) *
+                        sin(theta) *
+                        (cos(theta) + dad.k.d[i] * sin(theta)) +
+                        2 *
+                        atan(
+                            (dad.k.e[i] * sin(theta)),
+                            (cos(theta) + dad.k.d[i] * sin(theta)),
+                        ) *
+                        (
+                            1 + dad.k.d[i]^2 - dad.k.e[i]^2 +
+                            (1 - dad.k.d[i]^2 + dad.k.e[i]^2) * cos(2 * theta) +
+                            2 * dad.k.d[i] * sin(2 * theta)
+                        )
+                    )
+                ) / 16
 
-            intRABrdr[i] = (r^4 * (A * cos(theta) + B * sin(theta)) * (-40 * dad.k.e[i] * atan((dad.k.e[i] * sin(theta)), (cos(theta) + dad.k.d[i] * sin(theta))) * sin(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) - (-17 + 5 * log((r^2 * (dad.k.e[i]^2 * sin(theta)^2 + (cos(theta) + dad.k.d[i] * sin(theta))^2)) / a^2)) * (-1 - dad.k.d[i]^2 + dad.k.e[i]^2 + (-1 + dad.k.d[i]^2 - dad.k.e[i]^2) * cos(2 * theta) - 2 * dad.k.d[i] * sin(2 * theta)))) / 50
+            intRABrdr[i] =
+                (
+                    r^4 *
+                    (A * cos(theta) + B * sin(theta)) *
+                    (
+                        -40 *
+                        dad.k.e[i] *
+                        atan(
+                            (dad.k.e[i] * sin(theta)),
+                            (cos(theta) + dad.k.d[i] * sin(theta)),
+                        ) *
+                        sin(theta) *
+                        (cos(theta) + dad.k.d[i] * sin(theta)) -
+                        (
+                            -17 +
+                            5 * log(
+                                (
+                                    r^2 * (
+                                        dad.k.e[i]^2 * sin(theta)^2 +
+                                        (cos(theta) + dad.k.d[i] * sin(theta))^2
+                                    )
+                                ) / a^2,
+                            )
+                        ) * (
+                            -1 - dad.k.d[i]^2 +
+                            dad.k.e[i]^2 +
+                            (-1 + dad.k.d[i]^2 - dad.k.e[i]^2) * cos(2 * theta) -
+                            2 * dad.k.d[i] * sin(2 * theta)
+                        )
+                    )
+                ) / 50
 
-            intSABrdr[i] = (r^4 * (A * cos(theta) + B * sin(theta)) * (2 * dad.k.e[i] * (-17 + 5 * log((r^2 * (dad.k.e[i]^2 * sin(theta)^2 + (cos(theta) + dad.k.d[i] * sin(theta))^2)) / a^2)) * sin(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) + 5 * atan((dad.k.e[i] * sin(theta)), (cos(theta) + dad.k.d[i] * sin(theta))) * (1 + dad.k.d[i]^2 - dad.k.e[i]^2 + (1 - dad.k.d[i]^2 + dad.k.e[i]^2) * cos(2 * theta) + 2 * dad.k.d[i] * sin(2 * theta)))) / 50
+            intSABrdr[i] =
+                (
+                    r^4 *
+                    (A * cos(theta) + B * sin(theta)) *
+                    (
+                        2 *
+                        dad.k.e[i] *
+                        (
+                            -17 +
+                            5 * log(
+                                (
+                                    r^2 * (
+                                        dad.k.e[i]^2 * sin(theta)^2 +
+                                        (cos(theta) + dad.k.d[i] * sin(theta))^2
+                                    )
+                                ) / a^2,
+                            )
+                        ) *
+                        sin(theta) *
+                        (cos(theta) + dad.k.d[i] * sin(theta)) +
+                        5 *
+                        atan(
+                            (dad.k.e[i] * sin(theta)),
+                            (cos(theta) + dad.k.d[i] * sin(theta)),
+                        ) *
+                        (
+                            1 + dad.k.d[i]^2 - dad.k.e[i]^2 +
+                            (1 - dad.k.d[i]^2 + dad.k.e[i]^2) * cos(2 * theta) +
+                            2 * dad.k.d[i] * sin(2 * theta)
+                        )
+                    )
+                ) / 50
 
-            intdRdxABrdr[i] = (r^3 * (A * cos(theta) + B * sin(theta)) * (-4 * dad.k.e[i] * atan((dad.k.e[i] * sin(theta)), (cos(theta) + dad.k.d[i] * sin(theta))) * sin(theta) + (-5 + 2 * log((r^2 * (dad.k.e[i]^2 * sin(theta)^2 + (cos(theta) + dad.k.d[i] * sin(theta))^2)) / a^2)) * (cos(theta) + dad.k.d[i] * sin(theta)))) / 4
+            intdRdxABrdr[i] =
+                (
+                    r^3 *
+                    (A * cos(theta) + B * sin(theta)) *
+                    (
+                        -4 *
+                        dad.k.e[i] *
+                        atan(
+                            (dad.k.e[i] * sin(theta)),
+                            (cos(theta) + dad.k.d[i] * sin(theta)),
+                        ) *
+                        sin(theta) +
+                        (
+                            -5 +
+                            2 * log(
+                                (
+                                    r^2 * (
+                                        dad.k.e[i]^2 * sin(theta)^2 +
+                                        (cos(theta) + dad.k.d[i] * sin(theta))^2
+                                    )
+                                ) / a^2,
+                            )
+                        ) * (cos(theta) + dad.k.d[i] * sin(theta))
+                    )
+                ) / 4
 
-            intdRdyABrdr[i] = (r^3 * (A * cos(theta) + B * sin(theta)) * (-4 * dad.k.e[i] * atan((dad.k.e[i] * sin(theta)), (cos(theta) + dad.k.d[i] * sin(theta))) * (cos(theta) + 2 * dad.k.d[i] * sin(theta)) + (-5 + 2 * log((r^2 * (dad.k.e[i]^2 * sin(theta)^2 + (cos(theta) + dad.k.d[i] * sin(theta))^2)) / a^2)) * (dad.k.d[i] * cos(theta) + (dad.k.d[i]^2 - dad.k.e[i]^2) * sin(theta)))) / 4
+            intdRdyABrdr[i] =
+                (
+                    r^3 *
+                    (A * cos(theta) + B * sin(theta)) *
+                    (
+                        -4 *
+                        dad.k.e[i] *
+                        atan(
+                            (dad.k.e[i] * sin(theta)),
+                            (cos(theta) + dad.k.d[i] * sin(theta)),
+                        ) *
+                        (cos(theta) + 2 * dad.k.d[i] * sin(theta)) +
+                        (
+                            -5 +
+                            2 * log(
+                                (
+                                    r^2 * (
+                                        dad.k.e[i]^2 * sin(theta)^2 +
+                                        (cos(theta) + dad.k.d[i] * sin(theta))^2
+                                    )
+                                ) / a^2,
+                            )
+                        ) * (
+                            dad.k.d[i] * cos(theta) +
+                            (dad.k.d[i]^2 - dad.k.e[i]^2) * sin(theta)
+                        )
+                    )
+                ) / 4
 
-            intdSdxABrdr[i] = (r^3 * (A * cos(theta) + B * sin(theta)) * (dad.k.e[i] * (-5 + 2 * log((r^2 * (dad.k.e[i]^2 * sin(theta)^2 + (cos(theta) + dad.k.d[i] * sin(theta))^2)) / a^2)) * sin(theta) + 4 * atan((dad.k.e[i] * sin(theta)), (cos(theta) + dad.k.d[i] * sin(theta))) * (cos(theta) + dad.k.d[i] * sin(theta)))) / 8
+            intdSdxABrdr[i] =
+                (
+                    r^3 *
+                    (A * cos(theta) + B * sin(theta)) *
+                    (
+                        dad.k.e[i] *
+                        (
+                            -5 +
+                            2 * log(
+                                (
+                                    r^2 * (
+                                        dad.k.e[i]^2 * sin(theta)^2 +
+                                        (cos(theta) + dad.k.d[i] * sin(theta))^2
+                                    )
+                                ) / a^2,
+                            )
+                        ) *
+                        sin(theta) +
+                        4 *
+                        atan(
+                            (dad.k.e[i] * sin(theta)),
+                            (cos(theta) + dad.k.d[i] * sin(theta)),
+                        ) *
+                        (cos(theta) + dad.k.d[i] * sin(theta))
+                    )
+                ) / 8
 
-            intdSdyABrdr[i] = (r^3 * (A * cos(theta) + B * sin(theta)) * (dad.k.e[i] * (-5 + 2 * log((r^2 * (dad.k.e[i]^2 * sin(theta)^2 + (cos(theta) + dad.k.d[i] * sin(theta))^2)) / a^2)) * (cos(theta) + 2 * dad.k.d[i] * sin(theta)) + 4 * atan((dad.k.e[i] * sin(theta)), (cos(theta) + dad.k.d[i] * sin(theta))) * (dad.k.d[i] * cos(theta) + (dad.k.d[i]^2 - dad.k.e[i]^2) * sin(theta)))) / 8
+            intdSdyABrdr[i] =
+                (
+                    r^3 *
+                    (A * cos(theta) + B * sin(theta)) *
+                    (
+                        dad.k.e[i] *
+                        (
+                            -5 +
+                            2 * log(
+                                (
+                                    r^2 * (
+                                        dad.k.e[i]^2 * sin(theta)^2 +
+                                        (cos(theta) + dad.k.d[i] * sin(theta))^2
+                                    )
+                                ) / a^2,
+                            )
+                        ) *
+                        (cos(theta) + 2 * dad.k.d[i] * sin(theta)) +
+                        4 *
+                        atan(
+                            (dad.k.e[i] * sin(theta)),
+                            (cos(theta) + dad.k.d[i] * sin(theta)),
+                        ) *
+                        (
+                            dad.k.d[i] * cos(theta) +
+                            (dad.k.d[i]^2 - dad.k.e[i]^2) * sin(theta)
+                        )
+                    )
+                ) / 8
 
-            intdRdxrdr[i] = Clocal * (2 * r^2 * (-6 * dad.k.e[i] * atan((dad.k.e[i] * sin(theta)), (cos(theta) + dad.k.d[i] * sin(theta))) * sin(theta) + (-8 + 3 * log((r^2 * (dad.k.e[i]^2 * sin(theta)^2 + (cos(theta) + dad.k.d[i] * sin(theta))^2)) / a^2)) * (cos(theta) + dad.k.d[i] * sin(theta)))) / 9
+            intdRdxrdr[i] =
+                Clocal * (
+                    2 *
+                    r^2 *
+                    (
+                        -6 *
+                        dad.k.e[i] *
+                        atan(
+                            (dad.k.e[i] * sin(theta)),
+                            (cos(theta) + dad.k.d[i] * sin(theta)),
+                        ) *
+                        sin(theta) +
+                        (
+                            -8 +
+                            3 * log(
+                                (
+                                    r^2 * (
+                                        dad.k.e[i]^2 * sin(theta)^2 +
+                                        (cos(theta) + dad.k.d[i] * sin(theta))^2
+                                    )
+                                ) / a^2,
+                            )
+                        ) * (cos(theta) + dad.k.d[i] * sin(theta))
+                    )
+                ) / 9
 
-            intdRdyrdr[i] = Clocal * (2 * r^2 * (-6 * dad.k.e[i] * atan((dad.k.e[i] * sin(theta)), (cos(theta) + dad.k.d[i] * sin(theta))) * (cos(theta) + 2 * dad.k.d[i] * sin(theta)) + (-8 + 3 * log((r^2 * (dad.k.e[i]^2 * sin(theta)^2 + (cos(theta) + dad.k.d[i] * sin(theta))^2)) / a^2)) * (dad.k.d[i] * cos(theta) + (dad.k.d[i]^2 - dad.k.e[i]^2) * sin(theta)))) / 9
+            intdRdyrdr[i] =
+                Clocal * (
+                    2 *
+                    r^2 *
+                    (
+                        -6 *
+                        dad.k.e[i] *
+                        atan(
+                            (dad.k.e[i] * sin(theta)),
+                            (cos(theta) + dad.k.d[i] * sin(theta)),
+                        ) *
+                        (cos(theta) + 2 * dad.k.d[i] * sin(theta)) +
+                        (
+                            -8 +
+                            3 * log(
+                                (
+                                    r^2 * (
+                                        dad.k.e[i]^2 * sin(theta)^2 +
+                                        (cos(theta) + dad.k.d[i] * sin(theta))^2
+                                    )
+                                ) / a^2,
+                            )
+                        ) * (
+                            dad.k.d[i] * cos(theta) +
+                            (dad.k.d[i]^2 - dad.k.e[i]^2) * sin(theta)
+                        )
+                    )
+                ) / 9
 
-            intdSdxrdr[i] = Clocal * (r^2 * (dad.k.e[i] * (-8 + 3 * log((r^2 * (dad.k.e[i]^2 * sin(theta)^2 + (cos(theta) + dad.k.d[i] * sin(theta))^2)) / a^2)) * sin(theta) + 6 * atan((dad.k.e[i] * sin(theta)), (cos(theta) + dad.k.d[i] * sin(theta))) * (cos(theta) + dad.k.d[i] * sin(theta)))) / 9
+            intdSdxrdr[i] =
+                Clocal * (
+                    r^2 * (
+                        dad.k.e[i] *
+                        (
+                            -8 +
+                            3 * log(
+                                (
+                                    r^2 * (
+                                        dad.k.e[i]^2 * sin(theta)^2 +
+                                        (cos(theta) + dad.k.d[i] * sin(theta))^2
+                                    )
+                                ) / a^2,
+                            )
+                        ) *
+                        sin(theta) +
+                        6 *
+                        atan(
+                            (dad.k.e[i] * sin(theta)),
+                            (cos(theta) + dad.k.d[i] * sin(theta)),
+                        ) *
+                        (cos(theta) + dad.k.d[i] * sin(theta))
+                    )
+                ) / 9
 
-            intdSdyrdr[i] = -Clocal * (r^2 * (-(dad.k.e[i] * (-8 + 3 * log((r^2 * (dad.k.e[i]^2 * sin(theta)^2 + (cos(theta) + dad.k.d[i] * sin(theta))^2)) / a^2)) * (cos(theta) + 2 * dad.k.d[i] * sin(theta))) - 6 * atan((dad.k.e[i] * sin(theta)), (cos(theta) + dad.k.d[i] * sin(theta))) * (dad.k.d[i] * cos(theta) + (dad.k.d[i]^2 - dad.k.e[i]^2) * sin(theta)))) / 9
+            intdSdyrdr[i] =
+                -Clocal * (
+                    r^2 * (
+                        -(
+                            dad.k.e[i] *
+                            (
+                                -8 +
+                                3 * log(
+                                    (
+                                        r^2 * (
+                                            dad.k.e[i]^2 * sin(theta)^2 +
+                                            (cos(theta) + dad.k.d[i] * sin(theta))^2
+                                        )
+                                    ) / a^2,
+                                )
+                            ) *
+                            (cos(theta) + 2 * dad.k.d[i] * sin(theta))
+                        ) -
+                        6 *
+                        atan(
+                            (dad.k.e[i] * sin(theta)),
+                            (cos(theta) + dad.k.d[i] * sin(theta)),
+                        ) *
+                        (
+                            dad.k.d[i] * cos(theta) +
+                            (dad.k.d[i]^2 - dad.k.e[i]^2) * sin(theta)
+                        )
+                    )
+                ) / 9
 
         end
 
 
 
-        intdwdxrdr = 1 / (8 * pi) * (C1 * (intdRdxrdr[1] + intdRdxABrdr[1]) + C2 * (intdRdxrdr[2] + intdRdxABrdr[2]) + C3 * ((intdSdxrdr[1] + intdSdxABrdr[1]) - (intdSdxrdr[2] + intdSdxABrdr[2])))
+        intdwdxrdr =
+            1 / (8 * pi) * (
+                C1 * (intdRdxrdr[1] + intdRdxABrdr[1]) +
+                C2 * (intdRdxrdr[2] + intdRdxABrdr[2]) +
+                C3 * ((intdSdxrdr[1] + intdSdxABrdr[1]) - (intdSdxrdr[2] + intdSdxABrdr[2]))
+            )
 
-        intdwdyrdr = 1 / (8 * pi) * (C1 * (intdRdyrdr[1] + intdRdyABrdr[1]) + C2 * (intdRdyrdr[2] + intdRdyABrdr[2]) + C3 * ((intdSdyrdr[1] + intdSdyABrdr[1]) - (intdSdyrdr[2] + intdSdyABrdr[2])))
+        intdwdyrdr =
+            1 / (8 * pi) * (
+                C1 * (intdRdyrdr[1] + intdRdyABrdr[1]) +
+                C2 * (intdRdyrdr[2] + intdRdyABrdr[2]) +
+                C3 * ((intdSdyrdr[1] + intdSdyABrdr[1]) - (intdSdyrdr[2] + intdSdyABrdr[2]))
+            )
 
         # int2 = -1*(intdwdxrdr*m1+intdwdyrdr*m2)*nr/dad.k.D22
 
@@ -948,87 +2311,260 @@ function compute_d2Rw(pf, nf, dad, pre)
 
         G = (dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1] + dad.k.e[2])^2
         H = (dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1] - dad.k.e[2])^2
-        C1 = ((dad.k.d[1] - dad.k.d[2])^2 - (dad.k.e[1]^2 - dad.k.e[2]^2)) / (G * H * dad.k.e[1])
-        C2 = ((dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1]^2 - dad.k.e[2]^2)) / (G * H * dad.k.e[2])
+        C1 =
+            ((dad.k.d[1] - dad.k.d[2])^2 - (dad.k.e[1]^2 - dad.k.e[2]^2)) /
+            (G * H * dad.k.e[1])
+        C2 =
+            ((dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1]^2 - dad.k.e[2]^2)) /
+            (G * H * dad.k.e[2])
         C3 = 4 * (dad.k.d[1] - dad.k.d[2]) / (G * H)
         # a = constFS
         a = 1
         theta = atan(r2, r1)
         r = norm(rs)
-        d2Rdxdy, d2Rdy2, d2Sdx2, d2Sdxdy, d2Sdy2, d4Rdx2dy2, d4Rdx3dy, d4Rdx4, d4Rdxdy3, d4Rdy4, d4Sdx2dy2, d4Sdx3dy, d4Sdx4, d4Sdxdy3, d4Sdy4, d2Rdx2, extra = pre
+        d2Rdxdy,
+        d2Rdy2,
+        d2Sdx2,
+        d2Sdxdy,
+        d2Sdy2,
+        d4Rdx2dy2,
+        d4Rdx3dy,
+        d4Rdx4,
+        d4Rdxdy3,
+        d4Rdy4,
+        d4Sdx2dy2,
+        d4Sdx3dy,
+        d4Sdx4,
+        d4Sdxdy3,
+        d4Sdy4,
+        d2Rdx2,
+        extra = pre
         for i = 1:2
             constA = (cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2
             constB = atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-            d2Rdx2[i] = 2 * log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2))
+            d2Rdx2[i] =
+                2 * log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                )
 
-            ####      
+            ####
 
-            d2Rdxdy[i] = 2 * dad.k.d[i] * log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 4 * dad.k.e[i] * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
-            ###    
-            d2Rdy2[i] = 2 * (dad.k.d[i]^2 - dad.k.e[i]^2) * log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 8 * dad.k.d[i] * dad.k.e[i] * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+            d2Rdxdy[i] =
+                2 *
+                dad.k.d[i] *
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) -
+                4 *
+                dad.k.e[i] *
+                atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+            ###
+            d2Rdy2[i] =
+                2 *
+                (dad.k.d[i]^2 - dad.k.e[i]^2) *
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) -
+                8 *
+                dad.k.d[i] *
+                dad.k.e[i] *
+                atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
             d3Rdx3[i] = 4 * (cos(theta) + dad.k.d[i] * sin(theta)) / (r * constA)
 
             # Cálculo da derivada terceira de R1 e R2 em relação a x e y conforme Shi e Bezine
-            d3Rdx2dy[i] = 4 * (dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) + dad.k.e[i]^2 * sin(theta)) / (r * constA)
+            d3Rdx2dy[i] =
+                4 * (
+                    dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) +
+                    dad.k.e[i]^2 * sin(theta)
+                ) / (r * constA)
 
             # Cálculo da derivada terceira de R1 e R2 em relação a x e y conforme Shi e Bezine
-            d3Rdxdy2[i] = 4 * ((dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) + (dad.k.d[i]^2 + dad.k.e[i]^2) * dad.k.d[i] * sin(theta)) / (r * constA)
+            d3Rdxdy2[i] =
+                4 * (
+                    (dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) +
+                    (dad.k.d[i]^2 + dad.k.e[i]^2) * dad.k.d[i] * sin(theta)
+                ) / (r * constA)
 
             # Cálculo da derivada terceira de R1 e R2 em relação a y conforme Shi e Bezine
-            d3Rdy3[i] = 4 * (dad.k.d[i] * (dad.k.d[i]^2 - 3 * dad.k.e[i]^2) * cos(theta) + (dad.k.d[i]^4 - dad.k.e[i]^4) * sin(theta)) / (r * constA)
+            d3Rdy3[i] =
+                4 * (
+                    dad.k.d[i] * (dad.k.d[i]^2 - 3 * dad.k.e[i]^2) * cos(theta) +
+                    (dad.k.d[i]^4 - dad.k.e[i]^4) * sin(theta)
+                ) / (r * constA)
             # Cálculo da derivada quarta de R1 e R2 em relação a x conforme Shi e Bezine
-            d4Rdx4[i] = -4 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 - dad.k.e[i]^2 * sin(theta)^2) / (r^2 * constA^2)
+            d4Rdx4[i] =
+                -4 *
+                ((cos(theta) + dad.k.d[i] * sin(theta))^2 - dad.k.e[i]^2 * sin(theta)^2) /
+                (r^2 * constA^2)
 
             # Cálculo da derivada quarta de R1 e R2 em relação a x e y conforme Shi e Bezine
-            d4Rdx3dy[i] = -4 / r^2 * (dad.k.d[i] / constA + 2 * dad.k.e[i]^2 * sin(theta) * cos(theta) / ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)^2)
+            d4Rdx3dy[i] =
+                -4 / r^2 * (
+                    dad.k.d[i] / constA +
+                    2 * dad.k.e[i]^2 * sin(theta) * cos(theta) /
+                    (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    )^2
+                )
 
             # Cálculo da derivada quarta de R1 e R2 em relação a x e y conforme Shi e Bezine
-            d4Rdx2dy2[i] = -4 / r^2 * ((dad.k.d[i]^2 + dad.k.e[i]^2) / ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2) - 2 * dad.k.e[i]^2 * cos(theta)^2 / constA^2)
+            d4Rdx2dy2[i] =
+                -4 / r^2 * (
+                    (dad.k.d[i]^2 + dad.k.e[i]^2) / (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ) - 2 * dad.k.e[i]^2 * cos(theta)^2 / constA^2
+                )
 
             # Cálculo da derivada quarta de R1 e R2 em relação a x e y conforme Shi e Bezine
-            d4Rdxdy3[i] = -4 / r^2 * (dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) / ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2) - 2 * dad.k.e[i]^2 * cos(theta) * (2 * dad.k.d[i] * cos(theta) + (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)) / ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)^2)
+            d4Rdxdy3[i] =
+                -4 / r^2 * (
+                    dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) / (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ) -
+                    2 *
+                    dad.k.e[i]^2 *
+                    cos(theta) *
+                    (
+                        2 * dad.k.d[i] * cos(theta) +
+                        (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)
+                    ) /
+                    (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    )^2
+                )
 
             # Cálculo da derivada quarta de R1 e R2 em relação a y conforme Shi e Bezine
-            d4Rdy4[i] = -4 / r^2 * ((dad.k.d[i]^4 - dad.k.e[i]^4) / constA - 2 * dad.k.e[i]^2 * cos(theta) * ((3 * dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) + 2 * dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)) / constA^2)
+            d4Rdy4[i] =
+                -4 / r^2 * (
+                    (dad.k.d[i]^4 - dad.k.e[i]^4) / constA -
+                    2 *
+                    dad.k.e[i]^2 *
+                    cos(theta) *
+                    (
+                        (3 * dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) +
+                        2 * dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)
+                    ) / constA^2
+                )
 
 
 
 
-            d2Sdx2[i] = 2 * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+            d2Sdx2[i] =
+                2 * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-            d2Sdxdy[i] = dad.k.e[i] * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2))) + 2 * dad.k.d[i] * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+            d2Sdxdy[i] =
+                dad.k.e[i] * (log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                )) +
+                2 *
+                dad.k.d[i] *
+                atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
 
-            d2Sdy2[i] = 2 * dad.k.d[i] * dad.k.e[i] * log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) + 2 * (dad.k.d[i]^2 - dad.k.e[i]^2) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+            d2Sdy2[i] =
+                2 *
+                dad.k.d[i] *
+                dad.k.e[i] *
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) +
+                2 *
+                (dad.k.d[i]^2 - dad.k.e[i]^2) *
+                atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
             # Cálculo da derivada quarta de S1 e S2 em relação a x conforme Shi e Bezine
-            d4Sdx4[i] = 4 * dad.k.e[i] * sin(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) / (r^2 * constA^2)
+            d4Sdx4[i] =
+                4 * dad.k.e[i] * sin(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) /
+                (r^2 * constA^2)
 
             # Cálculo da derivada quarta de S1 e S2 em relação a x e y conforme Shi e Bezine
-            d4Sdx3dy[i] = 2 * dad.k.e[i] / r^2 * (1 / constA - 2 * cos(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) / constA^2)
+            d4Sdx3dy[i] =
+                2 * dad.k.e[i] / r^2 * (
+                    1 / constA -
+                    2 * cos(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) / constA^2
+                )
 
             # Cálculo da derivada quarta de S1 e S2 em relação a x e y conforme Shi e Bezine
-            d4Sdx2dy2[i] = -4 * dad.k.e[i] * cos(theta) * (dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) + dad.k.e[i]^2 * sin(theta)) / (r^2 * constA^2)
+            d4Sdx2dy2[i] =
+                -4 *
+                dad.k.e[i] *
+                cos(theta) *
+                (
+                    dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) +
+                    dad.k.e[i]^2 * sin(theta)
+                ) / (r^2 * constA^2)
 
             # Cálculo da derivada quarta de S1 e S2 em relação a x e y conforme Shi e Bezine
-            d4Sdxdy3[i] = -2 * dad.k.e[i] / r^2 * ((dad.k.d[i]^2 + dad.k.e[i]^2) / constA + (2 * (dad.k.d[i]^2 + dad.k.e[i]^2) * cos(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) - 4 * dad.k.e[i]^2 * cos(theta)^2) / constA^2)
+            d4Sdxdy3[i] =
+                -2 * dad.k.e[i] / r^2 * (
+                    (dad.k.d[i]^2 + dad.k.e[i]^2) / constA +
+                    (
+                        2 *
+                        (dad.k.d[i]^2 + dad.k.e[i]^2) *
+                        cos(theta) *
+                        (cos(theta) + dad.k.d[i] * sin(theta)) -
+                        4 * dad.k.e[i]^2 * cos(theta)^2
+                    ) / constA^2
+                )
 
             # Cálculo da derivada quarta de S1 e S2 em relação a y conforme Shi e Bezine
-            d4Sdy4[i] = -4 * dad.k.e[i] / r^2 * (dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) / constA + cos(theta) * (dad.k.d[i] * (dad.k.d[i]^2 - 3 * dad.k.e[i]^2) * cos(theta) + (dad.k.d[i]^4 - dad.k.e[i]^4) * sin(theta)) / constA^2)
+            d4Sdy4[i] =
+                -4 * dad.k.e[i] / r^2 * (
+                    dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) / constA +
+                    cos(theta) * (
+                        dad.k.d[i] * (dad.k.d[i]^2 - 3 * dad.k.e[i]^2) * cos(theta) +
+                        (dad.k.d[i]^4 - dad.k.e[i]^4) * sin(theta)
+                    ) / constA^2
+                )
         end
 
-        d2wdx2 = 1 / (8 * pi * dad.k.D22) * (C1 * d2Rdx2[1] + C2 * d2Rdx2[2] + C3 * (d2Sdx2[1] - d2Sdx2[2]))
-        d2wdxdy = 1 / (8 * pi * dad.k.D22) * (C1 * d2Rdxdy[1] + C2 * d2Rdxdy[2] + C3 * (d2Sdxdy[1] - d2Sdxdy[2]))
-        d2wdy2 = 1 / (8 * pi * dad.k.D22) * (C1 * d2Rdy2[1] + C2 * d2Rdy2[2] + C3 * (d2Sdy2[1] - d2Sdy2[2]))
+        d2wdx2 =
+            1 / (8 * pi * dad.k.D22) *
+            (C1 * d2Rdx2[1] + C2 * d2Rdx2[2] + C3 * (d2Sdx2[1] - d2Sdx2[2]))
+        d2wdxdy =
+            1 / (8 * pi * dad.k.D22) *
+            (C1 * d2Rdxdy[1] + C2 * d2Rdxdy[2] + C3 * (d2Sdxdy[1] - d2Sdxdy[2]))
+        d2wdy2 =
+            1 / (8 * pi * dad.k.D22) *
+            (C1 * d2Rdy2[1] + C2 * d2Rdy2[2] + C3 * (d2Sdy2[1] - d2Sdy2[2]))
 
         #dad.k.Derivadas quartas da solução fundamental
-        d4wdx4 = 1 / (8 * pi * dad.k.D22) * (C1 * d4Rdx4[1] + C2 * d4Rdx4[2] + C3 * (d4Sdx4[1] - d4Sdx4[2]))
-        d4wdx3dy = 1 / (8 * pi * dad.k.D22) * (C1 * d4Rdx3dy[1] + C2 * d4Rdx3dy[2] + C3 * (d4Sdx3dy[1] - d4Sdx3dy[2]))
-        d4wdx2dy2 = 1 / (8 * pi * dad.k.D22) * (C1 * d4Rdx2dy2[1] + C2 * d4Rdx2dy2[2] + C3 * (d4Sdx2dy2[1] - d4Sdx2dy2[2]))
-        d4wdxdy3 = 1 / (8 * pi * dad.k.D22) * (C1 * d4Rdxdy3[1] + C2 * d4Rdxdy3[2] + C3 * (d4Sdxdy3[1] - d4Sdxdy3[2]))
-        d4wdy4 = 1 / (8 * pi * dad.k.D22) * (C1 * d4Rdy4[1] + C2 * d4Rdy4[2] + C3 * (d4Sdy4[1] - d4Sdy4[2]))
+        d4wdx4 =
+            1 / (8 * pi * dad.k.D22) *
+            (C1 * d4Rdx4[1] + C2 * d4Rdx4[2] + C3 * (d4Sdx4[1] - d4Sdx4[2]))
+        d4wdx3dy =
+            1 / (8 * pi * dad.k.D22) *
+            (C1 * d4Rdx3dy[1] + C2 * d4Rdx3dy[2] + C3 * (d4Sdx3dy[1] - d4Sdx3dy[2]))
+        d4wdx2dy2 =
+            1 / (8 * pi * dad.k.D22) *
+            (C1 * d4Rdx2dy2[1] + C2 * d4Rdx2dy2[2] + C3 * (d4Sdx2dy2[1] - d4Sdx2dy2[2]))
+        d4wdxdy3 =
+            1 / (8 * pi * dad.k.D22) *
+            (C1 * d4Rdxdy3[1] + C2 * d4Rdxdy3[2] + C3 * (d4Sdxdy3[1] - d4Sdxdy3[2]))
+        d4wdy4 =
+            1 / (8 * pi * dad.k.D22) *
+            (C1 * d4Rdy4[1] + C2 * d4Rdy4[2] + C3 * (d4Sdy4[1] - d4Sdy4[2]))
 
 
         g1a = (dad.k.D12 - dad.k.D11) * na1 * na2 + dad.k.D16 * (na1^2 - na2^2)
@@ -1086,53 +2622,206 @@ function compute_dtRw(pf, nf, dad, pre)
 
         G = (dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1] + dad.k.e[2])^2
         H = (dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1] - dad.k.e[2])^2
-        C1 = ((dad.k.d[1] - dad.k.d[2])^2 - (dad.k.e[1]^2 - dad.k.e[2]^2)) / (G * H * dad.k.e[1])
-        C2 = ((dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1]^2 - dad.k.e[2]^2)) / (G * H * dad.k.e[2])
+        C1 =
+            ((dad.k.d[1] - dad.k.d[2])^2 - (dad.k.e[1]^2 - dad.k.e[2]^2)) /
+            (G * H * dad.k.e[1])
+        C2 =
+            ((dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1]^2 - dad.k.e[2]^2)) /
+            (G * H * dad.k.e[2])
         C3 = 4 * (dad.k.d[1] - dad.k.d[2]) / (G * H)
         # a = constFS
         a = 1
         theta = atan(r2, r1)
         r = norm(rs)
-        dRdx, dRdy, dSdx, dSdy, d2Rdx2, d2Rdxdy, d2Rdy2, d2Sdx2, d2Sdxdy, d2Sdy2, d3Rdx2dy, d3Rdx3, d3Rdxdy2, d3Rdy3, d3Sdx2dy, d3Sdx3, d3Sdxdy2, d3Sdy3, extra = pre
+        dRdx,
+        dRdy,
+        dSdx,
+        dSdy,
+        d2Rdx2,
+        d2Rdxdy,
+        d2Rdy2,
+        d2Sdx2,
+        d2Sdxdy,
+        d2Sdy2,
+        d3Rdx2dy,
+        d3Rdx3,
+        d3Rdxdy2,
+        d3Rdy3,
+        d3Sdx2dy,
+        d3Sdx3,
+        d3Sdxdy2,
+        d3Sdy3,
+        extra = pre
 
         for i = 1:2
             constA = (cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2
             constB = atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-            dRdx[i] = 2 * r * (cos(theta) + dad.k.d[i] * sin(theta)) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 2) - 4 * r * dad.k.e[i] * sin(theta) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+            dRdx[i] =
+                2 *
+                r *
+                (cos(theta) + dad.k.d[i] * sin(theta)) *
+                (
+                    log(
+                        r^2 / a^2 * (
+                            (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                            dad.k.e[i]^2 * sin(theta)^2
+                        ),
+                    ) - 2
+                ) -
+                4 *
+                r *
+                dad.k.e[i] *
+                sin(theta) *
+                atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-            dRdy[i] = 2 * r * (dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) - dad.k.e[i]^2 * sin(theta)) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 2) - 4 * r * dad.k.e[i] * (cos(theta) + 2 * dad.k.d[i] * sin(theta)) * atan((dad.k.e[i] * sin(theta)), (cos(theta) + dad.k.d[i] * sin(theta)))
+            dRdy[i] =
+                2 *
+                r *
+                (
+                    dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) -
+                    dad.k.e[i]^2 * sin(theta)
+                ) *
+                (
+                    log(
+                        r^2 / a^2 * (
+                            (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                            dad.k.e[i]^2 * sin(theta)^2
+                        ),
+                    ) - 2
+                ) -
+                4 *
+                r *
+                dad.k.e[i] *
+                (cos(theta) + 2 * dad.k.d[i] * sin(theta)) *
+                atan((dad.k.e[i] * sin(theta)), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-            dSdx[i] = r * dad.k.e[i] * sin(theta) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 2) + 2 * r * (cos(theta) + dad.k.d[i] * sin(theta)) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+            dSdx[i] =
+                r *
+                dad.k.e[i] *
+                sin(theta) *
+                (
+                    log(
+                        r^2 / a^2 * (
+                            (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                            dad.k.e[i]^2 * sin(theta)^2
+                        ),
+                    ) - 2
+                ) +
+                2 *
+                r *
+                (cos(theta) + dad.k.d[i] * sin(theta)) *
+                atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-            dSdy[i] = r * dad.k.e[i] * (cos(theta) + 2 * dad.k.d[i] * sin(theta)) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 2) + 2 * r * (dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) - dad.k.e[i]^2 * sin(theta)) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+            dSdy[i] =
+                r *
+                dad.k.e[i] *
+                (cos(theta) + 2 * dad.k.d[i] * sin(theta)) *
+                (
+                    log(
+                        r^2 / a^2 * (
+                            (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                            dad.k.e[i]^2 * sin(theta)^2
+                        ),
+                    ) - 2
+                ) +
+                2 *
+                r *
+                (
+                    dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) -
+                    dad.k.e[i]^2 * sin(theta)
+                ) *
+                atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-            d2Rdx2[i] = 2 * log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2))
+            d2Rdx2[i] =
+                2 * log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                )
 
-            ####      
+            ####
 
-            d2Rdxdy[i] = 2 * dad.k.d[i] * log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 4 * dad.k.e[i] * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
-            ###    
-            d2Rdy2[i] = 2 * (dad.k.d[i]^2 - dad.k.e[i]^2) * log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 8 * dad.k.d[i] * dad.k.e[i] * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+            d2Rdxdy[i] =
+                2 *
+                dad.k.d[i] *
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) -
+                4 *
+                dad.k.e[i] *
+                atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+            ###
+            d2Rdy2[i] =
+                2 *
+                (dad.k.d[i]^2 - dad.k.e[i]^2) *
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) -
+                8 *
+                dad.k.d[i] *
+                dad.k.e[i] *
+                atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
 
-            d2Sdx2[i] = 2 * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+            d2Sdx2[i] =
+                2 * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-            d2Sdxdy[i] = dad.k.e[i] * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2))) + 2 * dad.k.d[i] * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+            d2Sdxdy[i] =
+                dad.k.e[i] * (log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                )) +
+                2 *
+                dad.k.d[i] *
+                atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
 
-            d2Sdy2[i] = 2 * dad.k.d[i] * dad.k.e[i] * log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) + 2 * (dad.k.d[i]^2 - dad.k.e[i]^2) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+            d2Sdy2[i] =
+                2 *
+                dad.k.d[i] *
+                dad.k.e[i] *
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) +
+                2 *
+                (dad.k.d[i]^2 - dad.k.e[i]^2) *
+                atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
             d3Rdx3[i] = 4 * (cos(theta) + dad.k.d[i] * sin(theta)) / (r * constA)
 
             # Cálculo da derivada terceira de R1 e R2 em relação a x e y conforme Shi e Bezine
-            d3Rdx2dy[i] = 4 * (dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) + dad.k.e[i]^2 * sin(theta)) / (r * constA)
+            d3Rdx2dy[i] =
+                4 * (
+                    dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) +
+                    dad.k.e[i]^2 * sin(theta)
+                ) / (r * constA)
 
             # Cálculo da derivada terceira de R1 e R2 em relação a x e y conforme Shi e Bezine
-            d3Rdxdy2[i] = 4 * ((dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) + (dad.k.d[i]^2 + dad.k.e[i]^2) * dad.k.d[i] * sin(theta)) / (r * constA)
+            d3Rdxdy2[i] =
+                4 * (
+                    (dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) +
+                    (dad.k.d[i]^2 + dad.k.e[i]^2) * dad.k.d[i] * sin(theta)
+                ) / (r * constA)
 
             # Cálculo da derivada terceira de R1 e R2 em relação a y conforme Shi e Bezine
-            d3Rdy3[i] = 4 * (dad.k.d[i] * (dad.k.d[i]^2 - 3 * dad.k.e[i]^2) * cos(theta) + (dad.k.d[i]^4 - dad.k.e[i]^4) * sin(theta)) / (r * constA)
+            d3Rdy3[i] =
+                4 * (
+                    dad.k.d[i] * (dad.k.d[i]^2 - 3 * dad.k.e[i]^2) * cos(theta) +
+                    (dad.k.d[i]^4 - dad.k.e[i]^4) * sin(theta)
+                ) / (r * constA)
 
             # Cálculo da derivada terceira de S1 e S2 em relação a x conforme Shi e Bezine
             d3Sdx3[i] = -2 * dad.k.e[i] * sin(theta) / (r * constA)
@@ -1141,10 +2830,22 @@ function compute_dtRw(pf, nf, dad, pre)
             d3Sdx2dy[i] = 2 * dad.k.e[i] * cos(theta) / (r * constA)
 
             # Cálculo da derivada terceira de S1 e S2 em relação a x e y conforme Shi e Bezine
-            d3Sdxdy2[i] = 2 * dad.k.e[i] * (2 * dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) - (dad.k.d[i]^2 - dad.k.e[i]^2) * sin(theta)) / (r * constA)
+            d3Sdxdy2[i] =
+                2 *
+                dad.k.e[i] *
+                (
+                    2 * dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) -
+                    (dad.k.d[i]^2 - dad.k.e[i]^2) * sin(theta)
+                ) / (r * constA)
 
             # Cálculo da derivada terceira de S1 e S2 em relação a y conforme Shi e Bezine
-            d3Sdy3[i] = 2 * dad.k.e[i] * ((3 * dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) + 2 * dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)) / (r * constA)
+            d3Sdy3[i] =
+                2 *
+                dad.k.e[i] *
+                (
+                    (3 * dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) +
+                    2 * dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)
+                ) / (r * constA)
 
         end
 
@@ -1152,15 +2853,25 @@ function compute_dtRw(pf, nf, dad, pre)
         dwdy = 1 / (8 * pi) * (C1 * dRdy[1] + C2 * dRdy[2] + C3 * (dSdy[1] - dSdy[2]))
 
         #dad.k.Derivadas segundas da solução fundamental
-        d2wdx2 = 1 / (8 * pi) * (C1 * d2Rdx2[1] + C2 * d2Rdx2[2] + C3 * (d2Sdx2[1] - d2Sdx2[2]))
-        d2wdxdy = 1 / (8 * pi) * (C1 * d2Rdxdy[1] + C2 * d2Rdxdy[2] + C3 * (d2Sdxdy[1] - d2Sdxdy[2]))
-        d2wdy2 = 1 / (8 * pi) * (C1 * d2Rdy2[1] + C2 * d2Rdy2[2] + C3 * (d2Sdy2[1] - d2Sdy2[2]))
+        d2wdx2 =
+            1 / (8 * pi) * (C1 * d2Rdx2[1] + C2 * d2Rdx2[2] + C3 * (d2Sdx2[1] - d2Sdx2[2]))
+        d2wdxdy =
+            1 / (8 * pi) *
+            (C1 * d2Rdxdy[1] + C2 * d2Rdxdy[2] + C3 * (d2Sdxdy[1] - d2Sdxdy[2]))
+        d2wdy2 =
+            1 / (8 * pi) * (C1 * d2Rdy2[1] + C2 * d2Rdy2[2] + C3 * (d2Sdy2[1] - d2Sdy2[2]))
 
         #dad.k.Derivadas terceiras da solução fundamental
-        d3wdx3 = 1 / (8 * pi) * (C1 * d3Rdx3[1] + C2 * d3Rdx3[2] + C3 * (d3Sdx3[1] - d3Sdx3[2]))
-        d3wdx2dy = 1 / (8 * pi) * (C1 * d3Rdx2dy[1] + C2 * d3Rdx2dy[2] + C3 * (d3Sdx2dy[1] - d3Sdx2dy[2]))
-        d3wdxdy2 = 1 / (8 * pi) * (C1 * d3Rdxdy2[1] + C2 * d3Rdxdy2[2] + C3 * (d3Sdxdy2[1] - d3Sdxdy2[2]))
-        d3wdy3 = 1 / (8 * pi) * (C1 * d3Rdy3[1] + C2 * d3Rdy3[2] + C3 * (d3Sdy3[1] - d3Sdy3[2]))
+        d3wdx3 =
+            1 / (8 * pi) * (C1 * d3Rdx3[1] + C2 * d3Rdx3[2] + C3 * (d3Sdx3[1] - d3Sdx3[2]))
+        d3wdx2dy =
+            1 / (8 * pi) *
+            (C1 * d3Rdx2dy[1] + C2 * d3Rdx2dy[2] + C3 * (d3Sdx2dy[1] - d3Sdx2dy[2]))
+        d3wdxdy2 =
+            1 / (8 * pi) *
+            (C1 * d3Rdxdy2[1] + C2 * d3Rdxdy2[2] + C3 * (d3Sdxdy2[1] - d3Sdxdy2[2]))
+        d3wdy3 =
+            1 / (8 * pi) * (C1 * d3Rdy3[1] + C2 * d3Rdy3[2] + C3 * (d3Sdy3[1] - d3Sdy3[2]))
 
 
         g1a = (dad.k.D12 - dad.k.D11) * na1 * na2 + dad.k.D16 * (na1^2 - na2^2)
@@ -1194,7 +2905,7 @@ function calc_d2w_cont(dad, forcas, desloc, dwdt_cont)
     dwdt = zeros(3)
     normal_fonte = calc_normais(dad)
 
-    for j in 1:length(dad.ELEM)#Laço dos elementos
+    for j = 1:length(dad.ELEM)#Laço dos elementos
         elem_j = dad.ELEM[j]#Laço dos elementos
         x = dad.NOS[elem_j.indices, :] # Coordenada (x,y) dos nós geométricos
         inds = [2(elem_j.indices) .- 1 2(elem_j.indices)]'[:]
@@ -1203,10 +2914,12 @@ function calc_d2w_cont(dad, forcas, desloc, dwdt_cont)
         dwdn_elem = desloc[2(elem_j.indices)]
         Mn_elem = forcas[2(elem_j.indices)]
         dwdt_elem = dwdt_cont[elem_j.indices]
-        D = [dad.k.D11 dad.k.D12 dad.k.D16
+        D = [
+            dad.k.D11 dad.k.D12 dad.k.D16
             dad.k.D12 dad.k.D22 dad.k.D26
-            dad.k.D16 dad.k.D26 dad.k.D66]
-        for i in 1:length(elem_j.ξs)
+            dad.k.D16 dad.k.D26 dad.k.D66
+        ]
+        for i = 1:length(elem_j.ξs)
             eet = elem_j.ξs[i]
             N_geo, dN = calc_fforma(eet, elem_j)
             dxdqsi = dN' * x # dx/dξ & dy/dξ
@@ -1216,18 +2929,24 @@ function calc_d2w_cont(dad, forcas, desloc, dwdt_cont)
             m = normal_fonte[elem_j.indices[i], 1]
             n = normal_fonte[elem_j.indices[i], 2]
 
-            T = [m^2 n^2 2*m*n
+            T = [
+                m^2 n^2 2*m*n
                 n^2 m^2 -2*m*n
-                -m*n m*n m^2-n^2]
+                -m*n m*n m^2-n^2
+            ]
 
             Dnt = T \ D / T'
 
-            matD = [-Dnt[1, 1] -Dnt[1, 2] -2*Dnt[1, 3]
+            matD = [
+                -Dnt[1, 1] -Dnt[1, 2] -2*Dnt[1, 3]
                 -Dnt[1, 2] -Dnt[2, 2] -2*Dnt[2, 3]
-                -Dnt[1, 3] -Dnt[2, 3] -2*Dnt[3, 3]]
+                -Dnt[1, 3] -Dnt[2, 3] -2*Dnt[3, 3]
+            ]
             S = inv(matD)
             A = [[-1 0 0]' S[:, 2] S[:, 3]]
-            b = [-S[1, 1] * Mn_elem[i] d2wdt2 - S[1, 2] * Mn_elem[i] d2wdtdn - S[1, 3] * Mn_elem[i]]'
+            b =
+                [-S[1, 1] * Mn_elem[i] d2wdt2 - S[1, 2] * Mn_elem[i] d2wdtdn -
+                                                                     S[1, 3] * Mn_elem[i]]'
             y = inv(A) * b
             d2wdn2 = y[1]
             d2wnt[elem_j.indices[i], :] = [d2wdn2, d2wdt2, d2wdtdn]
@@ -1274,16 +2993,20 @@ function compute_tens_cont(d2wnt, dad)
         Q26 = 0
         Q12 = ni21 * E1 / (1 - ni12 * ni21)
 
-        Q = [Q11 Q12 Q16
+        Q = [
+            Q11 Q12 Q16
             Q12 Q22 Q26
-            Q16 Q26 Q66]
+            Q16 Q26 Q66
+        ]
 
         m = cos(theta)
         n = sin(theta)
 
-        T = [m^2 n^2 2*m*n
+        T = [
+            m^2 n^2 2*m*n
             n^2 m^2 -2*m*n
-            -m*n m*n m^2-n^2]
+            -m*n m*n m^2-n^2
+        ]
 
         Qbar = inv(T) * Q * inv(T')
         compliance = inv(Q)
@@ -1297,20 +3020,27 @@ function compute_tens_cont(d2wnt, dad)
         for i = 1:3
             m = nn[i, 1]
             n = nn[i, 2]
-            T = [m^2 n^2 2*m*n
+            T = [
+                m^2 n^2 2*m*n
                 n^2 m^2 -2*m*n
-                -m*n m*n m^2-n^2]
+                -m*n m*n m^2-n^2
+            ]
             d2wdn2 = d2wnt[inds[i], 1]
             d2wdt2 = d2wnt[inds[i], 2]
             d2wdndt = d2wnt[inds[i], 3]
-            d2wdnt = [d2wdn2 d2wdndt/2 0
+            d2wdnt = [
+                d2wdn2 d2wdndt/2 0
                 d2wdndt/2 d2wdt2 0
-                0 0 0]
+                0 0 0
+            ]
             d2wdxy = T * d2wdnt * inv(T)
             d2w = [d2wdxy[1, 1] d2wdxy[2, 2] d2wdxy[1, 2]]
-            MomentsXY[el, i, 1] = -(dad.k.D11 * d2w[1] + dad.k.D12 * d2w[2] + 2 * dad.k.D16 * d2w[3])
-            MomentsXY[el, i, 2] = -(dad.k.D12 * d2w[1] + dad.k.D22 * d2w[2] + 2 * dad.k.D26 * d2w[3])
-            MomentsXY[el, i, 3] = -(dad.k.D16 * d2w[1] + dad.k.D26 * d2w[2] + 2 * dad.k.D66 * d2w[3])
+            MomentsXY[el, i, 1] =
+                -(dad.k.D11 * d2w[1] + dad.k.D12 * d2w[2] + 2 * dad.k.D16 * d2w[3])
+            MomentsXY[el, i, 2] =
+                -(dad.k.D12 * d2w[1] + dad.k.D22 * d2w[2] + 2 * dad.k.D26 * d2w[3])
+            MomentsXY[el, i, 3] =
+                -(dad.k.D16 * d2w[1] + dad.k.D26 * d2w[2] + 2 * dad.k.D66 * d2w[3])
             Strain[1] = -z[1] * d2w[1]
             Strain[2] = -z[1] * d2w[2]
             Strain[3] = -z[1] * 2 * d2w[3]
@@ -1328,12 +3058,15 @@ function compute_tens_cont(d2wnt, dad)
                 epsilon_n = z[lamina] * d2wdn2
                 epsilon_t = z[lamina] * d2wdt2
                 gamma_nt = z[lamina] * d2wdndt
-                epnt = [epsilon_n gamma_nt/2 0
+                epnt = [
+                    epsilon_n gamma_nt/2 0
                     gamma_nt/2 epsilon_t 0
-                    0 0 0]
+                    0 0 0
+                ]
                 epxy = T * epnt * inv(T)
                 sigmaxy = Qbar[lamina] * epxy
-                tens_cont[el, 3*i-2:3*i, lamina] = [sigmaxy[1, 1] sigmaxy[2, 2] sigmaxy[1, 2]]
+                tens_cont[el, 3*i-2:3*i, lamina] =
+                    [sigmaxy[1, 1] sigmaxy[2, 2] sigmaxy[1, 2]]
 
             end
         end
@@ -1370,9 +3103,12 @@ function compute_tens_int(d2w, dad)
     MomentsXY = zeros(No_PtosInternos, 3)
 
     for i = 1:No_PtosInternos
-        MomentsXY[i, 1] = -(dad.k.D11 * d2w[i, 1] + dad.k.D12 * d2w[i, 2] + 2 * dad.k.D16 * d2w[i, 3])
-        MomentsXY[i, 2] = -(dad.k.D12 * d2w[i, 1] + dad.k.D22 * d2w[i, 2] + 2 * dad.k.D26 * d2w[i, 3])
-        MomentsXY[i, 3] = -(dad.k.D16 * d2w[i, 1] + dad.k.D26 * d2w[i, 2] + 2 * dad.k.D66 * d2w[i, 3])
+        MomentsXY[i, 1] =
+            -(dad.k.D11 * d2w[i, 1] + dad.k.D12 * d2w[i, 2] + 2 * dad.k.D16 * d2w[i, 3])
+        MomentsXY[i, 2] =
+            -(dad.k.D12 * d2w[i, 1] + dad.k.D22 * d2w[i, 2] + 2 * dad.k.D26 * d2w[i, 3])
+        MomentsXY[i, 3] =
+            -(dad.k.D16 * d2w[i, 1] + dad.k.D26 * d2w[i, 2] + 2 * dad.k.D66 * d2w[i, 3])
     end
 
     #Calcula as matrizes Q e Qbarra para cada lamina
@@ -1461,12 +3197,26 @@ function compute_tens_int(d2w, dad)
         Q22 = Matriz_Q[2, 2]
         Q66 = Matriz_Q[3, 3]
 
-        Qbarra[1, 1] = Q11 * cos(Tetha)^4 + Q22 * sin(Tetha)^4 + 2 * (Q12 + 2 * Q66) * sin(Tetha)^2 * cos(Tetha)^2
-        Qbarra[2, 2] = Q11 * sin(Tetha)^4 + Q22 * cos(Tetha)^4 + 2 * (Q12 + 2 * Q66) * sin(Tetha)^2 * cos(Tetha)^2
-        Qbarra[1, 2] = (Q11 + Q22 - 4 * Q66) * sin(Tetha)^2 * cos(Tetha)^2 + Q12 * (cos(Tetha)^4 + sin(Tetha)^4)
-        Qbarra[3, 3] = (Q11 + Q22 - 2 * Q12 - 2 * Q66) * sin(Tetha)^2 * cos(Tetha)^2 + Q66 * (sin(Tetha)^4 + cos(Tetha)^4)
-        Qbarra[1, 3] = (Q11 - Q12 - 2 * Q66) * cos(Tetha)^3 * sin(Tetha) - (Q22 - Q12 - 2 * Q66) * cos(Tetha) * sin(Tetha)^3
-        Qbarra[2, 3] = (Q11 - Q12 - 2 * Q66) * cos(Tetha) * sin(Tetha)^3 - (Q22 - Q12 - 2 * Q66) * cos(Tetha)^3 * sin(Tetha)
+        Qbarra[1, 1] =
+            Q11 * cos(Tetha)^4 +
+            Q22 * sin(Tetha)^4 +
+            2 * (Q12 + 2 * Q66) * sin(Tetha)^2 * cos(Tetha)^2
+        Qbarra[2, 2] =
+            Q11 * sin(Tetha)^4 +
+            Q22 * cos(Tetha)^4 +
+            2 * (Q12 + 2 * Q66) * sin(Tetha)^2 * cos(Tetha)^2
+        Qbarra[1, 2] =
+            (Q11 + Q22 - 4 * Q66) * sin(Tetha)^2 * cos(Tetha)^2 +
+            Q12 * (cos(Tetha)^4 + sin(Tetha)^4)
+        Qbarra[3, 3] =
+            (Q11 + Q22 - 2 * Q12 - 2 * Q66) * sin(Tetha)^2 * cos(Tetha)^2 +
+            Q66 * (sin(Tetha)^4 + cos(Tetha)^4)
+        Qbarra[1, 3] =
+            (Q11 - Q12 - 2 * Q66) * cos(Tetha)^3 * sin(Tetha) -
+            (Q22 - Q12 - 2 * Q66) * cos(Tetha) * sin(Tetha)^3
+        Qbarra[2, 3] =
+            (Q11 - Q12 - 2 * Q66) * cos(Tetha) * sin(Tetha)^3 -
+            (Q22 - Q12 - 2 * Q66) * cos(Tetha)^3 * sin(Tetha)
         Qbarra[2, 1] = Qbarra[1, 2]
         Qbarra[3, 2] = Qbarra[2, 3]
         Qbarra[3, 1] = Qbarra[1, 3]

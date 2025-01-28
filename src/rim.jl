@@ -1,6 +1,6 @@
 
 
-function interpola(r; tipo="tps")
+function interpola(r; tipo = "tps")
     if tipo == "tps"
         if r == 0
             return 0
@@ -13,7 +13,7 @@ function interpola(r; tipo="tps")
         return (2C - r) / (r + C)^4
     end
 end
-function int_interpolaρdρ(r; tipo="tps")
+function int_interpolaρdρ(r; tipo = "tps")
     if tipo == "tps"
         if r == 0
             return 0
@@ -26,7 +26,7 @@ function int_interpolaρdρ(r; tipo="tps")
         return r^2 / (r + C)^3
     end
 end
-function int_interpola(r; tipo="tps")
+function int_interpola(r; tipo = "tps")
     if tipo == "tps"
         if r == 0
             return 0
@@ -54,7 +54,7 @@ function Monta_M_RIMd(dad::Union{placa_fina,placa_fina_isotropica}, npg)
     M1 = zeros(n_pontos)
     M2 = zeros(n_pontos + n_nos)
     normal_fonte = calc_normais(dad)
-    pre = [zeros(2) for idx in 1:6]
+    pre = [zeros(2) for idx = 1:6]
 
     # Cálculo da matriz [F]
     @showprogress "Montando F e D" for i = 1:n_pontos
@@ -110,7 +110,7 @@ function Monta_M_RIMd(dad::Union{placa_fina,placa_fina_isotropica}, npg)
     A = M1' / F .* D
     for i = 1:n_nos #Laço dos pontos radiais
         A[2i-1:2i, i] .= 0
-        A[2i-1:2i, i] = -sum(A[2i-1:2i, :], dims=2) + M2[2i-1:2i]
+        A[2i-1:2i, i] = -sum(A[2i-1:2i, :], dims = 2) + M2[2i-1:2i]
     end
     for i = n_nos+1:n_pontos#Laço dos pontos radiais
         A[i+n_nos, i] = 0
@@ -153,7 +153,7 @@ function calc_md(x, pf, nf, qsi, w, elem, dad::Union{placa_fina,placa_fina_isotr
     return m_el, m_el1
 end
 
-function Monta_M_RIM(dad::Union{placa_fina,placa_fina_isotropica}, npg1=10, npg2=10)
+function Monta_M_RIM(dad::Union{placa_fina,placa_fina_isotropica}, npg1 = 10, npg2 = 10)
     n_nos = size(dad.NOS, 1)
     nelem = size(dad.ELEM, 1)
     n_noi = size(dad.pontos_internos, 1) #Number of internal nodes
@@ -194,10 +194,10 @@ function Monta_M_RIM(dad::Union{placa_fina,placa_fina_isotropica}, npg1=10, npg2
             caso = "canto"
         end
         pr = nodes[i, :]
-        for x = [:R0, :S0, :dRdx0, :dRdy0, :dSdx0, :dSdy0]
+        for x in [:R0, :S0, :dRdx0, :dRdy0, :dSdx0, :dSdy0]
             @eval $x = zeros(2)
         end
-        pre = [zeros(2) for idx in 1:6]
+        pre = [zeros(2) for idx = 1:6]
         for j = 1:n_pontos #Laço dos pontos fontes
             pr = nodes[j, :]
             for el = 1:nelem
@@ -297,9 +297,11 @@ function compute_domainterms(r, theta, nf, dad::Union{placa_fina}, pre)
 
     H = (dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1] - dad.k.e[2])^2
 
-    C1 = ((dad.k.d[1] - dad.k.d[2])^2 - (dad.k.e[1]^2 - dad.k.e[2]^2)) / (G * H * dad.k.e[1])
+    C1 =
+        ((dad.k.d[1] - dad.k.d[2])^2 - (dad.k.e[1]^2 - dad.k.e[2]^2)) / (G * H * dad.k.e[1])
 
-    C2 = ((dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1]^2 - dad.k.e[2]^2)) / (G * H * dad.k.e[2])
+    C2 =
+        ((dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1]^2 - dad.k.e[2]^2)) / (G * H * dad.k.e[2])
 
     C3 = 4 * (dad.k.d[1] - dad.k.d[2]) / (G * H)
 
@@ -307,17 +309,116 @@ function compute_domainterms(r, theta, nf, dad::Union{placa_fina}, pre)
 
 
     for i = 1:2
-        R[i] = r^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 - dad.k.e[i]^2 * sin(theta)^2) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 3) - 4 * r^2 * dad.k.e[i] * sin(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        R[i] =
+            r^2 *
+            ((cos(theta) + dad.k.d[i] * sin(theta))^2 - dad.k.e[i]^2 * sin(theta)^2) *
+            (
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) - 3
+            ) -
+            4 *
+            r^2 *
+            dad.k.e[i] *
+            sin(theta) *
+            (cos(theta) + dad.k.d[i] * sin(theta)) *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        S[i] = r^2 * dad.k.e[i] * sin(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 3) + r^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 - dad.k.e[i]^2 * sin(theta)^2) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        S[i] =
+            r^2 *
+            dad.k.e[i] *
+            sin(theta) *
+            (cos(theta) + dad.k.d[i] * sin(theta)) *
+            (
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) - 3
+            ) +
+            r^2 *
+            ((cos(theta) + dad.k.d[i] * sin(theta))^2 - dad.k.e[i]^2 * sin(theta)^2) *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        dRdx[i] = 2 * r * (cos(theta) + dad.k.d[i] * sin(theta)) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 2) - 4 * r * dad.k.e[i] * sin(theta) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        dRdx[i] =
+            2 *
+            r *
+            (cos(theta) + dad.k.d[i] * sin(theta)) *
+            (
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) - 2
+            ) -
+            4 *
+            r *
+            dad.k.e[i] *
+            sin(theta) *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        dRdy[i] = 2 * r * (dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) - dad.k.e[i]^2 * sin(theta)) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 2) - 4 * r * dad.k.e[i] * (cos(theta) + 2 * dad.k.d[i] * sin(theta)) * atan((dad.k.e[i] * sin(theta)), (cos(theta) + dad.k.d[i] * sin(theta)))
+        dRdy[i] =
+            2 *
+            r *
+            (
+                dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) -
+                dad.k.e[i]^2 * sin(theta)
+            ) *
+            (
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) - 2
+            ) -
+            4 *
+            r *
+            dad.k.e[i] *
+            (cos(theta) + 2 * dad.k.d[i] * sin(theta)) *
+            atan((dad.k.e[i] * sin(theta)), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        dSdx[i] = r * dad.k.e[i] * sin(theta) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 2) + 2 * r * (cos(theta) + dad.k.d[i] * sin(theta)) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        dSdx[i] =
+            r *
+            dad.k.e[i] *
+            sin(theta) *
+            (
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) - 2
+            ) +
+            2 *
+            r *
+            (cos(theta) + dad.k.d[i] * sin(theta)) *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        dSdy[i] = r * dad.k.e[i] * (cos(theta) + 2 * dad.k.d[i] * sin(theta)) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 2) + 2 * r * (dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) - dad.k.e[i]^2 * sin(theta)) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        dSdy[i] =
+            r *
+            dad.k.e[i] *
+            (cos(theta) + 2 * dad.k.d[i] * sin(theta)) *
+            (
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) - 2
+            ) +
+            2 *
+            r *
+            (
+                dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) -
+                dad.k.e[i]^2 * sin(theta)
+            ) *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
     end
 
 
@@ -359,10 +460,10 @@ function Monta_M_RIMd_alt(dad, npg)
     M1 = zeros(n_pontos)
     M2 = zeros(n_pontos + n_nos)
     normal_fonte = calc_normais(dad)
-    for x = [:R0, :S0, :dRdx0, :dRdy0, :dSdx0, :dSdy0]
+    for x in [:R0, :S0, :dRdx0, :dRdy0, :dSdx0, :dSdy0]
         @eval $x = zeros(2)
     end
-    pre = [zeros(2) for idx in 1:6]
+    pre = [zeros(2) for idx = 1:6]
     # Cálculo da matriz [F]
     @showprogress "Montando F e D" for i = 1:n_pontos
         if i <= n_nos
@@ -392,7 +493,8 @@ function Monta_M_RIMd_alt(dad, npg)
             if caso == "contorno"
                 D[2i-1:2i, j] = compute_domainterms(R, atan(r[2], r[1]), nf, dad, pre) .* R
             else
-                D[i+n_nos, j] = compute_domainterms(R, atan(r[2], r[1]), nf, dad, pre)[1] .* R
+                D[i+n_nos, j] =
+                    compute_domainterms(R, atan(r[2], r[1]), nf, dad, pre)[1] .* R
             end
         end
         qsi, w = gausslegendre(npg)
@@ -477,7 +579,7 @@ function DRM(dad, Hg, Gg)
     F = zeros(n_pontos, n_pontos)
 
 
-    # Cálculo da matriz [F] 
+    # Cálculo da matriz [F]
     for i = 1:n_pontos
         pf = nodes[i, :]
         for j = 1:n_pontos
@@ -496,17 +598,45 @@ function DRM(dad, Hg, Gg)
             drdy = ry
 
             # /@infiltrate
-            d4wdx4 = 3 * (8 * c1 - 5 * c2 * (-3 - 6 * drdx^2 + drdx^4) * r + 24 * (c3 + 4 * c3 * drdx^2) * r^2 + 35 * c4 * (1 + 6 * drdx^2 + drdx^4) * r^3)
+            d4wdx4 =
+                3 * (
+                    8 * c1 - 5 * c2 * (-3 - 6 * drdx^2 + drdx^4) * r +
+                    24 * (c3 + 4 * c3 * drdx^2) * r^2 +
+                    35 * c4 * (1 + 6 * drdx^2 + drdx^4) * r^3
+                )
 
-            d4wdx3dy = 3 * drdx * drdy * r * (-5 * c2 * (-3 + drdx^2) + 48 * c3 * r + 35 * c4 * (3 + drdx^2) * r^2)
+            d4wdx3dy =
+                3 *
+                drdx *
+                drdy *
+                r *
+                (-5 * c2 * (-3 + drdx^2) + 48 * c3 * r + 35 * c4 * (3 + drdx^2) * r^2)
 
-            d4wdx2dy2 = 8 * c1 - 15 * c2 * (-1 - drdx^2 + (-1 + drdx^2) * drdy^2) * r + 24 * c3 * (1 + 2 * drdx^2 + 2 * drdy^2) * r^2 + 35 * c4 * (1 + 3 * drdx^2 + 3 * (1 + drdx^2) * drdy^2) * r^3
+            d4wdx2dy2 =
+                8 * c1 - 15 * c2 * (-1 - drdx^2 + (-1 + drdx^2) * drdy^2) * r +
+                24 * c3 * (1 + 2 * drdx^2 + 2 * drdy^2) * r^2 +
+                35 * c4 * (1 + 3 * drdx^2 + 3 * (1 + drdx^2) * drdy^2) * r^3
 
-            d4wdxdy3 = 3 * drdx * drdy * r * (-5 * c2 * (-3 + drdy^2) + 48 * c3 * r + 35 * c4 * (3 + drdy^2) * r^2)
+            d4wdxdy3 =
+                3 *
+                drdx *
+                drdy *
+                r *
+                (-5 * c2 * (-3 + drdy^2) + 48 * c3 * r + 35 * c4 * (3 + drdy^2) * r^2)
 
-            d4wdy4 = 3 * (8 * c1 - 5 * c2 * (-3 - 6 * drdy^2 + drdy^4) * r + 24 * (c3 + 4 * c3 * drdy^2) * r^2 + 35 * c4 * (1 + 6 * drdy^2 + drdy^4) * r^3)
+            d4wdy4 =
+                3 * (
+                    8 * c1 - 5 * c2 * (-3 - 6 * drdy^2 + drdy^4) * r +
+                    24 * (c3 + 4 * c3 * drdy^2) * r^2 +
+                    35 * c4 * (1 + 6 * drdy^2 + drdy^4) * r^3
+                )
             #A força F será representada pela equação diferencial da placa.
-            F[i, j] = dad.k.D11 * d4wdx4 + 4 * dad.k.D16 * d4wdx3dy + 2 * (dad.k.D12 + 2 * dad.k.D66) * d4wdx2dy2 + 4 * dad.k.D26 * d4wdxdy3 + dad.k.D22 * d4wdy4
+            F[i, j] =
+                dad.k.D11 * d4wdx4 +
+                4 * dad.k.D16 * d4wdx3dy +
+                2 * (dad.k.D12 + 2 * dad.k.D66) * d4wdx2dy2 +
+                4 * dad.k.D26 * d4wdxdy3 +
+                dad.k.D22 * d4wdy4
 
         end
 
@@ -572,32 +702,86 @@ function DRM(dad, Hg, Gg)
                 dwdy = drdy * r^3 * (4 * c1 + 5 * c2 * r + 6 * c3 * r^2 + 7 * c4 * r^3)
 
 
-                d2wdx2 = r^2 * (4 * (c1 + 2 * c1 * drdx^2) + 5 * (c2 + 3 * c2 * drdx^2) * r +
-                                6 * (c3 + 4 * c3 * drdx^2) * r^2 + 7 * (c4 + 5 * c4 * drdx^2) * r^3)
-                d2wdy2 = r^2 * (4 * (c1 + 2 * c1 * drdy^2) + 5 * (c2 + 3 * c2 * drdy^2) * r +
-                                6 * (c3 + 4 * c3 * drdy^2) * r^2 + 7 * (c4 + 5 * c4 * drdy^2) * r^3)
+                d2wdx2 =
+                    r^2 * (
+                        4 * (c1 + 2 * c1 * drdx^2) +
+                        5 * (c2 + 3 * c2 * drdx^2) * r +
+                        6 * (c3 + 4 * c3 * drdx^2) * r^2 +
+                        7 * (c4 + 5 * c4 * drdx^2) * r^3
+                    )
+                d2wdy2 =
+                    r^2 * (
+                        4 * (c1 + 2 * c1 * drdy^2) +
+                        5 * (c2 + 3 * c2 * drdy^2) * r +
+                        6 * (c3 + 4 * c3 * drdy^2) * r^2 +
+                        7 * (c4 + 5 * c4 * drdy^2) * r^3
+                    )
 
 
-                d2wdxdy = drdx * drdy * r^2 * (8 * c1 + 15 * c2 * r + 24 * c3 * r^2 + 35 * c4 * r^3)
+                d2wdxdy =
+                    drdx *
+                    drdy *
+                    r^2 *
+                    (8 * c1 + 15 * c2 * r + 24 * c3 * r^2 + 35 * c4 * r^3)
 
 
-                d3wdx3 = 3 * drdx * r * (8 * c1 + 5 * c2 * (3 + drdx^2) * r +
-                                         8 * c3 * (3 + 2 * drdx^2) * r^2 + 35 * c4 * (1 + drdx^2) * r^3)
-                d3wdx2dy = drdy * r * (8 * c1 + 15 * c2 * (1 + drdx^2) * r +
-                                       24 * (c3 + 2 * c3 * drdx^2) * r^2 + 35 * (c4 + 3 * c4 * drdx^2) * r^3)
-                d3wdxdy2 = drdx * r * (8 * c1 + 15 * c2 * (1 + drdy^2) * r +
-                                       24 * (c3 + 2 * c3 * drdy^2) * r^2 + 35 * (c4 + 3 * c4 * drdy^2) * r^3)
-                d3wdy3 = 3 * drdy * r * (8 * c1 + 5 * c2 * (3 + drdy^2) * r +
-                                         8 * c3 * (3 + 2 * drdy^2) * r^2 + 35 * c4 * (1 + drdy^2) * r^3)
+                d3wdx3 =
+                    3 *
+                    drdx *
+                    r *
+                    (
+                        8 * c1 +
+                        5 * c2 * (3 + drdx^2) * r +
+                        8 * c3 * (3 + 2 * drdx^2) * r^2 +
+                        35 * c4 * (1 + drdx^2) * r^3
+                    )
+                d3wdx2dy =
+                    drdy *
+                    r *
+                    (
+                        8 * c1 +
+                        15 * c2 * (1 + drdx^2) * r +
+                        24 * (c3 + 2 * c3 * drdx^2) * r^2 +
+                        35 * (c4 + 3 * c4 * drdx^2) * r^3
+                    )
+                d3wdxdy2 =
+                    drdx *
+                    r *
+                    (
+                        8 * c1 +
+                        15 * c2 * (1 + drdy^2) * r +
+                        24 * (c3 + 2 * c3 * drdy^2) * r^2 +
+                        35 * (c4 + 3 * c4 * drdy^2) * r^3
+                    )
+                d3wdy3 =
+                    3 *
+                    drdy *
+                    r *
+                    (
+                        8 * c1 +
+                        5 * c2 * (3 + drdy^2) * r +
+                        8 * c3 * (3 + 2 * drdy^2) * r^2 +
+                        35 * c4 * (1 + drdy^2) * r^3
+                    )
 
                 f1 = dad.k.D11 * nx^2 + 2 * dad.k.D16 * nx * ny + dad.k.D12 * ny^2
                 f2 = 2 * (dad.k.D16 * nx^2 + 2 * dad.k.D66 * nx * ny + dad.k.D26 * ny^2)
                 f3 = dad.k.D12 * nx^2 + 2 * dad.k.D26 * nx * ny + dad.k.D22 * ny^2
 
-                h1 = dad.k.D11 * nx * (1 + ny^2) + 2 * dad.k.D16 * ny^3 - dad.k.D12 * nx * ny^2
-                h2 = 4 * dad.k.D16 * nx + dad.k.D12 * ny * (1 + nx^2) + 4 * dad.k.D66 * ny^3 - dad.k.D11 * nx^2 * ny - 2 * dad.k.D26 * nx * ny^2
-                h3 = 4 * dad.k.D26 * ny + dad.k.D12 * nx * (1 + ny^2) + 4 * dad.k.D66 * nx^3 - dad.k.D22 * nx * ny^2 - 2 * dad.k.D16 * nx^2 * ny
-                h4 = dad.k.D22 * ny * (1 + nx^2) + 2 * dad.k.D26 * nx^3 - dad.k.D12 * nx^2 * ny
+                h1 =
+                    dad.k.D11 * nx * (1 + ny^2) + 2 * dad.k.D16 * ny^3 -
+                    dad.k.D12 * nx * ny^2
+                h2 =
+                    4 * dad.k.D16 * nx +
+                    dad.k.D12 * ny * (1 + nx^2) +
+                    4 * dad.k.D66 * ny^3 - dad.k.D11 * nx^2 * ny - 2 * dad.k.D26 * nx * ny^2
+                h3 =
+                    4 * dad.k.D26 * ny +
+                    dad.k.D12 * nx * (1 + ny^2) +
+                    4 * dad.k.D66 * nx^3 - dad.k.D22 * nx * ny^2 - 2 * dad.k.D16 * nx^2 * ny
+                h4 =
+                    dad.k.D22 * ny * (1 + nx^2) + 2 * dad.k.D26 * nx^3 -
+                    dad.k.D12 * nx^2 * ny
 
                 dwdn = (dwdx * nx + dwdy * ny) #rotação
                 vn = -(h1 * d3wdx3 + h2 * d3wdx2dy + h3 * d3wdxdy2 + h4 * d3wdy3)
@@ -627,22 +811,40 @@ function DRM(dad, Hg, Gg)
 
 
 
-                d2wdx2 = r^2 * (4 * (c1 + 2 * c1 * drdx^2) + 5 * (c2 + 3 * c2 * drdx^2) * r +
-                                6 * (c3 + 4 * c3 * drdx^2) * r^2 + 7 * (c4 + 5 * c4 * drdx^2) * r^3)
-                d2wdy2 = r^2 * (4 * (c1 + 2 * c1 * drdy^2) + 5 * (c2 + 3 * c2 * drdy^2) * r +
-                                6 * (c3 + 4 * c3 * drdy^2) * r^2 + 7 * (c4 + 5 * c4 * drdy^2) * r^3)
+                d2wdx2 =
+                    r^2 * (
+                        4 * (c1 + 2 * c1 * drdx^2) +
+                        5 * (c2 + 3 * c2 * drdx^2) * r +
+                        6 * (c3 + 4 * c3 * drdx^2) * r^2 +
+                        7 * (c4 + 5 * c4 * drdx^2) * r^3
+                    )
+                d2wdy2 =
+                    r^2 * (
+                        4 * (c1 + 2 * c1 * drdy^2) +
+                        5 * (c2 + 3 * c2 * drdy^2) * r +
+                        6 * (c3 + 4 * c3 * drdy^2) * r^2 +
+                        7 * (c4 + 5 * c4 * drdy^2) * r^3
+                    )
 
 
-                d2wdxdy = drdx * drdy * r^2 * (8 * c1 + 15 * c2 * r + 24 * c3 * r^2 + 35 * c4 * r^3)
+                d2wdxdy =
+                    drdx *
+                    drdy *
+                    r^2 *
+                    (8 * c1 + 15 * c2 * r + 24 * c3 * r^2 + 35 * c4 * r^3)
 
 
                 g1a = (dad.k.D12 - dad.k.D11) * na1 * na2 + dad.k.D16 * (na1^2 - na2^2)
-                g2a = 2 * (dad.k.D26 - dad.k.D16) * na1 * na2 + 2 * dad.k.D66 * (na1^2 - na2^2)
+                g2a =
+                    2 * (dad.k.D26 - dad.k.D16) * na1 * na2 +
+                    2 * dad.k.D66 * (na1^2 - na2^2)
                 g3a = (dad.k.D22 - dad.k.D12) * na1 * na2 + dad.k.D26 * (na1^2 - na2^2)
 
 
                 g1d = (dad.k.D12 - dad.k.D11) * nd1 * nd2 + dad.k.D16 * (nd1^2 - nd2^2)
-                g2d = 2 * (dad.k.D26 - dad.k.D16) * nd1 * nd2 + 2 * dad.k.D66 * (nd1^2 - nd2^2)
+                g2d =
+                    2 * (dad.k.D26 - dad.k.D16) * nd1 * nd2 +
+                    2 * dad.k.D66 * (nd1^2 - nd2^2)
                 g3d = (dad.k.D22 - dad.k.D12) * nd1 * nd2 + dad.k.D26 * (nd1^2 - nd2^2)
 
 
@@ -672,7 +874,7 @@ function DRM(dad, Hg, Gg)
 end
 
 
-function Monta_dM_RIM(dad::Union{placa_fina,placa_fina_isotropica}, npg1=10, npg2=10)
+function Monta_dM_RIM(dad::Union{placa_fina,placa_fina_isotropica}, npg1 = 10, npg2 = 10)
     n_nos = size(dad.NOS, 1)
     nelem = size(dad.ELEM, 1)
     n_noi = size(dad.pontos_internos, 1) #Number of internal nodes
@@ -719,7 +921,7 @@ function Monta_dM_RIM(dad::Union{placa_fina,placa_fina_isotropica}, npg1=10, npg
         end
         pr = nodes[i, :]
 
-        pre = [zeros(2) for idx in 1:18]
+        pre = [zeros(2) for idx = 1:18]
         for j = 1:n_pontos #Laço dos pontos fontes
             pr = nodes[j, :]
             for el = 1:nelem
@@ -792,16 +994,28 @@ function Monta_dM_RIM(dad::Union{placa_fina,placa_fina_isotropica}, npg1=10, npg
         M3[:, 3*i] = 2Mxy[:, i]
         if i <= n_nos
             # dM2dtdm[:, 2*i-1] = dMdtdm[1:linesdM2dtdm, i]
-            dM2dtdm[1:2:end, 2*i-1] = -(Mx[1:2:2n_nos, i] .* -normal_fonte[:, 2] + My[1:2:2n_nos, i] .* normal_fonte[:, 1])
-            dM2dtdm[2:2:end, 2*i-1] = -(Mx[1:2:2n_nos, i] .* normal_fonte[:, 1] + My[1:2:2n_nos, i] .* normal_fonte[:, 2])
+            dM2dtdm[1:2:end, 2*i-1] = -(
+                Mx[1:2:2n_nos, i] .* -normal_fonte[:, 2] +
+                My[1:2:2n_nos, i] .* normal_fonte[:, 1]
+            )
+            dM2dtdm[2:2:end, 2*i-1] = -(
+                Mx[1:2:2n_nos, i] .* normal_fonte[:, 1] +
+                My[1:2:2n_nos, i] .* normal_fonte[:, 2]
+            )
             dM2dx2[1:n_noi, 2*i-1] = dMx[2*n_nos+1:2:2*(n_nos+n_noi)-1, i]
             dM2dxdy[1:n_noi, 2*i-1] = dMx[2*n_nos+2:2:2*(n_nos+n_noi), i]
             dM2dy2[1:n_noi, 2*i-1] = dMy[2*n_nos+2:2:2*(n_nos+n_noi), i]
             # @infiltrate
         else
             # dM2dtdm[:, n_nos+i] = dMdtdm[1:linesdM2dtdm, i]
-            dM2dtdm[1:2:end, n_nos+i] = -(Mx[1:2:2n_nos, i] .* -normal_fonte[:, 2] + My[1:2:2n_nos, i] .* normal_fonte[:, 1])
-            dM2dtdm[2:2:end, n_nos+i] = -(Mx[1:2:2n_nos, i] .* normal_fonte[:, 1] + My[1:2:2n_nos, i] .* normal_fonte[:, 2])
+            dM2dtdm[1:2:end, n_nos+i] = -(
+                Mx[1:2:2n_nos, i] .* -normal_fonte[:, 2] +
+                My[1:2:2n_nos, i] .* normal_fonte[:, 1]
+            )
+            dM2dtdm[2:2:end, n_nos+i] = -(
+                Mx[1:2:2n_nos, i] .* normal_fonte[:, 1] +
+                My[1:2:2n_nos, i] .* normal_fonte[:, 2]
+            )
             dM2dx2[1:n_noi, n_nos+i] = dMx[2*n_nos+1:2:2*(n_nos+n_noi)-1, i]
             dM2dxdy[1:n_noi, n_nos+i] = dMx[2*n_nos+2:2:2*(n_nos+n_noi), i]
             dM2dy2[1:n_noi, n_nos+i] = dMy[2*n_nos+2:2:2*(n_nos+n_noi), i]
@@ -867,15 +1081,34 @@ function compute_domain_d_terms(r, theta, nf, n, dad::Union{placa_fina}, pre)
     r1 = r .* cos(theta)
     r2 = r .* sin(theta)
     # @infiltrate
-    dRdx, dRdy, dSdx, dSdy, d2Rdx2, d2Rdxdy, d2Rdy2, d2Sdx2, d2Sdxdy, d2Sdy2, d3Rdx2dy, d3Rdx3, d3Rdxdy2, d3Rdy3, d3Sdx2dy, d3Sdx3, d3Sdxdy2, d3Sdy3 = pre
+    dRdx,
+    dRdy,
+    dSdx,
+    dSdy,
+    d2Rdx2,
+    d2Rdxdy,
+    d2Rdy2,
+    d2Sdx2,
+    d2Sdxdy,
+    d2Sdy2,
+    d3Rdx2dy,
+    d3Rdx3,
+    d3Rdxdy2,
+    d3Rdy3,
+    d3Sdx2dy,
+    d3Sdx3,
+    d3Sdxdy2,
+    d3Sdy3 = pre
 
     G = (dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1] + dad.k.e[2])^2
 
     H = (dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1] - dad.k.e[2])^2
 
-    C1 = ((dad.k.d[1] - dad.k.d[2])^2 - (dad.k.e[1]^2 - dad.k.e[2]^2)) / (G * H * dad.k.e[1])
+    C1 =
+        ((dad.k.d[1] - dad.k.d[2])^2 - (dad.k.e[1]^2 - dad.k.e[2]^2)) / (G * H * dad.k.e[1])
 
-    C2 = ((dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1]^2 - dad.k.e[2]^2)) / (G * H * dad.k.e[2])
+    C2 =
+        ((dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1]^2 - dad.k.e[2]^2)) / (G * H * dad.k.e[2])
 
     C3 = 4 * (dad.k.d[1] - dad.k.d[2]) / (G * H)
 
@@ -887,60 +1120,262 @@ function compute_domain_d_terms(r, theta, nf, n, dad::Union{placa_fina}, pre)
 
         # S[i] = r^2 * dad.k.e[i] * sin(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 3) + r^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 - dad.k.e[i]^2 * sin(theta)^2) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        dRdx[i] = 2 * r * (cos(theta) + dad.k.d[i] * sin(theta)) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 2) - 4 * r * dad.k.e[i] * sin(theta) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        dRdx[i] =
+            2 *
+            r *
+            (cos(theta) + dad.k.d[i] * sin(theta)) *
+            (
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) - 2
+            ) -
+            4 *
+            r *
+            dad.k.e[i] *
+            sin(theta) *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        dRdy[i] = 2 * r * (dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) - dad.k.e[i]^2 * sin(theta)) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 2) - 4 * r * dad.k.e[i] * (cos(theta) + 2 * dad.k.d[i] * sin(theta)) * atan((dad.k.e[i] * sin(theta)), (cos(theta) + dad.k.d[i] * sin(theta)))
+        dRdy[i] =
+            2 *
+            r *
+            (
+                dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) -
+                dad.k.e[i]^2 * sin(theta)
+            ) *
+            (
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) - 2
+            ) -
+            4 *
+            r *
+            dad.k.e[i] *
+            (cos(theta) + 2 * dad.k.d[i] * sin(theta)) *
+            atan((dad.k.e[i] * sin(theta)), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        dSdx[i] = r * dad.k.e[i] * sin(theta) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 2) + 2 * r * (cos(theta) + dad.k.d[i] * sin(theta)) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        dSdx[i] =
+            r *
+            dad.k.e[i] *
+            sin(theta) *
+            (
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) - 2
+            ) +
+            2 *
+            r *
+            (cos(theta) + dad.k.d[i] * sin(theta)) *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        dSdy[i] = r * dad.k.e[i] * (cos(theta) + 2 * dad.k.d[i] * sin(theta)) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 2) + 2 * r * (dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) - dad.k.e[i]^2 * sin(theta)) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        dSdy[i] =
+            r *
+            dad.k.e[i] *
+            (cos(theta) + 2 * dad.k.d[i] * sin(theta)) *
+            (
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) - 2
+            ) +
+            2 *
+            r *
+            (
+                dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) -
+                dad.k.e[i]^2 * sin(theta)
+            ) *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
 
-        d2Rdx2[i] = 2 * log(r .^ 2 / a^2 .* ((cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 + dad.k.e[i]^2 * sin(theta) .^ 2))
+        d2Rdx2[i] =
+            2 * log(
+                r .^ 2 / a^2 .* (
+                    (cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 +
+                    dad.k.e[i]^2 * sin(theta) .^ 2
+                ),
+            )
 
-        d2Rdxdy[i] = 2 * dad.k.d[i] * log(r .^ 2 / a^2 .* ((cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 + dad.k.e[i]^2 * sin(theta) .^ 2)) - 4 * dad.k.e[i] * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        d2Rdxdy[i] =
+            2 *
+            dad.k.d[i] *
+            log(
+                r .^ 2 / a^2 .* (
+                    (cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 +
+                    dad.k.e[i]^2 * sin(theta) .^ 2
+                ),
+            ) -
+            4 *
+            dad.k.e[i] *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        d2Rdy2[i] = 2 * (dad.k.d[i]^2 - dad.k.e[i]^2) * log(r .^ 2 / a^2 .* ((cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 + dad.k.e[i]^2 * sin(theta) .^ 2)) - 8 * dad.k.d[i] * dad.k.e[i] * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        d2Rdy2[i] =
+            2 *
+            (dad.k.d[i]^2 - dad.k.e[i]^2) *
+            log(
+                r .^ 2 / a^2 .* (
+                    (cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 +
+                    dad.k.e[i]^2 * sin(theta) .^ 2
+                ),
+            ) -
+            8 *
+            dad.k.d[i] *
+            dad.k.e[i] *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        d2Sdx2[i] = 2 * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        d2Sdx2[i] =
+            2 * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        d2Sdxdy[i] = dad.k.e[i] * (log(r .^ 2 / a^2 .* ((cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 + dad.k.e[i]^2 * sin(theta) .^ 2))) + 2 * dad.k.d[i] * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        d2Sdxdy[i] =
+            dad.k.e[i] * (log(
+                r .^ 2 / a^2 .* (
+                    (cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 +
+                    dad.k.e[i]^2 * sin(theta) .^ 2
+                ),
+            )) +
+            2 *
+            dad.k.d[i] *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        d2Sdy2[i] = 2 * dad.k.d[i] * dad.k.e[i] * log(r .^ 2 / a^2 .* ((cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 + dad.k.e[i]^2 * sin(theta) .^ 2)) + 2 * (dad.k.d[i]^2 - dad.k.e[i]^2) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        d2Sdy2[i] =
+            2 *
+            dad.k.d[i] *
+            dad.k.e[i] *
+            log(
+                r .^ 2 / a^2 .* (
+                    (cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 +
+                    dad.k.e[i]^2 * sin(theta) .^ 2
+                ),
+            ) +
+            2 *
+            (dad.k.d[i]^2 - dad.k.e[i]^2) *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        d3Rdx3[i] = 4 * (cos(theta) + dad.k.d[i] * sin(theta)) ./ (r .* ((cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 + dad.k.e[i]^2 * sin(theta) .^ 2))
+        d3Rdx3[i] =
+            4 * (cos(theta) + dad.k.d[i] * sin(theta)) ./ (
+                r .* (
+                    (cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 +
+                    dad.k.e[i]^2 * sin(theta) .^ 2
+                )
+            )
 
-        d3Rdx2dy[i] = 4 * (dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) + dad.k.e[i]^2 * sin(theta)) ./ (r .* ((cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 + dad.k.e[i]^2 * sin(theta) .^ 2))
+        d3Rdx2dy[i] =
+            4 * (
+                dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) +
+                dad.k.e[i]^2 * sin(theta)
+            ) ./ (
+                r .* (
+                    (cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 +
+                    dad.k.e[i]^2 * sin(theta) .^ 2
+                )
+            )
 
-        d3Rdxdy2[i] = 4 * ((dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) + (dad.k.d[i]^2 + dad.k.e[i]^2) * dad.k.d[i] * sin(theta)) ./ (r .* ((cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 + dad.k.e[i]^2 * sin(theta) .^ 2))
+        d3Rdxdy2[i] =
+            4 * (
+                (dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) +
+                (dad.k.d[i]^2 + dad.k.e[i]^2) * dad.k.d[i] * sin(theta)
+            ) ./ (
+                r .* (
+                    (cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 +
+                    dad.k.e[i]^2 * sin(theta) .^ 2
+                )
+            )
 
-        d3Rdy3[i] = 4 * (dad.k.d[i] * (dad.k.d[i]^2 - 3 * dad.k.e[i]^2) * cos(theta) + (dad.k.d[i]^4 - dad.k.e[i]^4) * sin(theta)) ./ (r .* ((cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 + dad.k.e[i]^2 * sin(theta) .^ 2))
+        d3Rdy3[i] =
+            4 * (
+                dad.k.d[i] * (dad.k.d[i]^2 - 3 * dad.k.e[i]^2) * cos(theta) +
+                (dad.k.d[i]^4 - dad.k.e[i]^4) * sin(theta)
+            ) ./ (
+                r .* (
+                    (cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 +
+                    dad.k.e[i]^2 * sin(theta) .^ 2
+                )
+            )
 
-        d3Sdx3[i] = -2 * dad.k.e[i] * sin(theta) ./ (r .* ((cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 + dad.k.e[i]^2 * sin(theta) .^ 2))
+        d3Sdx3[i] =
+            -2 * dad.k.e[i] * sin(theta) ./ (
+                r .* (
+                    (cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 +
+                    dad.k.e[i]^2 * sin(theta) .^ 2
+                )
+            )
 
 
-        d3Sdx2dy[i] = 2 * dad.k.e[i] * cos(theta) ./ (r .* ((cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 + dad.k.e[i]^2 * sin(theta) .^ 2))
+        d3Sdx2dy[i] =
+            2 * dad.k.e[i] * cos(theta) ./ (
+                r .* (
+                    (cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 +
+                    dad.k.e[i]^2 * sin(theta) .^ 2
+                )
+            )
 
-        d3Sdxdy2[i] = 2 * dad.k.e[i] * (2 * dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) - (dad.k.d[i]^2 - dad.k.e[i]^2) * sin(theta)) ./ (r .* ((cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 + dad.k.e[i]^2 * sin(theta) .^ 2))
+        d3Sdxdy2[i] =
+            2 *
+            dad.k.e[i] *
+            (
+                2 * dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) -
+                (dad.k.d[i]^2 - dad.k.e[i]^2) * sin(theta)
+            ) ./ (
+                r .* (
+                    (cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 +
+                    dad.k.e[i]^2 * sin(theta) .^ 2
+                )
+            )
 
-        d3Sdy3[i] = 2 * dad.k.e[i] * ((3 * dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) + 2 * dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)) ./ (r .* ((cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 + dad.k.e[i]^2 * sin(theta) .^ 2))
+        d3Sdy3[i] =
+            2 *
+            dad.k.e[i] *
+            (
+                (3 * dad.k.d[i]^2 - dad.k.e[i]^2) * cos(theta) +
+                2 * dad.k.d[i] * (dad.k.d[i]^2 + dad.k.e[i]^2) * sin(theta)
+            ) ./ (
+                r .* (
+                    (cos(theta) + dad.k.d[i] * sin(theta)) .^ 2 +
+                    dad.k.e[i]^2 * sin(theta) .^ 2
+                )
+            )
     end
 
 
 
-    dwdx = 1 / (8 * pi * dad.k.D22) * (C1 * dRdx[1] + C2 * dRdx[2] + C3 * (dSdx[1] - dSdx[2]))
-    dwdy = 1 / (8 * pi * dad.k.D22) * (C1 * dRdy[1] + C2 * dRdy[2] + C3 * (dSdy[1] - dSdy[2]))
+    dwdx =
+        1 / (8 * pi * dad.k.D22) * (C1 * dRdx[1] + C2 * dRdx[2] + C3 * (dSdx[1] - dSdx[2]))
+    dwdy =
+        1 / (8 * pi * dad.k.D22) * (C1 * dRdy[1] + C2 * dRdy[2] + C3 * (dSdy[1] - dSdy[2]))
 
-    d2wdx2 = 1 / (8 * pi * dad.k.D22) * (C1 * d2Rdx2[1] + C2 * d2Rdx2[2] + C3 * (d2Sdx2[1] - d2Sdx2[2]))
-    d2wdxdy = 1 / (8 * pi * dad.k.D22) * (C1 * d2Rdxdy[1] + C2 * d2Rdxdy[2] + C3 * (d2Sdxdy[1] - d2Sdxdy[2]))
-    d2wdy2 = 1 / (8 * pi * dad.k.D22) * (C1 * d2Rdy2[1] + C2 * d2Rdy2[2] + C3 * (d2Sdy2[1] - d2Sdy2[2]))
+    d2wdx2 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d2Rdx2[1] + C2 * d2Rdx2[2] + C3 * (d2Sdx2[1] - d2Sdx2[2]))
+    d2wdxdy =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d2Rdxdy[1] + C2 * d2Rdxdy[2] + C3 * (d2Sdxdy[1] - d2Sdxdy[2]))
+    d2wdy2 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d2Rdy2[1] + C2 * d2Rdy2[2] + C3 * (d2Sdy2[1] - d2Sdy2[2]))
 
     d2wdmdx = -(d2wdx2 * m1 + d2wdxdy * m2)
     d2wdmdy = -(d2wdxdy * m1 + d2wdy2 * m2)
-    d3wdx3 = 1 / (8 * pi * dad.k.D22) * (C1 * d3Rdx3[1] + C2 * d3Rdx3[2] + C3 * (d3Sdx3[1] - d3Sdx3[2]))
-    d3wdx2dy = 1 / (8 * pi * dad.k.D22) * (C1 * d3Rdx2dy[1] + C2 * d3Rdx2dy[2] + C3 * (d3Sdx2dy[1] - d3Sdx2dy[2]))
-    d3wdxdy2 = 1 / (8 * pi * dad.k.D22) * (C1 * d3Rdxdy2[1] + C2 * d3Rdxdy2[2] + C3 * (d3Sdxdy2[1] - d3Sdxdy2[2]))
-    d3wdy3 = 1 / (8 * pi * dad.k.D22) * (C1 * d3Rdy3[1] + C2 * d3Rdy3[2] + C3 * (d3Sdy3[1] - d3Sdy3[2]))
+    d3wdx3 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d3Rdx3[1] + C2 * d3Rdx3[2] + C3 * (d3Sdx3[1] - d3Sdx3[2]))
+    d3wdx2dy =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d3Rdx2dy[1] + C2 * d3Rdx2dy[2] + C3 * (d3Sdx2dy[1] - d3Sdx2dy[2]))
+    d3wdxdy2 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d3Rdxdy2[1] + C2 * d3Rdxdy2[2] + C3 * (d3Sdxdy2[1] - d3Sdxdy2[2]))
+    d3wdy3 =
+        1 / (8 * pi * dad.k.D22) *
+        (C1 * d3Rdy3[1] + C2 * d3Rdy3[2] + C3 * (d3Sdy3[1] - d3Sdy3[2]))
 
 
     d3wdx2dm = -(d3wdx3 * m1 + d3wdx2dy * m2)
@@ -949,7 +1384,8 @@ function compute_domain_d_terms(r, theta, nf, n, dad::Union{placa_fina}, pre)
     # dwdt = -(dwdx * t1 + dwdy * t2)
     # dwdm = -(dwdx * m1 + dwdy * m2)
     # @infiltrate
-    [dwdx dwdy d2wdx2 d2wdxdy; d2wdmdx d2wdmdy d2wdxdy d2wdy2], [d2wdx2 d2wdy2 d2wdxdy; d3wdx2dm d3wdy2dm d3wdxdydm]
+    [dwdx dwdy d2wdx2 d2wdxdy; d2wdmdx d2wdmdy d2wdxdy d2wdy2],
+    [d2wdx2 d2wdy2 d2wdxdy; d3wdx2dm d3wdy2dm d3wdxdydm]
 end
 
 
@@ -987,7 +1423,7 @@ function Monta_dM_RIMd(dad::Union{placa_fina,placa_fina_isotropica}, npg)
 
     normal_fonte = calc_normais(dad)
 
-    pre = [zeros(2) for idx in 1:20]
+    pre = [zeros(2) for idx = 1:20]
 
     # Cálculo da matriz [F]
     @showprogress "Montando F e D" for i = 1:n_pontos
@@ -1116,25 +1552,25 @@ function Monta_dM_RIMd(dad::Union{placa_fina,placa_fina_isotropica}, npg)
     # dAdtdm = M1' / F .* dDdtdm
     for i = 1:n_nos #Laço dos pontos radiais
         Ax[2i-1:2i, i] .= 0
-        Ax[2i-1:2i, i] = -sum(Ax[2i-1:2i, :], dims=2) + Mx[2i-1:2i]
+        Ax[2i-1:2i, i] = -sum(Ax[2i-1:2i, :], dims = 2) + Mx[2i-1:2i]
 
         Ay[2i-1:2i, i] .= 0
-        Ay[2i-1:2i, i] = -sum(Ay[2i-1:2i, :], dims=2) + My[2i-1:2i]
+        Ay[2i-1:2i, i] = -sum(Ay[2i-1:2i, :], dims = 2) + My[2i-1:2i]
 
         Axx[2i-1:2i, i] .= 0
-        Axx[2i-1:2i, i] = -sum(Axx[2i-1:2i, :], dims=2) + Mxx[2i-1:2i]
+        Axx[2i-1:2i, i] = -sum(Axx[2i-1:2i, :], dims = 2) + Mxx[2i-1:2i]
 
         Ayy[2i-1:2i, i] .= 0
-        Ayy[2i-1:2i, i] = -sum(Ayy[2i-1:2i, :], dims=2) + Myy[2i-1:2i]
+        Ayy[2i-1:2i, i] = -sum(Ayy[2i-1:2i, :], dims = 2) + Myy[2i-1:2i]
 
         Axy[2i-1:2i, i] .= 0
-        Axy[2i-1:2i, i] = -sum(Axy[2i-1:2i, :], dims=2) + Mxy[2i-1:2i]
+        Axy[2i-1:2i, i] = -sum(Axy[2i-1:2i, :], dims = 2) + Mxy[2i-1:2i]
 
         dAx[2i-1:2i, i] .= 0
-        dAx[2i-1:2i, i] = -sum(dAx[2i-1:2i, :], dims=2) + dMx[2i-1:2i]
+        dAx[2i-1:2i, i] = -sum(dAx[2i-1:2i, :], dims = 2) + dMx[2i-1:2i]
 
         dAy[2i-1:2i, i] .= 0
-        dAy[2i-1:2i, i] = -sum(dAy[2i-1:2i, :], dims=2) + dMy[2i-1:2i]
+        dAy[2i-1:2i, i] = -sum(dAy[2i-1:2i, :], dims = 2) + dMy[2i-1:2i]
 
         # dAdtdm[2i-1:2i, i] .= 0
         # dAdtdm[2i-1:2i, i] = -sum(dAdtdm[2i-1:2i, :], dims=2) + dMdtdm[2i-1:2i]
@@ -1159,10 +1595,10 @@ function Monta_dM_RIMd(dad::Union{placa_fina,placa_fina_isotropica}, npg)
 
 
         dAx[2i-1:2i, i] .= 0
-        dAx[2i-1:2i, i] = -sum(dAx[2i-1:2i, :], dims=2) + dMx[2i-1:2i]
+        dAx[2i-1:2i, i] = -sum(dAx[2i-1:2i, :], dims = 2) + dMx[2i-1:2i]
 
         dAy[2i-1:2i, i] .= 0
-        dAy[2i-1:2i, i] = -sum(dAy[2i-1:2i, :], dims=2) + dMy[2i-1:2i]
+        dAy[2i-1:2i, i] = -sum(dAy[2i-1:2i, :], dims = 2) + dMy[2i-1:2i]
 
 
     end
@@ -1200,14 +1636,26 @@ function Monta_dM_RIMd(dad::Union{placa_fina,placa_fina_isotropica}, npg)
         M3[:, 3*i-1] = Ayy[:, i]
         M3[:, 3*i] = 2Axy[:, i]
         if i <= n_nos
-            dM2dtdm[1:2:end, 2*i-1] = -(Ax[1:2:2n_nos, i] .* -normal_fonte[:, 2] + Ay[1:2:2n_nos, i] .* normal_fonte[:, 1])
-            dM2dtdm[2:2:end, 2*i-1] = -(Ax[1:2:2n_nos, i] .* normal_fonte[:, 1] + Ay[1:2:2n_nos, i] .* normal_fonte[:, 2])
+            dM2dtdm[1:2:end, 2*i-1] = -(
+                Ax[1:2:2n_nos, i] .* -normal_fonte[:, 2] +
+                Ay[1:2:2n_nos, i] .* normal_fonte[:, 1]
+            )
+            dM2dtdm[2:2:end, 2*i-1] = -(
+                Ax[1:2:2n_nos, i] .* normal_fonte[:, 1] +
+                Ay[1:2:2n_nos, i] .* normal_fonte[:, 2]
+            )
             dM2dx2[1:n_noi, 2*i-1] = dAx[2*n_nos+1:2:2*(n_nos+n_noi)-1, i]
             dM2dxdy[1:n_noi, 2*i-1] = dAx[2*n_nos+2:2:2*(n_nos+n_noi), i]
             dM2dy2[1:n_noi, 2*i-1] = dAy[2*n_nos+2:2:2*(n_nos+n_noi), i]
         else
-            dM2dtdm[1:2:end, n_nos+i] = -(Ax[1:2:2n_nos, i] .* -normal_fonte[:, 2] + Ay[1:2:2n_nos, i] .* normal_fonte[:, 1])
-            dM2dtdm[2:2:end, n_nos+i] = -(Ax[1:2:2n_nos, i] .* normal_fonte[:, 1] + Ay[1:2:2n_nos, i] .* normal_fonte[:, 2])
+            dM2dtdm[1:2:end, n_nos+i] = -(
+                Ax[1:2:2n_nos, i] .* -normal_fonte[:, 2] +
+                Ay[1:2:2n_nos, i] .* normal_fonte[:, 1]
+            )
+            dM2dtdm[2:2:end, n_nos+i] = -(
+                Ax[1:2:2n_nos, i] .* normal_fonte[:, 1] +
+                Ay[1:2:2n_nos, i] .* normal_fonte[:, 2]
+            )
             dM2dx2[1:n_noi, n_nos+i] = dAx[2*n_nos+1:2:2*(n_nos+n_noi)-1, i]
             dM2dxdy[1:n_noi, n_nos+i] = dAx[2*n_nos+2:2:2*(n_nos+n_noi), i]
             dM2dy2[1:n_noi, n_nos+i] = dAy[2*n_nos+2:2:2*(n_nos+n_noi), i]
@@ -1303,6 +1751,6 @@ function compute_domain_d_terms(r, theta, nf, n, dad::placa_fina_isotropica, pre
     # dwdt = -(dwdx * t1 + dwdy * t2)
     # dwdm = -(dwdx * m1 + dwdy * m2)
     # @infiltrate
-    [dwdx dwdy d2wdx2 d2wdxdy; d2wdmdx d2wdmdy d2wdxdy d2wdy2], [d2wdx2 d2wdy2 d2wdxdy; d3wdx2dm d3wdy2dm d3wdxdydm]
+    [dwdx dwdy d2wdx2 d2wdxdy; d2wdmdx d2wdmdy d2wdxdy d2wdy2],
+    [d2wdx2 d2wdy2 d2wdxdy; d3wdx2dm d3wdy2dm d3wdxdydm]
 end
-

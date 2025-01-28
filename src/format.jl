@@ -1,7 +1,7 @@
 function calcula_arco(x1, y1, x2, y2, xc, yc, raio)
     # Function to compute the tet1 angle between the line from point (x1,y1) to (xc,yc) and the
-    # horizontal direction 
-    #  and 
+    # horizontal direction
+    #  and
     # the tet2 angle between the line from point (x2,y2) to (xc,yc)
     # and the horizontal direction
     dx1 = x1 - xc
@@ -80,7 +80,7 @@ function calcula_centro(x1, y1, x2, y2, raio)
 end
 # function format_dad(entrada, NPX=2, NPY=2, afasta=1)
 
-function format_dad(entrada, NPX=2, NPY=2, afasta=1; canto=false)
+function format_dad(entrada, NPX = 2, NPY = 2, afasta = 1; canto = false)
     # Programa para formatação dos dados de entrada
     # @infiltrate
     if length(entrada) == 6
@@ -189,7 +189,7 @@ function format_dad(entrada, NPX=2, NPY=2, afasta=1; canto=false)
         # Generation of elements and nodes
         CORNERS[p1, 9] = cont_el + 1
 
-        qsi = range(0, stop=1, length=tipo_elem)
+        qsi = range(0, stop = 1, length = tipo_elem)
         for i = 1:num_el_lin
             if (SEGMENTOS[t, 4] == 0) # The segment is a straight line
                 x_i = x1l + delta_x / num_el_lin * (i - 1)# initial x coordinate of the element
@@ -207,9 +207,9 @@ function format_dad(entrada, NPX=2, NPY=2, afasta=1; canto=false)
 
             cont_el = cont_el + 1
             nos = (cont_el-1)*tipo_elem+1:cont_el*tipo_elem
-            qsis = range(-1 + afasta / tipo_elem, stop=1 - afasta / tipo_elem, length=tipo_elem) # Parametrização de -1 a 1
+            # qsis = range(-1 + afasta / tipo_elem, stop=1 - afasta / tipo_elem, length=tipo_elem) # Parametrização de -1 a 1
             # qsis = [-0.77, 0.77] # Parametrização de -1 a 1
-            # qsis, ~ = gausslegendre(tipo_elem) # Parametrização de -1 a 1
+            qsis, ~ = gausslegendre(tipo_elem) # Parametrização de -1 a 1
             # @infiltrate
             N1, dN1 = calc_fforma_gen(pontosg[1], qsis)
             N2, dN2 = calc_fforma_gen(pontosg[2], qsis)
@@ -219,22 +219,67 @@ function format_dad(entrada, NPX=2, NPY=2, afasta=1; canto=false)
             # @infiltrate
             if prob == potencial || prob == helmholtz
                 if subregioes == 0
-                    ELEM[cont_el] = elemento(nos, CCSeg[t, 2], fill(CCSeg[t, 3], tipo_elem), qsis, tamanho, 0)
+                    ELEM[cont_el] = elemento(
+                        nos,
+                        CCSeg[t, 2],
+                        fill(CCSeg[t, 3], tipo_elem),
+                        qsis,
+                        tamanho,
+                        0,
+                    )
                 else
-                    ELEM[cont_el] = elemento(nos, CCSeg[t, 2], fill(CCSeg[t, 3], tipo_elem), qsis, tamanho, subregioes.regiao[cont_el])
+                    ELEM[cont_el] = elemento(
+                        nos,
+                        CCSeg[t, 2],
+                        fill(CCSeg[t, 3], tipo_elem),
+                        qsis,
+                        tamanho,
+                        subregioes.regiao[cont_el],
+                    )
                 end
 
-            elseif prob == elastico || prob == elastico_aniso || prob == placa_fina || prob == placa_fina_isotropica
+            elseif prob == elastico ||
+                   prob == elastico_aniso ||
+                   prob == placa_fina ||
+                   prob == placa_fina_isotropica
                 if subregioes == 0
-                    ELEM[cont_el] = elementov(nos, CCSeg[t, [2, 4]], repeat(CCSeg[t, [3, 5]], 1, tipo_elem), qsis, tamanho, 0)
+                    ELEM[cont_el] = elementov(
+                        nos,
+                        CCSeg[t, [2, 4]],
+                        repeat(CCSeg[t, [3, 5]], 1, tipo_elem),
+                        qsis,
+                        tamanho,
+                        0,
+                    )
                 else
-                    ELEM[cont_el] = elementov(nos, CCSeg[t, [2, 4]], repeat(CCSeg[t, [3, 5]], 1, tipo_elem), qsis, tamanho, subregioes.regiao[cont_el])
+                    ELEM[cont_el] = elementov(
+                        nos,
+                        CCSeg[t, [2, 4]],
+                        repeat(CCSeg[t, [3, 5]], 1, tipo_elem),
+                        qsis,
+                        tamanho,
+                        subregioes.regiao[cont_el],
+                    )
                 end
             else
                 if subregioes == 0
-                    ELEM[cont_el] = elementov(nos, CCSeg[t, [2, 4, 6]], repeat(CCSeg[t, [3, 5, 7]], 1, tipo_elem), qsis, tamanho, 0)
+                    ELEM[cont_el] = elementov(
+                        nos,
+                        CCSeg[t, [2, 4, 6]],
+                        repeat(CCSeg[t, [3, 5, 7]], 1, tipo_elem),
+                        qsis,
+                        tamanho,
+                        0,
+                    )
                 else
-                    ELEM[cont_el] = elementov(nos, CCSeg[t, [2, 4, 6]], repeat(CCSeg[t, [3, 5, 7]], 1, tipo_elem), qsis, tamanho, subregioes.regiao[cont_el])
+                    ELEM[cont_el] = elementov(
+                        nos,
+                        CCSeg[t, [2, 4, 6]],
+                        repeat(CCSeg[t, [3, 5, 7]], 1, tipo_elem),
+                        qsis,
+                        tamanho,
+                        subregioes.regiao[cont_el],
+                    )
                 end
             end
         end
@@ -252,12 +297,12 @@ function format_dad(entrada, NPX=2, NPY=2, afasta=1; canto=false)
     #   vizinhos=false
     #   if vizinhos
     if afasta == 0
-        NOSn = unique(NOS, dims=1)             # elimina pontos iguais
+        NOSn = unique(NOS, dims = 1)             # elimina pontos iguais
         ELEM1 = vcat([i.indices for i in ELEM]'...)
         ELEMn = zeros(size(ELEM1))
 
         for i = 1:size(NOSn, 1)
-            equalind = findall(sum(isequal.(NOSn[i, :]', NOS), dims=2) .== 2)[:]   # true +true = 2
+            equalind = findall(sum(isequal.(NOSn[i, :]', NOS), dims = 2) .== 2)[:]   # true +true = 2
             for ind in equalind
                 ELEMn[ELEM1.==ind[1]] .= i
             end
@@ -266,10 +311,12 @@ function format_dad(entrada, NPX=2, NPY=2, afasta=1; canto=false)
         for i = 1:size(ELEM1, 1)
             if prob == potencial
                 # @infiltrate
-                ELEM[i] = elemento(ELEMn[i, :], ELEM[i].tipoCDC, ELEM[i].valorCDC, ELEM[i].ξs, 0)
+                ELEM[i] =
+                    elemento(ELEMn[i, :], ELEM[i].tipoCDC, ELEM[i].valorCDC, ELEM[i].ξs, 0)
             else
                 prob == elastico
-                ELEM[i] = elementov(ELEMn[i, :], ELEM[i].tipoCDC, ELEM[i].valorCDC, ELEM[i].ξs, 0)
+                ELEM[i] =
+                    elementov(ELEMn[i, :], ELEM[i].tipoCDC, ELEM[i].valorCDC, ELEM[i].ξs, 0)
             end
         end
         return prob(NOSn, gera_p_in(NPX, NPY, PONTOS, SEGMENTOS), ELEM, k)
@@ -285,7 +332,7 @@ function format_dad(entrada, NPX=2, NPY=2, afasta=1; canto=false)
 
     for i = 1:num_elementos
         tipo = size(ELEM[i].indices, 1)
-        ξs = range(-1, stop=1, length=tipo)
+        ξs = range(-1, stop = 1, length = tipo)
 
         N_geo = calc_fforma_gen.(ELEM[i].ξs, Ref(ξs)) # funções de forma generalizada
         xn = zeros(tipo, 2)
@@ -293,7 +340,7 @@ function format_dad(entrada, NPX=2, NPY=2, afasta=1; canto=false)
             x = NOS[ELEM[i].indices, :] # coordenadas dos nos geometricos que compoem o elemento
             # @show x,N_geo
             # @infiltrate
-            xn[k, :] = N_geo[k][1]' * x # coordenadas geometricas do no em qsi = 
+            xn[k, :] = N_geo[k][1]' * x # coordenadas geometricas do no em qsi =
         end
         NOS[ELEM[i].indices, :] = xn
     end
@@ -306,7 +353,13 @@ function format_dad(entrada, NPX=2, NPY=2, afasta=1; canto=false)
     # @infiltrate
     normais = 0 * NOS
     if canto
-        dad = prob(NOS, gera_p_in(NPX, NPY, PONTOS, SEGMENTOS), ELEM, normais, (; k..., cantos=CORNERS, bc_canto=bc_canto))
+        dad = prob(
+            NOS,
+            gera_p_in(NPX, NPY, PONTOS, SEGMENTOS),
+            ELEM,
+            normais,
+            (; k..., cantos = CORNERS, bc_canto = bc_canto),
+        )
         normais = calc_normais(dad)
         dad.normal = normais
         # prob(NOS, gera_p_in(NPX, NPY, PONTOS, SEGMENTOS), ELEM, merge(k,(cantos=CORNERS),))
@@ -319,7 +372,7 @@ function format_dad(entrada, NPX=2, NPY=2, afasta=1; canto=false)
     dad
 end
 
-function aplicaCDC(H, G, dad::Union{elastico,elastico_aniso}, nosrestritos=[])
+function aplicaCDC(H, G, dad::Union{elastico,elastico_aniso}, nosrestritos = [])
     nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
     n = size(dad.NOS, 1)
     A = deepcopy(H)
@@ -329,7 +382,7 @@ function aplicaCDC(H, G, dad::Union{elastico,elastico_aniso}, nosrestritos=[])
     else
         scale = 1
     end
-    for elem_i in dad.ELEM, i in 1:2  # Laço dos pontos fontes
+    for elem_i in dad.ELEM, i = 1:2  # Laço dos pontos fontes
         ind_elem = elem_i.indices
         # @show elem_i.tipoCDC[i]
 
@@ -354,7 +407,12 @@ function aplicaCDC(H, G, dad::Union{elastico,elastico_aniso}, nosrestritos=[])
     end
     if temsubregioes(dad)
         neq = size(dad.k.subregioes.equivale, 1)
-        indeq = [2 * dad.k.subregioes.equivale[:, 1] .- 1 dad.k.subregioes.equivale[:, 1] * 2 2 * dad.k.subregioes.equivale[:, 2] .- 1 dad.k.subregioes.equivale[:, 2] * 2]'[:]
+        indeq =
+            [2 * dad.k.subregioes.equivale[:, 1] .- 1 dad.k.subregioes.equivale[:, 1] * 2 2 *
+                                                                                          dad.k.subregioes.equivale[
+                :,
+                2,
+            ] .- 1 dad.k.subregioes.equivale[:, 2] * 2]'[:]
         # @infiltrate
         A = [A -G[:, indeq]; dad.k.subregioes.Hc]
         b = [b; zeros(4neq)]
@@ -401,7 +459,7 @@ end
 #             T[2ind_elem.+(i-2)] = elem_i.valorCDC[i, :] # A temperatura é a condição de contorno
 #             q[2ind_elem.+(i-2)] = x[2ind_elem.+(i-2)] * scale # O fluxo é o valor calculado
 #         elseif elem_i.tipoCDC[i] == 1
-#             T[2ind_elem.+(i-2)] = x[2ind_elem.+(i-2)] # 
+#             T[2ind_elem.+(i-2)] = x[2ind_elem.+(i-2)] #
 #             q[2ind_elem.+(i-2)] = elem_i.valorCDC[i, :]
 #         end
 #     end
@@ -423,7 +481,7 @@ end
 
 
 
-function separa(dad::Union{elastico,elastico_aniso}, x, nosrestritos=[], h=[])
+function separa(dad::Union{elastico,elastico_aniso}, x, nosrestritos = [], h = [])
     # Separa fluxo e temperatura
 
     # ncdc = número de linhas da matriz CDC
@@ -437,16 +495,16 @@ function separa(dad::Union{elastico,elastico_aniso}, x, nosrestritos=[], h=[])
     else
         scale = 1
     end
-    for elem_i in dad.ELEM, i in 1:2   # Laço dos pontos fontes
+    for elem_i in dad.ELEM, i = 1:2   # Laço dos pontos fontes
         ind_elem = elem_i.indices
         if elem_i.tipoCDC[i] == 0
             T[2ind_elem.+(i-2)] = elem_i.valorCDC[i, :] # A temperatura é a condição de contorno
             q[2ind_elem.+(i-2)] = x[2ind_elem.+(i-2)] * scale # O fluxo é o valor calculado
         elseif elem_i.tipoCDC[i] == 1
-            T[2ind_elem.+(i-2)] = x[2ind_elem.+(i-2)] # 
+            T[2ind_elem.+(i-2)] = x[2ind_elem.+(i-2)] #
             q[2ind_elem.+(i-2)] = elem_i.valorCDC[i, :]
         elseif elem_i.tipoCDC[i] == 2
-            T[2ind_elem.+(i-2)] = x[2ind_elem.+(i-2)] # 
+            T[2ind_elem.+(i-2)] = x[2ind_elem.+(i-2)] #
         end
     end
     if !isempty(nosrestritos)
@@ -467,7 +525,12 @@ function separa(dad::Union{elastico,elastico_aniso}, x, nosrestritos=[], h=[])
         end
     elseif temsubregioes(dad)
         neq = size(dad.k.subregioes.equivale, 1)
-        indeq = [2 * dad.k.subregioes.equivale[:, 1] .- 1 dad.k.subregioes.equivale[:, 1] * 2 2 * dad.k.subregioes.equivale[:, 2] .- 1 dad.k.subregioes.equivale[:, 2] * 2]'[:]
+        indeq =
+            [2 * dad.k.subregioes.equivale[:, 1] .- 1 dad.k.subregioes.equivale[:, 1] * 2 2 *
+                                                                                          dad.k.subregioes.equivale[
+                :,
+                2,
+            ] .- 1 dad.k.subregioes.equivale[:, 2] * 2]'[:]
         for i = 1:4neq
             q[indeq[i]] = x[2nc(dad)+i]
         end
@@ -491,7 +554,7 @@ function separa(dad::Union{potencial,helmholtz}, x)
             T[ind_elem] = elem_i.valorCDC # A temperatura é a condição de contorno
             q[ind_elem] = x[ind_elem] # O fluxo é o valor calculado
         elseif elem_i.tipoCDC == 1
-            T[ind_elem] = x[ind_elem] # 
+            T[ind_elem] = x[ind_elem] #
             q[ind_elem] = elem_i.valorCDC
         end
     end
@@ -499,45 +562,45 @@ function separa(dad::Union{potencial,helmholtz}, x)
 end
 
 
-function inpoly(p, node, edge, reltol=1.0e-12)
+function inpoly(p, node, edge, reltol = 1.0e-12)
 
     #   INPOLY: Point-in-polygon testing.
-    # 
+    #
     #  Determine whether a series of points lie within the bounds of a polygon
     #  in the 2D plane. General non-convex, multiply-connected polygonal
     #  regions can be handled.
-    # 
+    #
     #  SHORT SYNTAX:
-    # 
+    #
     #    in = inpoly(p, node);
-    # 
+    #
     #    p   : The points to be tested as an Nx2 array [x1 y1; x2 y2; etc].
     #    node: The vertices of the polygon as an Mx2 array [X1 Y1; X2 Y2; etc].
     #          The standard syntax assumes that the vertices are specified in
     #          consecutive order.
-    # 
+    #
     #    in  : An Nx1 logical array with IN(i) = TRUE if P(i,:) lies within the
     #          region.
-    # 
+    #
     #  LONG SYNTAX:
-    # 
+    #
     #   [in, on] = inpoly(p, node, edge, tol);
-    # 
+    #
     #   edge: An Mx2 array of polygon edges, specified as connections between
     #         the vertices in NODE: [n1 n2; n3 n4; etc]. The vertices in NODE
     #         do not need to be specified in connsecutive order when using the
     #         extended syntax.
-    # 
+    #
     #   on  : An Nx1 logical array with ON(i) = TRUE if P(i,:) lies on a
     #         polygon edge. (A tolerance is used to deal with numerical
     #         precision, so that points within a distance of
-    #         reltol*min(bbox(node)) from a polygon edge are considered "on" the 
+    #         reltol*min(bbox(node)) from a polygon edge are considered "on" the
     #         edge.
-    # 
+    #
     #  EXAMPLE:
-    # 
+    #
     #    polydemo;       #  Will run a few examples
-    # 
+    #
     #  See also INPOLYGON
 
     #  The algorithm is based on the crossing number test, which counts the
@@ -546,31 +609,31 @@ function inpoly(p, node, edge, reltol=1.0e-12)
     #  counts are inside. A simple implementation of this method requires each
     #  wall intersection be checked for each point, resulting in an O(N*M)
     #  operation count.
-    # 
+    #
     #  This implementation does better in 2 ways:
-    # 
+    #
     #    1. The test points are sorted by y-value and a binary search is used to
     #       find the first point in the list that has a chance of intersecting
     #       with a given wall. The sorted list is also used to determine when we
     #       have reached the last point in the list that has a chance of
     #       intersection. This means that in general only a small portion of
     #       points are checked for each wall, rather than the whole set.
-    # 
+    #
     #    2. The intersection test is simplified by first checking against the
     #       bounding box for a given wall segment. Checking against the bbox is
     #       an inexpensive alternative to the full intersection test and allows
     #       us to take a number of shortcuts, minimising the number of times the
     #       full test needs to be done.
-    # 
+    #
     #    Darren Engwirda: 2005-2009
     #    Email          : d_engwirda@hotmail.com
     #    Last updated   : 28/03/2009 with MATLAB 7.0
-    # 
+    #
     #  Problems or suggestions? Email me.
     nnode = size(node, 1)
 
     # #  PRE-PROCESSING
-    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     n = size(p, 1)
     nc = size(edge, 1)
 
@@ -596,7 +659,7 @@ function inpoly(p, node, edge, reltol=1.0e-12)
     y = p[i, 2]
     x = p[i, 1]
     # #  MAIN LOOP
-    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     cn = falses(n)     #  Because we're dealing with mod(cn,2) we don't have
     #  to actually increment the crossing number, we can
     #  just flip a logical at each intersection (faster!)
@@ -657,7 +720,8 @@ function inpoly(p, node, edge, reltol=1.0e-12)
                     if X <= xmax
 
                         #  Check if we're "on" the edge
-                        on[j] = on[j] || (abs((y2 - Y) * (x1 - X) - (y1 - Y) * (x2 - X)) <= tol)
+                        on[j] =
+                            on[j] || (abs((y2 - Y) * (x1 - X) - (y1 - Y) * (x2 - X)) <= tol)
 
                         #  Do the actual intersection test
                         if (Y < y2) && ((y2 - y1) * (X - x1) < (Y - y1) * (x2 - x1))
@@ -747,12 +811,12 @@ function separa(dad::Union{elastico_iga,elastico_aniso_iga}, x)
     [dad.E * u[1:2:end] dad.E * u[2:2:end]], [dad.E * t[1:2:end] dad.E * t[2:2:end]]
 end
 
-function calc_normais(dad; tangente=false)
+function calc_normais(dad; tangente = false)
     normais = deepcopy(dad.NOS)
     tangentes = deepcopy(dad.NOS)
     for elem_j in dad.ELEM#Laço dos elementos
         x = dad.NOS[elem_j.indices, :] # Coordenada (x,y) dos nós geométricos
-        for i in 1:length(elem_j.indices) #
+        for i = 1:length(elem_j.indices) #
             ξ = elem_j.ξs[i]
             N_geo, dN = calc_fforma(ξ, elem_j)
             dxdqsi = dN' * x
@@ -769,7 +833,7 @@ function calc_normais(dad; tangente=false)
     normais
 end
 function matrizrotação(dad)
-    normais, tangentes = calc_normais(dad, tangente=true)
+    normais, tangentes = calc_normais(dad, tangente = true)
     R = spzeros(2nc(dad), 2nc(dad))
     for i = 1:nc(dad)
         R[2i-1:2i, 2i-1:2i] = [normais[i, :]; tangentes[i, :]]
@@ -784,7 +848,7 @@ function aplicaCDC(H, G, dad::placa_fina)
     ncanto = size(dad.k.bc_canto, 1)
     scale = dad.k.D22
 
-    for elem_i in dad.ELEM, i in 1:2  # Laço dos pontos fontes
+    for elem_i in dad.ELEM, i = 1:2  # Laço dos pontos fontes
         ind_elem = elem_i.indices
         # @show elem_i.tipoCDC[i]
         if elem_i.tipoCDC[i] == 0
@@ -812,7 +876,7 @@ function aplicaCDC(H, G, dad::placa_fina_isotropica)
     ncanto = size(dad.k.bc_canto, 1)
     scale = dad.k.D
 
-    for elem_i in dad.ELEM, i in 1:2  # Laço dos pontos fontes
+    for elem_i in dad.ELEM, i = 1:2  # Laço dos pontos fontes
         ind_elem = elem_i.indices
         # @show elem_i.tipoCDC[i]
         if elem_i.tipoCDC[i] == 0
@@ -839,7 +903,7 @@ function aplicaCDC(H, G, dad::placa_espessa_isotropica)
     bcval = zeros(size(H, 2))
     scale = dad.k.D
 
-    for elem_i in dad.ELEM, i in 1:3  # Laço dos pontos fontes
+    for elem_i in dad.ELEM, i = 1:3  # Laço dos pontos fontes
         ind_elem = elem_i.indices
         # @show elem_i.tipoCDC[i]
         if elem_i.tipoCDC[i] == 0

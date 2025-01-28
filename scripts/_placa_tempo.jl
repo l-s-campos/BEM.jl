@@ -8,7 +8,7 @@ NPX = [5] #pontos internos na direção x
 npg = [10]    #apenas números pares
 # nt = [20, 40, 80, 160]    #apenas números pares
 nt = [80]    #apenas números pares
-## Formatação dos dados 
+## Formatação dos dados
 problema = ["sladek03_apoiado"]
 # problema = ["sladek03", "sladek03_apoiado"]
 metodo = ["DRM"]

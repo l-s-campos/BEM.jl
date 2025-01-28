@@ -113,9 +113,9 @@ function _aca_partial(K, irange, jrange, atol, rmax, rtol, istart, buffer_ = not
     er = Inf
     est_norm = 0 # approximate norm of K[irange,jrange]
     r = 0 # current rank
-    while er > max(atol, rtol * est_norm) && r < rmax &&sum(I)>0
+    while er > max(atol, rtol * est_norm) && r < rmax && sum(I) > 0
         # remove index i from allowed row
-    #   @show I
+        #   @show I
         I[i] = false
         # pre-allocate row and column
         a = newcol!(A)
@@ -124,7 +124,7 @@ function _aca_partial(K, irange, jrange, atol, rmax, rtol, istart, buffer_ = not
         B.k -= 1
         # compute next row by row <-- K[i+ishift,jrange] - R[i,:]
         getblock!(b, Kadj, jrange, i + ishift)
-        for k in 1:r
+        for k = 1:r
             axpy!(-adjoint(A[k][i]), B[k], b)
             # for j in eachindex(row)
             #     row[j] = row[j] - B[k][j]*adjoint(A[k][i])
@@ -144,7 +144,7 @@ function _aca_partial(K, irange, jrange, atol, rmax, rtol, istart, buffer_ = not
             J[j] = false
             # compute next col by col <-- K[irange,j+jshift] - R[:,j]
             getblock!(a, K, irange, j + jshift)
-            for k in 1:r
+            for k = 1:r
                 axpy!(-adjoint(B[k][j]), A[k], a)
                 # for i in eachindex(col)
                 #     col[i] = col[i] - A[k][i]*adjoint(B[k][j])
@@ -181,7 +181,7 @@ compute the Frobenius norm of `Rₖ₊₁ = A*adjoint(B)` efficiently.
     a = A[k]
     b = B[k]
     out = norm(a)^2 * norm(b)^2
-    for l in 1:(k-1)
+    for l = 1:(k-1)
         out += 2 * real(dot(A[l], a) * (dot(b, B[l])))
     end
     return sqrt(cur^2 + out)
@@ -204,7 +204,7 @@ for more details.
 function _aca_partial_pivot(v, J)
     idx = -1
     val = -Inf
-    for n in 1:length(J)
+    for n = 1:length(J)
         x = v[n]
         σ = svdvals(x)[end]
         if σ > val && J[n]

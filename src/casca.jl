@@ -20,11 +20,15 @@ function calsolfund(pg, pf, n, nf, Casca::casca, pre)
 
     kn = dot([k11, k12], n)
 
-    uc = [u zeros(2, 2)
-        zeros(2, 2) w]
+    uc = [
+        u zeros(2, 2)
+        zeros(2, 2) w
+    ]
 
-    pc = [t zeros(2, 2)
-        w.*kn V]
+    pc = [
+        t zeros(2, 2)
+        w.*kn V
+    ]
     uc, pc
 end
 
@@ -58,11 +62,15 @@ function calsolfund(pg, pf, n, nf, Casca::casca_aniso, pre)
 
     kn = dot([k11, k12], n)
 
-    uc = [u zeros(2, 2)
-        zeros(2, 2) w]
+    uc = [
+        u zeros(2, 2)
+        zeros(2, 2) w
+    ]
 
-    pc = [t zeros(2, 2)
-        w.*kn V]
+    pc = [
+        t zeros(2, 2)
+        w.*kn V
+    ]
     uc, pc
 end
 
@@ -98,8 +106,12 @@ function compute_domain_terms(r, theta, nf, n, Casca::casca, pre)
     u12 = (r1[1] * r1[2]) / (2 * prod1 * GE)
     u21 = u12
 
-    u11x = (rx .* ((3 - 4 * nu) * rx .^ 2 + (1 - 4 * nu) * ry .^ 2)) ./ (8 * GE * (-1 + nu) * pi * r)
-    u22y = (ry .* ((1 - 4 * nu) * rx .^ 2 + (3 - 4 * nu) * ry .^ 2)) ./ (8 * GE * (-1 + nu) * pi * r)
+    u11x =
+        (rx .* ((3 - 4 * nu) * rx .^ 2 + (1 - 4 * nu) * ry .^ 2)) ./
+        (8 * GE * (-1 + nu) * pi * r)
+    u22y =
+        (ry .* ((1 - 4 * nu) * rx .^ 2 + (3 - 4 * nu) * ry .^ 2)) ./
+        (8 * GE * (-1 + nu) * pi * r)
     u12x = ((rx - ry) .* ry .* (rx + ry)) ./ (8 * GE * (-1 + nu) * pi * r)
     u12y = (-rx .^ 3 + rx .* ry .^ 2) ./ (8 * GE * (-1 + nu) * pi * r)
 
@@ -137,14 +149,18 @@ function compute_domain_terms(r, theta, nf, n, Casca::casca, pre)
     end
 
 
-    termcasca = [0 0 term1 0
+    termcasca = [
+        0 0 term1 0
         0 0 term2 0
         term3 term4 term7 0
-        term5 term6 term8 0]
-    termdinamico = [u11 u12 0 0
+        term5 term6 term8 0
+    ]
+    termdinamico = [
+        u11 u12 0 0
         u21 u22 0 0
         0 0 w 0
-        0 0 dwdm 0]
+        0 0 dwdm 0
+    ]
     termdinamico, termcasca
 end
 
@@ -157,7 +173,7 @@ function Monta_M_RIMd(Casca::casca, npg)
     n_noi = size(dad.pontos_internos, 1) #Number of internal nodes
     n_canto = size(dad.k.cantos, 1)
 
-    pre = [zeros(2) for idx in 1:20]
+    pre = [zeros(2) for idx = 1:20]
 
 
     n_pontos = n_nos + n_noi
@@ -173,10 +189,10 @@ function Monta_M_RIMd(Casca::casca, npg)
     # M2x = zeros(2n_pontos, 2)
     # M2y = zeros(2n_pontos, 2)
     normal_fonte = calc_normais(dad)
-    for x = [:R0, :S0, :dRdx0, :dRdy0, :dSdx0, :dSdy0]
+    for x in [:R0, :S0, :dRdx0, :dRdy0, :dSdx0, :dSdy0]
         @eval $x = zeros(2)
     end
-    pre = [zeros(2) for idx in 1:6]
+    pre = [zeros(2) for idx = 1:6]
     # Cálculo da matriz [F]
     @showprogress "Montando F e D" for i = 1:n_pontos
         if i <= n_nos
@@ -250,9 +266,17 @@ function Monta_M_RIMd(Casca::casca, npg)
         # Ay = aux .* Dy
         for i = 1:n_nos #Laço dos pontos radiais
             AM[4i-3:4i, 4i-3:4i] .= 0
-            AM[4i-3:4i, 4i-3:4i] = -[sum(AM[4i-3:4i, 1:4:end], dims=2) sum(AM[4i-3:4i, 2:4:end], dims=2) sum(AM[4i-3:4i, 3:4:end], dims=2) sum(AM[4i-3:4i, 4:4:end], dims=2)] + Mm[4i-3:4i, :]
+            AM[4i-3:4i, 4i-3:4i] =
+                -[sum(AM[4i-3:4i, 1:4:end], dims = 2) sum(AM[4i-3:4i, 2:4:end], dims = 2) sum(
+                    AM[4i-3:4i, 3:4:end],
+                    dims = 2,
+                ) sum(AM[4i-3:4i, 4:4:end], dims = 2)] + Mm[4i-3:4i, :]
             AP[4i-3:4i, 4i-3:4i] .= 0
-            AP[4i-3:4i, 4i-3:4i] = -[sum(AP[4i-3:4i, 1:4:end], dims=2) sum(AP[4i-3:4i, 2:4:end], dims=2) sum(AP[4i-3:4i, 3:4:end], dims=2) sum(AP[4i-3:4i, 4:4:end], dims=2)] + Mp[4i-3:4i, :]
+            AP[4i-3:4i, 4i-3:4i] =
+                -[sum(AP[4i-3:4i, 1:4:end], dims = 2) sum(AP[4i-3:4i, 2:4:end], dims = 2) sum(
+                    AP[4i-3:4i, 3:4:end],
+                    dims = 2,
+                ) sum(AP[4i-3:4i, 4:4:end], dims = 2)] + Mp[4i-3:4i, :]
         end
         AM, AP
     end
@@ -302,7 +326,7 @@ function Monta_M_RIMd(Casca::casca, npg)
         return Fm, Fp
     end
 
-    function calc_HeG(Casca::casca, npg=8)
+    function calc_HeG(Casca::casca, npg = 8)
         dad = Casca.dadplaca
         nelem = size(dad.ELEM, 1)# Quantidade de elementos discretizados no contorno
         n_fis = size(dad.NOS, 1)
@@ -314,7 +338,7 @@ function Monta_M_RIMd(Casca::casca, npg)
         qsi, w = gausslegendre(npg)# Quadratura de gauss
         # qsi2, w2 = gausslegendre(2npg)# Quadratura de gauss
         normal_fonte = calc_normais(dad)
-        pre = [zeros(2) for idx in 1:29]
+        pre = [zeros(2) for idx = 1:29]
 
 
         @showprogress "Montando H e G" for i = 1:n_fis+n_cantos+n_internos
@@ -331,11 +355,13 @@ function Monta_M_RIMd(Casca::casca, npg)
                 nf = zeros(2)
                 caso = "canto"
             end
-            for j in 1:length(dad.ELEM)#Laço dos elementos
+            for j = 1:length(dad.ELEM)#Laço dos elementos
                 elem_j = dad.ELEM[j]#Laço dos elementos
                 x = dad.NOS[elem_j.indices, :] # Coordenada (x,y) dos nós geométricos
                 Δelem = (x[end, :] - x[1, :]) # Δx e Δy entre o primeiro e ultimo nó geometrico
-                eet = (elem_j.ξs[end] - elem_j.ξs[1]) * dot(Δelem, pf .- x[1, :]) / norm(Δelem)^2 + elem_j.ξs[1]
+                eet =
+                    (elem_j.ξs[end] - elem_j.ξs[1]) * dot(Δelem, pf .- x[1, :]) /
+                    norm(Δelem)^2 + elem_j.ξs[1]
                 N_geo, dN = calc_fforma(eet, elem_j)
                 ps = N_geo' * x
                 b = norm(ps' - pf) / norm(Δelem)
@@ -354,7 +380,8 @@ function Monta_M_RIMd(Casca::casca, npg)
                         # h, g = integraelemsing(pf, nf, x, qsi2, w2, elem_j, dad, xi0)
                         h, g = integraelemsing(x, dad, xi0)
                     end
-                    cols = [4elem_j.indices .- 3 4elem_j.indices .- 2 4elem_j.indices .- 1 4elem_j.indices]'[:]
+                    cols =
+                        [4elem_j.indices .- 3 4elem_j.indices .- 2 4elem_j.indices .- 1 4elem_j.indices]'[:]
                     # @infiltrate
                     H[4*i-3:4*i, cols] = h
                     G[4*i-3:4*i, cols] = g
@@ -370,14 +397,16 @@ function Monta_M_RIMd(Casca::casca, npg)
                         h, g = integraelemsing(x, dad, xi0)
 
                     end
-                    cols = [4elem_j.indices .- 3 4elem_j.indices .- 2 4elem_j.indices .- 1 4elem_j.indices]'[:]
+                    cols =
+                        [4elem_j.indices .- 3 4elem_j.indices .- 2 4elem_j.indices .- 1 4elem_j.indices]'[:]
                     ind = i + 3n_fis + 2n_noi
                     H[ind, cols] = h[1, :]
                     G[ind, cols] = g[1, :]
                     q_el = compute_q(pf, nf, x, eta, w .* Jt, elem_j, dad, pre)
                     q[ind] += q_el[1]
                 else
-                    cols = [4elem_j.indices .- 3 4elem_j.indices .- 2 4elem_j.indices .- 1 4elem_j.indices]'[:]
+                    cols =
+                        [4elem_j.indices .- 3 4elem_j.indices .- 2 4elem_j.indices .- 1 4elem_j.indices]'[:]
                     ind = (i - n_fis) * 3 + 4n_fis - 2
                     H[ind:ind+2, cols] = h[1, :]
                     G[ind:ind+2, cols] = g[1, :]

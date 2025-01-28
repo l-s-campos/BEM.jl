@@ -19,7 +19,22 @@ npg = 16    #apenas números pares
 # res = zeros(5, 4, 4, 10)
 prob = [quarto_circ, placa_moulton, potencial1d, dad_laquini1, dad_laquini2, dad_laquini3]
 ana = [ana_quarto_circ, T_ana_moulton, T_ana_1d, fa1, fa2, fa3]
-res = DataFrame(prob=String[], n=Int[], order=Int[], t=Float64[], td=Float64[], speedup=Float64[], tsolve=Float64[], ti=Float64[], tid=Float64[], speedupi=Float64[], erms=Float64[], ermsd=Float64[], em1=Float64[], em2=Float64[])
+res = DataFrame(
+    prob = String[],
+    n = Int[],
+    order = Int[],
+    t = Float64[],
+    td = Float64[],
+    speedup = Float64[],
+    tsolve = Float64[],
+    ti = Float64[],
+    tid = Float64[],
+    speedupi = Float64[],
+    erms = Float64[],
+    ermsd = Float64[],
+    em1 = Float64[],
+    em2 = Float64[],
+)
 # res = zeros(0, 4)
 # testeinterno = [zeros(10) (1 .- (0.8 .^ (1:5:50)))]
 for p = 1:1, i = 1:5, j = 2:5
@@ -66,13 +81,33 @@ for p = 1:1, i = 1:5, j = 2:5
     # @show cond(A) , cond(Ad)
     # @infiltrate
     # res[p, :] = [length(T) order t[1] t[2] t[3] t[1] / t[2] e1 e2 em1 em2]
-    push!(res, [string(prob[p]), length(T), order, t[1], t[2], t[1] / t[2], t[3], t[5], t[6], t[5] / t[6], ei1, ei2, eim1, eim2])
+    push!(
+        res,
+        [
+            string(prob[p]),
+            length(T),
+            order,
+            t[1],
+            t[2],
+            t[1] / t[2],
+            t[3],
+            t[5],
+            t[6],
+            t[5] / t[6],
+            ei1,
+            ei2,
+            eim1,
+            eim2,
+        ],
+    )
 end
 for i in prob, order = 2:5
-    CSV.write(string(i, "_", order, ".csv"), filter(row -> (row.prob == string(i)) && (row.order == order), res))
+    CSV.write(
+        string(i, "_", order, ".csv"),
+        filter(row -> (row.prob == string(i)) && (row.order == order), res),
+    )
 end
 # p = lines(dad.NOS[:, 1], T)
 # lines!(dad.NOS[:, 1], Td)
 # lines!(dad.NOS[:, 1], Tana)
 # p
-

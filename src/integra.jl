@@ -1,16 +1,16 @@
-function mudavar2(x, p=5)
+function mudavar2(x, p = 5)
     t = x^(1 / p) / (x^(1 / p) + (1 - x)^(1 / p))
 end
-function mudavar1(t, p=5)
+function mudavar1(t, p = 5)
     x = t^(p) / (t^(p) + (1 - t)^(p))
 end
-function f_prime(t, p=5)
+function f_prime(t, p = 5)
     numerator = p * (-(t - 1) * t)^(p - 1)
     denominator = (t^p + (1 - t)^p)^2
     return numerator / denominator
 end
 function corrige_x(x, b)
-    for i in 1:size(x, 1)
+    for i = 1:size(x, 1)
         if x[i] > b
             x[i] = x[i] - b
         end
@@ -20,7 +20,7 @@ end
 
 "f->  funçao a ser integrada
 m->ordem da singularidade
-t->posição da singularidade 
+t->posição da singularidade
 n->Quantidade de pontos de integração
 https://link.springer.com/article/10.1007/s10092-021-00446-1
 t = 0.3
@@ -32,7 +32,7 @@ F1(x)=-(t^2 - t - 1) log(x - t) - 1/2 x (2 t + x - 2)
 dot(f1.(eta / 2 .+ 0.5), w) / 2-1.22523041106851637258923008288999
 dot(f2.(eta / 2 .+ 0.5), w) / 2+6.42298561774988045927786175929650
 dot(f3.(eta / 2 .+ 0.5), w) / 2-2.73546857952209343844408750481721"
-function novelquad(m, t, n, p=5)
+function novelquad(m, t, n, p = 5)
     a = 0
     b = 1
     h = (b - a) / n
@@ -44,7 +44,11 @@ function novelquad(m, t, n, p=5)
         xs = [tau .+ h * (1:n) .- h / 2; tau .+ h / 2 * (1:2n) .- h / 4]
         ws = [ones(n) * 2h; -ones(2n) * h / 2]
     elseif m == 4
-        xs = [tau .+ h * (1:n) .- h / 2; tau .+ h / 2 * (1:2n) .- h / 4; tau .+ h / 4 * (1:4n) .- h / 8]
+        xs = [
+            tau .+ h * (1:n) .- h / 2
+            tau .+ h / 2 * (1:2n) .- h / 4
+            tau .+ h / 4 * (1:4n) .- h / 8
+        ]
         ws = [ones(n) * 16h / 7; -ones(2n) * 5h / 7; -ones(4n) * h / 28]
     else
         return 0
@@ -53,7 +57,16 @@ function novelquad(m, t, n, p=5)
 end
 
 
-function integraelemsing_num(pf, nf, x, elem, dad::Union{placa_fina,placa_fina_isotropica}, pre, xi0, npg=30)
+function integraelemsing_num(
+    pf,
+    nf,
+    x,
+    elem,
+    dad::Union{placa_fina,placa_fina_isotropica},
+    pre,
+    xi0,
+    npg = 30,
+)
     h = zeros(Float64, 2, 2 * size(elem))
     g = zeros(Float64, 2, 2 * size(elem))
     Nm = zeros(Float64, 2, 2 * size(elem))
@@ -81,7 +94,7 @@ function integraelemsing_num(pf, nf, x, elem, dad::Union{placa_fina,placa_fina_i
 end
 
 
-function integradelemsing_num(pf, x, elem, dad::Union{elastico}, xi0, npg=30)
+function integradelemsing_num(pf, x, elem, dad::Union{elastico}, xi0, npg = 30)
     d = zeros(Float64, 3, 2 * size(elem))
     s = zeros(Float64, 3, 2 * size(elem))
     Nm = zeros(Float64, 2, 2 * size(elem))
@@ -100,13 +113,17 @@ function integradelemsing_num(pf, x, elem, dad::Union{elastico}, xi0, npg=30)
         D, S = caldsolfund(pg', pf, [sy, -sx], dad)
         Nm[1, 1:2:end] = N
         Nm[2, 2:2:end] = N
-        D_2 = [D[1, 1, 1] D[2, 1, 1]
+        D_2 = [
+            D[1, 1, 1] D[2, 1, 1]
             D[1, 2, 2] D[2, 2, 2]
-            D[1, 1, 2] D[2, 1, 2]]
+            D[1, 1, 2] D[2, 1, 2]
+        ]
 
-        S_2 = [S[1, 1, 1] S[2, 1, 1]
+        S_2 = [
+            S[1, 1, 1] S[2, 1, 1]
             S[1, 2, 2] S[2, 2, 2]
-            S[1, 1, 2] S[2, 1, 2]]
+            S[1, 1, 2] S[2, 1, 2]
+        ]
         # @infiltrate
         d += D_2 * Nm * dgamadqsi * w[k]
         s += S_2 * Nm * dgamadqsi * w[k]
@@ -116,7 +133,7 @@ function integradelemsing_num(pf, x, elem, dad::Union{elastico}, xi0, npg=30)
     d, s
 end
 
-function integraelemsing_num(pf, x, elem, dad::Union{elastico}, xi0, npg=30)
+function integraelemsing_num(pf, x, elem, dad::Union{elastico}, xi0, npg = 30)
     h = zeros(Float64, 2, 2 * size(elem))
     g = zeros(Float64, 2, 2 * size(elem))
     Nm = zeros(Float64, 2, 2 * size(elem))

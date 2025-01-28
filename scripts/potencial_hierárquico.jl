@@ -19,7 +19,23 @@ npg = 10    #apenas números pares
 # res = zeros(5, 4, 4, 10)
 prob = [placa_moulton, potencial1d, dad_laquini1, dad_laquini2, dad_laquini3]
 ana = [T_ana_moulton, T_ana_1d, fa1, fa2, fa3]
-res = DataFrame(prob=String[], n=Int[], order=Int[], t=Float64[], td=Float64[], tHd=Float64[], tsolve=Float64[], tsolved=Float64[], tsolveHd=Float64[], erms=Float64[], ermsd=Float64[], ermsHd=Float64[], em1=Float64[], em2=Float64[], em3=Float64[])
+res = DataFrame(
+    prob = String[],
+    n = Int[],
+    order = Int[],
+    t = Float64[],
+    td = Float64[],
+    tHd = Float64[],
+    tsolve = Float64[],
+    tsolved = Float64[],
+    tsolveHd = Float64[],
+    erms = Float64[],
+    ermsd = Float64[],
+    ermsHd = Float64[],
+    em1 = Float64[],
+    em2 = Float64[],
+    em3 = Float64[],
+)
 for p = 1:5, i = 1:7, j = 2:3
     nelem = 4 * 2^i  #Numero de elementos
     order = j
@@ -36,7 +52,7 @@ for p = 1:5, i = 1:7, j = 2:3
     reset_timer!()
     tHeG = @timed H, G = calc_HeG(dad, npg)  #importante
     tHeGd = @timed Hd, Gd = BEM.calc_HeGd(dad, 3)  #importante
-    tHeGHd = @timed HH, HG = BEM.calc_HeG_Hd(dad, atol=1e-6)
+    tHeGHd = @timed HH, HG = BEM.calc_HeG_Hd(dad, atol = 1e-6)
 
     A, b = aplicaCDC(H, G, dad) # Calcula a matriz A e o vetor b
     Ad, bd = aplicaCDC(Hd, Gd, dad) # Calcula a matriz A e o vetor b
@@ -45,9 +61,9 @@ for p = 1:5, i = 1:7, j = 2:3
     tsolve = @timed x = A \ b
     tsolved = @timed xd = Ad \ bd
 
-    tsolve = @timed x, f = gmres(A, b, rtol=1e-5, itmax=100) #GMRES nas matrizes 
-    tsolved = @timed xd, f = gmres(Ad, bd, rtol=1e-5, itmax=100) #GMRES nas matrizes 
-    tsolveHd = @timed xH, f = gmres(HH, bH, rtol=1e-5, itmax=100) #GMRES nas matrizes 
+    tsolve = @timed x, f = gmres(A, b, rtol = 1e-5, itmax = 100) #GMRES nas matrizes
+    tsolved = @timed xd, f = gmres(Ad, bd, rtol = 1e-5, itmax = 100) #GMRES nas matrizes
+    tsolveHd = @timed xH, f = gmres(HH, bH, rtol = 1e-5, itmax = 100) #GMRES nas matrizes
 
 
 
@@ -59,7 +75,8 @@ for p = 1:5, i = 1:7, j = 2:3
     ti = @timed Ti = calc_Ti(dad, T, q, npg)
     tid = @timed Tid = BEM.calc_Tid(dad, Td, qd, 3)
 
-    t = [tHeG.time + ti.time tHeGd.time + tid.time tHeGHd.time tsolve.time tsolved.time tsolveHd.time]
+    t =
+        [tHeG.time + ti.time tHeGd.time + tid.time tHeGHd.time tsolve.time tsolved.time tsolveHd.time]
     # t, T, Td, q, qd = compara_potencial(dad, npg)
     Tana = ana[p](dad.NOS)
     e1 = norm(T - Tana) / norm(Tana)
@@ -81,13 +98,34 @@ for p = 1:5, i = 1:7, j = 2:3
     # res = DataFrame(prob=String[], n=Int[], order=Int[], t=Float64[], td=Float64[], tHd=Float64[], tsolve=Float64[], tsolved=Float64[], tsolveHd=Float64[], erms=Float64[], ermsd=Float64[], ermsHd=Float64[], em1=Float64[], em2=Float64[], em3=Float64[])
 
     # res[p, :] = [length(T) order t[1] t[2] t[3] t[1] / t[2] e1 e2 em1 em2]
-    push!(res, [string(prob[p]), length(T), order, t[1], t[2], t[3], t[4], t[5], t[6], ei1, ei2, ei3, eim1, eim2, eim3])
+    push!(
+        res,
+        [
+            string(prob[p]),
+            length(T),
+            order,
+            t[1],
+            t[2],
+            t[3],
+            t[4],
+            t[5],
+            t[6],
+            ei1,
+            ei2,
+            ei3,
+            eim1,
+            eim2,
+            eim3,
+        ],
+    )
 end
 for i in prob, order = 2:5
-    CSV.write(string(i, "_", order, ".csv"), filter(row -> (row.prob == string(i)) && (row.order == order), res))
+    CSV.write(
+        string(i, "_", order, ".csv"),
+        filter(row -> (row.prob == string(i)) && (row.order == order), res),
+    )
 end
 # p = lines(dad.NOS[:, 1], T)
 # lines!(dad.NOS[:, 1], Td)
 # lines!(dad.NOS[:, 1], Tana)
 # p
-
