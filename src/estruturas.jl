@@ -248,4 +248,3 @@ export potencial,
     casca_aniso,
     placa_espessa,
     placa_espessa_isotropica
-

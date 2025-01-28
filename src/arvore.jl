@@ -4,7 +4,7 @@ function divnode(X, t)
     # t = vetor com os números dos nós; [t]
     n = length(t)   # Quantidade de nós
     x = X[t, :] # Matrix com as coordenadas dos nós que pertencem ao bloco a ser dividido; {t,2}
-    c = mean(x, dims=1)   # Vetor com as coordenadas do centro geométrico do conjunto de nós;{1,2}
+    c = mean(x, dims = 1)   # Vetor com as coordenadas do centro geométrico do conjunto de nós;{1,2}
     #mean(x,1) = média ao longo da 1 dimensão da matrix (1dim = linhas).
     covx = cov(x)                           # Calcula matrix de covariância de x
     eig_valx, eig_vecx = eigen(covx)          # Calcula autovalores e autovetores da matriz de covariância de x
@@ -20,16 +20,18 @@ function divnode(X, t)
     return x1, x2, diam, c
 end
 
-function cluster(dad; max_elem=4, η=1.0)
+function cluster(dad; max_elem = 4, η = 1.0)
     # X = Coordenadas (x,y) dos nós
     # max_elem = Define máximo de nós em cada folha, tal que: max_elem/2 =< nós em cada folha < max_elem
     centro = centros(dad)
     collocCoord = [dad.NOS; dad.pontos_internos]
     Tree1, child1, center_row1, diam1 = Tree(collocCoord, max_elem)
     if typeof(dad) == potencial_iga
-        Tree2, child2, center_row2, diam2 = Tree(centro, max_elem, [dad.tipoCDC[i.indices[1]] for i in dad.ELEM])
+        Tree2, child2, center_row2, diam2 =
+            Tree(centro, max_elem, [dad.tipoCDC[i.indices[1]] for i in dad.ELEM])
     else
-        Tree2, child2, center_row2, diam2 = Tree(centro, max_elem, [i.tipoCDC for i in dad.ELEM])
+        Tree2, child2, center_row2, diam2 =
+            Tree(centro, max_elem, [i.tipoCDC for i in dad.ELEM])
     end
     n1 = size(Tree1, 1)
     n2 = size(Tree2, 1)
@@ -38,7 +40,8 @@ function cluster(dad; max_elem=4, η=1.0)
     # Cria matriz para alocar o resultado da aplicação da condição de admissibilidade entre os blocos
     for i = 1:n1     # Para todos os nós da malha
         for j = 1:n2
-            admiss[i, j] = η * norm(center_row1[i] - center_row2[j], 2) - max(diam1[i], diam2[j])
+            admiss[i, j] =
+                η * norm(center_row1[i] - center_row2[j], 2) - max(diam1[i], diam2[j])
             # Condição de admissibilidade, para satisfazer deve ser > 0
         end
     end
@@ -72,7 +75,8 @@ function blocks(Tree1, child1, Tree2, child2, allow)
                     block = vcat(block, [fc1[c1*2+i] fc2[c1*2+i] 0])
                     # Adicionar blocos e identificador 0 (não admissivel) a proxima linha matrix block
                 else
-                    if length(Tree1[fc1[c1*2+i]]) >= length(Tree2[fc2[c1*2+i]]) && child1[fc1[c1*2+i], 1] != 0
+                    if length(Tree1[fc1[c1*2+i]]) >= length(Tree2[fc2[c1*2+i]]) &&
+                       child1[fc1[c1*2+i], 1] != 0
                         # Se a quantidade de elementos no bloco Tree[fc1[...]]] e >=  Tree[fc2[...]]
                         fc1 = [fc1; child1[fc1[c1*2+i], :]]        # Adiciona filhos a fc1[...]
                         fc2 = [fc2; fc2[c1*2+i]; fc2[c1*2+i]]    # Repete elemento de fc2[...]
@@ -132,9 +136,9 @@ function matvec(hmat::hmat, b)
             v[b1] += @views hmat.A[i, 1] * (hmat.A[i, 2] * b[hmat.cols[i]])
             #  mul!(@view(v[b1]),hmat[i,1],hmat[i,2]*@view(b[cols[i]]),1,1)
         else
-            #  v[b1]=v[b1]+mul!(v[b1],hmat[i,1],(b[cols[i]])) 
+            #  v[b1]=v[b1]+mul!(v[b1],hmat[i,1],(b[cols[i]]))
             v[b1] += @views hmat.A[i, 1] * (b[hmat.cols[i]])
-            # mul!(@view(v[b1]),hmat[i,1],@view(b[cols[i]]),1,1) 
+            # mul!(@view(v[b1]),hmat[i,1],@view(b[cols[i]]),1,1)
 
         end
     end
@@ -163,13 +167,13 @@ function centros(dad)
     centros = zeros(n, 2)
     for i = 1:n
         x = dad.NOS[dad.ELEM[i].indices, :]
-        centros[i, :] = mean(x, dims=1)
+        centros[i, :] = mean(x, dims = 1)
     end
     # centros,ind
     centros
 end
 
-function Tree(X, max_elem, tipoCDC=1)
+function Tree(X, max_elem, tipoCDC = 1)
     m, n = size(X)                     # Tamanho da matriz contendo as coordernadas de cada nós {m,2}
     max_clt = ceil(Int, 2 * m / max_elem)  # Define limite superior para tamanho (nº de linhas) das matrizes e vetores utilizados
     child1 = zeros(1, 2 * max_clt)
@@ -237,7 +241,7 @@ function Tree(X, max_elem, tipoCDC=1)
     for i = 1:ileaf-1     # Para todos as folhas
         Tree[inode+i] = leaves[i]   # Insere as folhas na árvore
         x = X[leaves[i], :]
-        c = mean(x, dims=1)
+        c = mean(x, dims = 1)
         d = 2 * maximum(sqrt.(((x.-c).*(x.-c))[:, 1] + ((x.-c).*(x.-c))[:, 2]))        # Havia sido calculado somente os dos bloco que foram divididos, ou seja, os nós.
         center_row[inode+i, :] = c   # Adicona o c das folhas na matrixc center_row
         diam[inode+i] = d           # Adicona diam das folhas na matrix diam
@@ -246,7 +250,7 @@ function Tree(X, max_elem, tipoCDC=1)
     Tree, child, center_row, diam
 end
 
-function Hinterp(dad, Tree1, Tree2, block; ninterp=3, compressão=true, ϵ=1e-3)
+function Hinterp(dad, Tree1, Tree2, block; ninterp = 3, compressão = true, ϵ = 1e-3)
     # arg = [NOS1,NOS_GEO1,tipoCDC,valorCDC,normal,ELEM1,k]
     #         1      2        3      4        5     6   7
     n = size(block, 1)               # Quantidade de Submatrizes
@@ -269,7 +273,7 @@ function Hinterp(dad, Tree1, Tree2, block; ninterp=3, compressão=true, ϵ=1e-3)
     return HA, HB
 end
 
-function Ainterp(dad, Tree1, Tree2, block, ninterp=3; compressão=true, ϵ=1e-3)
+function Ainterp(dad, Tree1, Tree2, block, ninterp = 3; compressão = true, ϵ = 1e-3)
     # arg = [NOS1,NOS_GEO1,tipoCDC,valorCDC,normal,ELEM1,k]
     #         1      2        3      4        5     6   7
     nc = size(dad.NOS, 1)
@@ -323,7 +327,7 @@ function Ainterp(dad, Tree1, Tree2, block, ninterp=3; compressão=true, ϵ=1e-3)
     end
     return HA, b
 end
-function montaAcheia(hmat, block, Tree1, Tree2, cols, dad::potencial_iga; full=true)
+function montaAcheia(hmat, block, Tree1, Tree2, cols, dad::potencial_iga; full = true)
     nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
     nc = size(dad.NOS, 1)
     ni = size(dad.pontos_internos, 1)
@@ -365,7 +369,7 @@ function montaAcheia(hmat, block, Tree1, Tree2, cols, dad::potencial_iga; full=t
     A
 end
 
-function montaAcheia(hmat, block, Tree1, Tree2, dad::potencial; full=true)
+function montaAcheia(hmat, block, Tree1, Tree2, dad::potencial; full = true)
     nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
     nc = size(dad.NOS, 1)
     ni = size(dad.pontos_internos, 1)
@@ -400,8 +404,8 @@ indl=qr2.p[1:size(qr2.Q,1)]
 A1=M[:,indc]
 A2=M[indl,indc]divide M[indl,:]
 M=A1*A2"
-function nosproximoskmeans(X, k=9)
-    res = kmeans(X', k; tol=1e-2, max_iters=30)
+function nosproximoskmeans(X, k = 9)
+    res = kmeans(X', k; tol = 1e-2, max_iters = 30)
     I = zeros(Int, k)
     for i = 1:k
         inds = findall(res.assignments .== i)
@@ -411,7 +415,7 @@ function nosproximoskmeans(X, k=9)
     I
 end
 
-function Akmeans(dad, Tree1, Tree2, block, nnucleos=6; compressão=true, ϵ=1e-3)
+function Akmeans(dad, Tree1, Tree2, block, nnucleos = 6; compressão = true, ϵ = 1e-3)
     # arg = [NOS1,NOS_GEO1,tipoCDC,valorCDC,normal,ELEM1,k]
     #         1      2        3      4        5     6   7
 
@@ -458,8 +462,8 @@ function Akmeans(dad, Tree1, Tree2, block, nnucleos=6; compressão=true, ϵ=1e-3
         else
             # @infiltrate             # Caso contrario (Se blocos são admissiveis)
             H1, G1 = calc_HeG(dad, b1, b2[indices[block[i, 2]]], 16)
-            qrH1 = pqrfact(H1, rtol=1e-8)
-            qrH2 = pqrfact(:c, qrH1.Q, rtol=1e-8)
+            qrH1 = pqrfact(H1, rtol = 1e-8)
+            qrH2 = pqrfact(:c, qrH1.Q, rtol = 1e-8)
             indl = qrH2.p[1:size(qrH2.Q, 1)]
             H2, G2 = calc_HeG(dad, b1[indl], b2, 16)
             H2 = H1[indl, :] \ H2
@@ -482,7 +486,7 @@ function Akmeans(dad, Tree1, Tree2, block, nnucleos=6; compressão=true, ϵ=1e-3
 end
 
 
-function Akmeans2(dad, Tree1, Tree2, block, nnucleos=6; compressão=true, ϵ=1e-3)
+function Akmeans2(dad, Tree1, Tree2, block, nnucleos = 6; compressão = true, ϵ = 1e-3)
     # arg = [NOS1,NOS_GEO1,tipoCDC,valorCDC,normal,ELEM1,k]
     #         1      2        3      4        5     6   7
     nc = size(dad.NOS, 1)
@@ -500,7 +504,8 @@ function Akmeans2(dad, Tree1, Tree2, block, nnucleos=6; compressão=true, ϵ=1e-
     end
     for i in unique(block[:, 1])
         # push!(indices,nosproximoskmeans([dad.NOS;dad.pontos_internos][Tree2[i],:],nnucleos))
-        indices1[i] = nosproximoskmeans([dad.NOS; dad.pontos_internos][Tree1[i], :], nnucleos)
+        indices1[i] =
+            nosproximoskmeans([dad.NOS; dad.pontos_internos][Tree1[i], :], nnucleos)
     end
 
 
@@ -551,8 +556,8 @@ function Akmeans2(dad, Tree1, Tree2, block, nnucleos=6; compressão=true, ϵ=1e-
     return HA, b
 end
 
-function MatrizH(dad, f, p=9)
-    Tree1, Tree2, block = cluster(dad, η=1, max_elem=30)
+function MatrizH(dad, f, p = 9)
+    Tree1, Tree2, block = cluster(dad, η = 1, max_elem = 30)
     cols = colsblocks(block, Tree2, dad)
     Ai, bi = f(dad, Tree1, Tree2, block, p)
     hmat(Ai, block, Tree1, Tree2, dad, cols, size(bi, 1)), bi

@@ -53,7 +53,8 @@ end
 npassos = 1
 x0 = 0 * b2
 # u, t = BEM.Contato_NL_newton_incremental(dad, x0, A2, b2, h, 100, 1e-8, npassos, nosrestritos)
-u, t = BEM.Contato_NL_newton_incremental2(dad, x0, A2, b2, h, 100, 1e-8, npassos, nosrestritos)
+u, t =
+    BEM.Contato_NL_newton_incremental2(dad, x0, A2, b2, h, 100, 1e-8, npassos, nosrestritos)
 
 
 # corpo elástico - corpo elástico)

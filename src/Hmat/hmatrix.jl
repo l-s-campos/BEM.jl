@@ -238,7 +238,7 @@ given in the global indexing system (see [`HMatrix`](@ref) for more
 information); otherwise the *local* indexing system induced by the row and
 columns trees are used.
 """
-Base.Matrix(hmat::HMatrix; global_index=true) = Matrix{eltype(hmat)}(hmat; global_index)
+Base.Matrix(hmat::HMatrix; global_index = true) = Matrix{eltype(hmat)}(hmat; global_index)
 function Base.Matrix{T}(hmat::HMatrix; global_index) where {T}
     M = zeros(T, size(hmat)...)
     piv = pivot(hmat)
@@ -286,11 +286,11 @@ function assemble_hmatrix(
     K,
     rowtree,
     coltree;
-    adm=StrongAdmissibilityStd(3),
-    comp=PartialACA(),
-    global_index=use_global_index(),
-    threads=use_threads(),
-    distributed=false,
+    adm = StrongAdmissibilityStd(3),
+    comp = PartialACA(),
+    global_index = use_global_index(),
+    threads = use_threads(),
+    distributed = false,
 ) where {T}
     if distributed
         _assemble_hmat_distributed(K, rowtree, coltree; adm, comp, global_index, threads)
@@ -395,9 +395,9 @@ function _assemble_threads!(hmat, K, comp, bufs)
     blocks = filter_tree(hmat, true) do x
         return (isleaf(x) || length(x) < 1000 * 1000)
     end
-    sort!(blocks; lt=(x, y) -> length(x) < length(y), rev=true)
+    sort!(blocks; lt = (x, y) -> length(x) < length(y), rev = true)
     n = length(blocks)
-    @sync for i in 1:n
+    @sync for i = 1:n
         Threads.@spawn begin
             buf = take!(bufs)
             _assemble_cpu!(blocks[i], K, comp, buf)
@@ -506,7 +506,7 @@ function isclean(H::HMatrix)
     return true
 end
 
-function depth(tree::HMatrix, acc=0)
+function depth(tree::HMatrix, acc = 0)
     if isroot(tree)
         return acc
     else
@@ -568,7 +568,7 @@ Partiotion the leaves of `H` into `np` sequences of approximate equal cost (as
 determined by the `cost` function) while also trying to maximize the locality of
 each partition.
 """
-function hilbert_partition(H::HMatrix, np=Threads.nthreads(), cost=_cost_gemv)
+function hilbert_partition(H::HMatrix, np = Threads.nthreads(), cost = _cost_gemv)
     # the hilbert curve will be indexed from (0,0) × (N-1,N-1), so set N to be
     # the smallest power of two larger than max(m,n), where m,n = size(H)
     m, n = size(H)
@@ -594,7 +594,7 @@ end
 Similar to [`hilbert_partition`](@ref), but attempts to partition the leaves of
 `H` by row.
 """
-function row_partition(H::HMatrix, np=Threads.nthreads(), cost=_cost_gemv)
+function row_partition(H::HMatrix, np = Threads.nthreads(), cost = _cost_gemv)
     # sort the leaves by their row index
     leaves = filter_tree(x -> isleaf(x), H)
     row_indices = map(leaves) do leaf
@@ -615,7 +615,7 @@ end
 Similar to [`hilbert_partition`](@ref), but attempts to partition the leaves of
 `H` by column.
 """
-function col_partition(H::HMatrix, np=Threads.nthreads(), cost=_cost_gemv)
+function col_partition(H::HMatrix, np = Threads.nthreads(), cost = _cost_gemv)
     # sort the leaves by their row index
     leaves = filter_tree(x -> isleaf(x), H)
     row_indices = map(leaves) do leaf
@@ -630,7 +630,7 @@ function col_partition(H::HMatrix, np=Threads.nthreads(), cost=_cost_gemv)
     return build_sequence_partition(leaves, np, cost, cmax)
 end
 
-function partition!(s::Symbol, H::HMatrix, np=Threads.nthreads(), cost=_cost_gemv)
+function partition!(s::Symbol, H::HMatrix, np = Threads.nthreads(), cost = _cost_gemv)
     p = if s == :hilbert
         hilbert_partition(H, np, cost)
     elseif s == :row
@@ -657,12 +657,12 @@ function LinearAlgebra.axpy!(a, X::UniformScaling, Y::HMatrix)
         d = data(Y)
         @assert d isa Matrix
         n = min(size(d)...)
-        for i in 1:n
+        for i = 1:n
             d[i, i] += a * X.λ
         end
     else
         n = min(blocksize(Y)...)
-        for i in 1:n
+        for i = 1:n
             axpy!(a, X, children(Y)[i, i])
         end
     end
@@ -679,7 +679,7 @@ function LinearAlgebra.axpy!(
     a,
     X::AbstractSparseArray{<:Any,<:Any,2},
     Y::HMatrix;
-    global_index=true,
+    global_index = true,
 )
     rp = loc2glob(rowtree(Y))
     cp = loc2glob(coltree(Y))

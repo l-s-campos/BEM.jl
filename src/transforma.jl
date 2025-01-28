@@ -1,4 +1,4 @@
-function telles(gamm, eet, r=0)
+function telles(gamm, eet, r = 0)
 
     eest = eet^2 - 1
     term1 = eet * eest + abs(eest)
@@ -73,7 +73,7 @@ function Ma(u, a, b)
 end
 
 
-function Wenjing(r, a, m=10)
+function Wenjing(r, a, m = 10)
     # https://link.springer.com/article/10.1007/s00466-008-0262-6
     r = (r .+ 1) / 2
     ro = 1 / (m - 1) * ((1 .- r .^ m) ./ (1 .- r) .- 1)
@@ -84,7 +84,8 @@ function Wenjing(r, a, m=10)
     elseif a == 1
         return 1 .- 2ro, dro
     else
-        return [(a + 1) * ro .- 1; (1 - a) * ro .+ 0], [(a + 1) / 2 * dro; (1 - a) / 2 * dro]
+        return [(a + 1) * ro .- 1; (1 - a) * ro .+ 0],
+        [(a + 1) / 2 * dro; (1 - a) / 2 * dro]
     end
 
 end
@@ -141,10 +142,16 @@ function pontosintegra(NOS, elem_j, ind_elem, qsi, w)
             # @show distancia(xel[1],xel,pf,elem_j),elem_j.comprimento
             return qsi, w
         end
-        res = optimize(x -> distancia(x[1], xel, pf, elem_j), [0.0], Newton(), Optim.Options(g_tol=1e-3, iterations=10))
+        res = optimize(
+            x -> distancia(x[1], xel, pf, elem_j),
+            [0.0],
+            Newton(),
+            Optim.Options(g_tol = 1e-3, iterations = 10),
+        )
         # @infiltrate
         # eta,Jt=sinhtrans(qsi,Optim.minimizer(res)[1],Optim.minimum(res))
-        eta, Jt = sinhtrans(qsi, Optim.minimizer(res)[1], Optim.minimum(res) / elem_j.comprimento)
+        eta, Jt =
+            sinhtrans(qsi, Optim.minimizer(res)[1], Optim.minimum(res) / elem_j.comprimento)
         # @show Optim.minimizer(res)[1],Optim.minimum(res)/elem_j.comprimento
         return eta, w .* Jt
     end
@@ -158,7 +165,7 @@ function distancia(qsi, x, pf, elem)
 end
 
 
-function Monegato(t, s0, q=5.0)
+function Monegato(t, s0, q = 5.0)
     s0 = min(max(-1, s0), 1)
 
     δ = 2^(-q) * ((1 + s0)^(1 / q) + (1 - s0)^(1 / q))^q

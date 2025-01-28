@@ -197,7 +197,7 @@ function LinearAlgebra.mul!(
     leaves = filter_tree(x -> Trees.isleaf(x), A)
     nb = length(leaves)
     acc = Vector{Future}(undef, nb)
-    @sync for i in 1:nb
+    @sync for i = 1:nb
         r = leaves[i].data.future
         pid = r.where
         jrange = @fetchfrom pid colrange(fetch(r))

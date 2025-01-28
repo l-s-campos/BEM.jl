@@ -20,7 +20,7 @@ println("3. Resolvendo o sistema linear")
 x = A \ b
 println("4. Separando deslocamento e forças de superficie")
 u, t = separa(dad, x) #importante
-sum(H, dims=2)
+sum(H, dims = 2)
 # lines(u[:,1])
 # A1,b1 = calc_Aeb(dad,npg)  #importante
 # x1=A1\b1

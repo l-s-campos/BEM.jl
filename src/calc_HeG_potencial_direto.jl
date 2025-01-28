@@ -1,181 +1,191 @@
-function calc_HeGd(dad::potencial, npg=3)
-  nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
-  n = size(dad.NOS, 1)
-  intelems = zeros(n)
-  H = zeros(n, n)
-  G = zeros(n, n)
-  qsi, w = gausslegendre(npg)    # Quadratura de gauss
-  normal_fonte = calc_normais(dad)
+function calc_HeGd(dad::potencial, npg = 3)
+    nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
+    n = size(dad.NOS, 1)
+    intelems = zeros(n)
+    H = zeros(n, n)
+    G = zeros(n, n)
+    qsi, w = gausslegendre(npg)    # Quadratura de gauss
+    normal_fonte = calc_normais(dad)
 
-  for elem_j in dad.ELEM  #Laço dos elementos
-    x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
-    intelem = integraelemd(x, qsi, w, elem_j)
-    # @infiltrate
-    intelems[elem_j.indices] = intelem
+    for elem_j in dad.ELEM  #Laço dos elementos
+        x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
+        intelem = integraelemd(x, qsi, w, elem_j)
+        # @infiltrate
+        intelems[elem_j.indices] = intelem
 
-  end
-  for i = 1:n
-    xi = dad.NOS[i, 1]
-    yi = dad.NOS[i, 2]
-    for j = 1:n
-      if i == j
-        continue
-      end
-      xj = dad.NOS[j, 1]
-      yj = dad.NOS[j, 2]
-      # r = sqrt((xi - xj)^2 + (yi - yj)^2)
-
-      Qast, Tast = calsolfund([xj - xi, yj - yi], normal_fonte[j, :], dad)
-
-      H[i, j] = Qast * intelems[j]
-      G[i, j] = Tast * intelems[j]
     end
-  end
-  for i = 1:n                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
-    # H[i, i] = -0.5
-    H[i, i] = -sum(H[i, :])
-  end
-  somaH = H * (dad.NOS[:, 1] + dad.NOS[:, 2])
-  somaG = G * (normal_fonte[:, 1] + normal_fonte[:, 2]) * dad.k
-  for i = 1:n                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
-    G[i, i] = (-somaH[i] - somaG[i]) / (normal_fonte[i, 1] + normal_fonte[i, 2])
-  end
-  H, G
+    for i = 1:n
+        xi = dad.NOS[i, 1]
+        yi = dad.NOS[i, 2]
+        for j = 1:n
+            if i == j
+                continue
+            end
+            xj = dad.NOS[j, 1]
+            yj = dad.NOS[j, 2]
+            # r = sqrt((xi - xj)^2 + (yi - yj)^2)
+
+            Qast, Tast = calsolfund([xj - xi, yj - yi], normal_fonte[j, :], dad)
+
+            H[i, j] = Qast * intelems[j]
+            G[i, j] = Tast * intelems[j]
+        end
+    end
+    for i = 1:n                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
+        # H[i, i] = -0.5
+        H[i, i] = -sum(H[i, :])
+    end
+    somaH = H * (dad.NOS[:, 1] + dad.NOS[:, 2])
+    somaG = G * (normal_fonte[:, 1] + normal_fonte[:, 2]) * dad.k
+    for i = 1:n                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
+        G[i, i] = (-somaH[i] - somaG[i]) / (normal_fonte[i, 1] + normal_fonte[i, 2])
+    end
+    H, G
 end
 
-function calc_HeG_Hd(dad::potencial; npg=3, atol=1e-4)
-  n = size(dad.NOS, 1)
-  intelems = zeros(n)
-  qsi, w = BEM.gausslegendre(npg)    # Quadratura de gauss
-  normal_fonte = BEM.calc_normais(dad)
+function calc_HeG_Hd(dad::potencial; npg = 3, atol = 1e-4)
+    n = size(dad.NOS, 1)
+    intelems = zeros(n)
+    qsi, w = BEM.gausslegendre(npg)    # Quadratura de gauss
+    normal_fonte = BEM.calc_normais(dad)
 
-  for elem_j in dad.ELEM  #Laço dos elementos
-    x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
-    intelem = integraelemd(x, qsi, w, elem_j)
+    for elem_j in dad.ELEM  #Laço dos elementos
+        x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
+        intelem = integraelemd(x, qsi, w, elem_j)
+        # @infiltrate
+        intelems[elem_j.indices] = intelem
+    end
+
+    # X = [[Point2D(dad.NOS[i, 1], dad.NOS[i, 2]) for i in 1:nc(dad)]; [Point2D(dad.pontos_internos[i, 1], dad.pontos_internos[i, 2]) for i in 1:ni(dad)]]
+    # # X = [Point2D(dad.NOS[i, 1], dad.NOS[i, 2]) for i in 1:nc(dad)]
+
+    splitter = BEM.PrincipalComponentSplitter(; nmax = 10)
+    # Xclt = Yclt = ClusterTree(X, splitter)
+    Xclt, Yclt = ClusterTree(dad, splitter)
+
     # @infiltrate
-    intelems[elem_j.indices] = intelem
-  end
+    adm = StrongAdmissibilityStd(eta = 3)
+    comp = PartialACA(; atol)
 
-  # X = [[Point2D(dad.NOS[i, 1], dad.NOS[i, 2]) for i in 1:nc(dad)]; [Point2D(dad.pontos_internos[i, 1], dad.pontos_internos[i, 2]) for i in 1:ni(dad)]]
-  # # X = [Point2D(dad.NOS[i, 1], dad.NOS[i, 2]) for i in 1:nc(dad)]
-
-  splitter = BEM.PrincipalComponentSplitter(; nmax=10)
-  # Xclt = Yclt = ClusterTree(X, splitter)
-  Xclt, Yclt = ClusterTree(dad, splitter)
-
-  # @infiltrate
-  adm = StrongAdmissibilityStd(eta=3)
-  comp = PartialACA(; atol)
-
-  KG = BEM.kernelG(dad, intelems)
-  KH = BEM.kernelH(dad, normal_fonte, intelems)
-  HG = assemble_hmat(KG, Xclt, Yclt; adm, comp)
-  HH = assemble_hmat(KH, Xclt, Yclt; adm, comp)
-  # @infiltrate
-  corrige_diagonais!(dad, HH, HG, normal_fonte)
-  HH, HG
+    KG = BEM.kernelG(dad, intelems)
+    KH = BEM.kernelH(dad, normal_fonte, intelems)
+    HG = assemble_hmat(KG, Xclt, Yclt; adm, comp)
+    HH = assemble_hmat(KH, Xclt, Yclt; adm, comp)
+    # @infiltrate
+    corrige_diagonais!(dad, HH, HG, normal_fonte)
+    HH, HG
 end
-function corrige_diagonais!(dad::DadosBEM, Hmat::HMatrix, Gmat::HMatrix, normal_fonte::Array{Float64,2})
-  piv = pivot(Hmat)
-  diag = Hmat * ones(size(Hmat, 2))
+function corrige_diagonais!(
+    dad::DadosBEM,
+    Hmat::HMatrix,
+    Gmat::HMatrix,
+    normal_fonte::Array{Float64,2},
+)
+    piv = pivot(Hmat)
+    diag = Hmat * ones(size(Hmat, 2))
 
-  for block in AbstractTrees.PreOrderDFS(Hmat)
-    hasdata(block) || continue
-    # !block.admissible || continue
-    irange = rowrange(block) .- piv[1] .+ 1
-    jrange = colrange(block) .- piv[2] .+ 1
+    for block in AbstractTrees.PreOrderDFS(Hmat)
+        hasdata(block) || continue
+        # !block.admissible || continue
+        irange = rowrange(block) .- piv[1] .+ 1
+        jrange = colrange(block) .- piv[2] .+ 1
 
-    irangeg = rowperm(Hmat)[irange]
-    jrangeg = colperm(Hmat)[jrange]
-    inds = indexin(irangeg, jrangeg)
+        irangeg = rowperm(Hmat)[irange]
+        jrangeg = colperm(Hmat)[jrange]
+        inds = indexin(irangeg, jrangeg)
+        # @infiltrate
+        # @show irangeg
+        # @show jrangeg
+        # @show inds
+        for i = 1:size(irange, 1)
+            inds[i] !== nothing || continue
+            # @infiltrate block.admissible
+            block.data[i, inds[i]] = -diag[irangeg[i]]
+        end
+    end
+
+    diagG = (
+        Hmat * [(dad.NOS[:, 1] + dad.NOS[:, 2]); zeros(ni(dad))] +
+        Gmat * [(normal_fonte[:, 1] + normal_fonte[:, 2]); zeros(ni(dad))] * dad.k
+    )
+    diagG[end-ni(dad)+1:end] .= 0
+    piv = pivot(Gmat)
     # @infiltrate
-    # @show irangeg
-    # @show jrangeg
-    # @show inds
-    for i = 1:size(irange, 1)
-      inds[i] !== nothing || continue
-      # @infiltrate block.admissible
-      block.data[i, inds[i]] = -diag[irangeg[i]]
+    for block in AbstractTrees.PreOrderDFS(Gmat)
+        hasdata(block) || continue
+        !block.admissible || continue
+        irange = rowrange(block) .- piv[1] .+ 1
+        jrange = colrange(block) .- piv[2] .+ 1
+        irangeg = rowperm(Hmat)[irange]
+        jrangeg = colperm(Hmat)[jrange]
+        inds = indexin(irangeg, jrangeg)
+        for i = 1:size(irange, 1)
+            inds[i] !== nothing || continue
+            irangeg[i] <= nc(dad) || continue
+            block.data[i, inds[i]] =
+                -diagG[irangeg[i]] /
+                (normal_fonte[irangeg[i], 1] + normal_fonte[irangeg[i], 2])
+        end
     end
-  end
-
-  diagG = (Hmat * [(dad.NOS[:, 1] + dad.NOS[:, 2]); zeros(ni(dad))] + Gmat * [(normal_fonte[:, 1] + normal_fonte[:, 2]); zeros(ni(dad))] * dad.k)
-  diagG[end-ni(dad)+1:end] .= 0
-  piv = pivot(Gmat)
-  # @infiltrate
-  for block in AbstractTrees.PreOrderDFS(Gmat)
-    hasdata(block) || continue
-    !block.admissible || continue
-    irange = rowrange(block) .- piv[1] .+ 1
-    jrange = colrange(block) .- piv[2] .+ 1
-    irangeg = rowperm(Hmat)[irange]
-    jrangeg = colperm(Hmat)[jrange]
-    inds = indexin(irangeg, jrangeg)
-    for i = 1:size(irange, 1)
-      inds[i] !== nothing || continue
-      irangeg[i] <= nc(dad) || continue
-      block.data[i, inds[i]] = -diagG[irangeg[i]] / (normal_fonte[irangeg[i], 1] + normal_fonte[irangeg[i], 2])
-    end
-  end
 
 end
 
 
 function aplicaCDC(HH::HMatrix, HG::HMatrix, dad::DadosBEM)
-  tipoCDC = BEM.tipoCDC(dad)
-  valorCDC = [BEM.valorCDC(dad); zeros(ni(dad))]
+    tipoCDC = BEM.tipoCDC(dad)
+    valorCDC = [BEM.valorCDC(dad); zeros(ni(dad))]
 
-  aux = Array
-  piv = pivot(HH)
-  nodesH = collect(AbstractTrees.PreOrderDFS(HH))
-  nodesG = collect(AbstractTrees.PreOrderDFS(HG))
-  # @infiltrate
-  for block = 1:length(nodesH)
-    # @show block, nodesH[block].admissible
-    hasdata(nodesH[block]) || continue
-    # @show block
-    irange = rowrange(nodesH[block]) .- piv[1] .+ 1
-    jrange = colrange(nodesH[block]) .- piv[2] .+ 1
-    jrangeg = colperm(HH)[jrange]
-    # @show tipoCDC[jrangeg]
-    tipoCDC[jrangeg[1]] == 0 || continue
+    aux = Array
+    piv = pivot(HH)
+    nodesH = collect(AbstractTrees.PreOrderDFS(HH))
+    nodesG = collect(AbstractTrees.PreOrderDFS(HG))
+    # @infiltrate
+    for block = 1:length(nodesH)
+        # @show block, nodesH[block].admissible
+        hasdata(nodesH[block]) || continue
+        # @show block
+        irange = rowrange(nodesH[block]) .- piv[1] .+ 1
+        jrange = colrange(nodesH[block]) .- piv[2] .+ 1
+        jrangeg = colperm(HH)[jrange]
+        # @show tipoCDC[jrangeg]
+        tipoCDC[jrangeg[1]] == 0 || continue
 
-    aux = deepcopy(nodesH[block].data)
+        aux = deepcopy(nodesH[block].data)
 
-    nodesH[block].data = -1 * nodesG[block].data
-    nodesG[block].data = -1 * (aux)
-  end
-  HG * valorCDC
-  # @infiltrate
+        nodesH[block].data = -1 * nodesG[block].data
+        nodesG[block].data = -1 * (aux)
+    end
+    HG * valorCDC
+    # @infiltrate
 end
 
-function calc_Tid(dad::potencial, T, q, npg=3)
-  nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
-  nb = nc(dad)
-  npi = ni(dad)
-  intelems = zeros(nb)
-  qsi, w = gausslegendre(npg)    # Quadratura de gauss
-  normal_fonte = calc_normais(dad)
-  Ti = zeros(npi)
-  for elem_j in dad.ELEM  #Laço dos elementos
-    x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
-    intelem = integraelemd(x, qsi, w, elem_j)
-    # @infiltrate
-    intelems[elem_j.indices] = intelem
+function calc_Tid(dad::potencial, T, q, npg = 3)
+    nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
+    nb = nc(dad)
+    npi = ni(dad)
+    intelems = zeros(nb)
+    qsi, w = gausslegendre(npg)    # Quadratura de gauss
+    normal_fonte = calc_normais(dad)
+    Ti = zeros(npi)
+    for elem_j in dad.ELEM  #Laço dos elementos
+        x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
+        intelem = integraelemd(x, qsi, w, elem_j)
+        # @infiltrate
+        intelems[elem_j.indices] = intelem
 
-  end
-  for i = 1:npi
-    xi = dad.pontos_internos[i, 1]
-    yi = dad.pontos_internos[i, 2]
-    for j = 1:nb
-      xj = dad.NOS[j, 1]
-      yj = dad.NOS[j, 2]
-      # r = sqrt((xi - xj)^2 + (yi - yj)^2)
-      Qast, Tast = calsolfund([xj - xi, yj - yi], normal_fonte[j, :], dad)
-      Ti[i] += Qast * intelems[j] * T[j] - Tast * intelems[j] * q[j]
     end
-  end
-  Ti
+    for i = 1:npi
+        xi = dad.pontos_internos[i, 1]
+        yi = dad.pontos_internos[i, 2]
+        for j = 1:nb
+            xj = dad.NOS[j, 1]
+            yj = dad.NOS[j, 2]
+            # r = sqrt((xi - xj)^2 + (yi - yj)^2)
+            Qast, Tast = calsolfund([xj - xi, yj - yi], normal_fonte[j, :], dad)
+            Ti[i] += Qast * intelems[j] * T[j] - Tast * intelems[j] * q[j]
+        end
+    end
+    Ti
 end
 
 
@@ -184,134 +194,134 @@ end
 #__________________________________________________________________________________________________________
 "Funcao para calcular a das funções de forma"
 function integraelemd(x, eta, w, elem)
-  h = zeros(Float64, size(elem))
+    h = zeros(Float64, size(elem))
 
-  for k in eachindex(w)
-    N, dN = calc_fforma(eta[k], elem)
-    # pg = N' * x    # Ponto de gauss interpolador
-    dxdqsi = dN' * x   # dx/dξ & dy/dξ
-    dgamadqsi = norm(dxdqsi)  # dΓ/dξ = J(ξ) Jacobiano
-    # sx = dxdqsi[1] / dgamadqsi # vetor tangente dx/dΓ
-    # sy = dxdqsi[2] / dgamadqsi # vetor tangente dy/dΓ
-    # @infiltrate
-    # @show pg,pf,r,[sy,-sx],Qast
-    h += N * dgamadqsi * w[k]
-  end
-  h
+    for k in eachindex(w)
+        N, dN = calc_fforma(eta[k], elem)
+        # pg = N' * x    # Ponto de gauss interpolador
+        dxdqsi = dN' * x   # dx/dξ & dy/dξ
+        dgamadqsi = norm(dxdqsi)  # dΓ/dξ = J(ξ) Jacobiano
+        # sx = dxdqsi[1] / dgamadqsi # vetor tangente dx/dΓ
+        # sy = dxdqsi[2] / dgamadqsi # vetor tangente dy/dΓ
+        # @infiltrate
+        # @show pg,pf,r,[sy,-sx],Qast
+        h += N * dgamadqsi * w[k]
+    end
+    h
 end
-function Monta_M_Hd(dad::potencial, npg; atol=1e-4)
-  n_nos = size(dad.NOS, 1)
-  nelem = size(dad.ELEM, 1)
-  n_noi = size(dad.pontos_internos, 1) #Number of internal nodes
+function Monta_M_Hd(dad::potencial, npg; atol = 1e-4)
+    n_nos = size(dad.NOS, 1)
+    nelem = size(dad.ELEM, 1)
+    n_noi = size(dad.pontos_internos, 1) #Number of internal nodes
 
-  qsi, w = gausslegendre(npg)
-  n_pontos = n_nos + n_noi
-  nodes = [dad.NOS; dad.pontos_internos]
-  M = zeros(n_pontos)
-  M1 = zeros(n_pontos)
+    qsi, w = gausslegendre(npg)
+    n_pontos = n_nos + n_noi
+    nodes = [dad.NOS; dad.pontos_internos]
+    M = zeros(n_pontos)
+    M1 = zeros(n_pontos)
 
-  splitter = BEM.PrincipalComponentSplitter(; nmax=10)
-  Xclt, Yclt = ClusterTree(dad, splitter)
+    splitter = BEM.PrincipalComponentSplitter(; nmax = 10)
+    Xclt, Yclt = ClusterTree(dad, splitter)
 
-  adm = StrongAdmissibilityStd()
-  comp = PartialACA(; atol)
+    adm = StrongAdmissibilityStd()
+    comp = PartialACA(; atol)
 
 
-  KF = BEM.kernelF(dad)
+    KF = BEM.kernelF(dad)
 
-  HF = assemble_hmat(KF, Xclt, Yclt; adm, comp)
-  M, M1 = calcMs(dad, npg)
-  # @show size(M)
-  # @show length(M)
-  # @infiltrate
-  # S = HF \ M
-  S = gmres(HF, M)
-  KD = BEM.kernelD(dad, S)
-  HD = assemble_hmat(KD, Xclt, Yclt; adm, comp)
-  corrige_diagonal_M!(HD, M1)
+    HF = assemble_hmat(KF, Xclt, Yclt; adm, comp)
+    M, M1 = calcMs(dad, npg)
+    # @show size(M)
+    # @show length(M)
+    # @infiltrate
+    # S = HF \ M
+    S = gmres(HF, M)
+    KD = BEM.kernelD(dad, S)
+    HD = assemble_hmat(KD, Xclt, Yclt; adm, comp)
+    corrige_diagonal_M!(HD, M1)
 
-  # A = ones(length(M)) * M' / F .* D
-  # for i = 1:n_pontos #Laço dos pontos radiais
-  #   A[i, i] = 0
-  #   A[i, i] = -sum(A[i, :])
-  # end
-  # A + diagm(0 => M1)
-  HD
-  # M, M1, F, D
+    # A = ones(length(M)) * M' / F .* D
+    # for i = 1:n_pontos #Laço dos pontos radiais
+    #   A[i, i] = 0
+    #   A[i, i] = -sum(A[i, :])
+    # end
+    # A + diagm(0 => M1)
+    HD
+    # M, M1, F, D
 end
 struct kernelF <: AbstractMatrix{Float64}
-  dad::DadosBEM
+    dad::DadosBEM
 end
 function Base.getindex(K::kernelF, i::Int, j::Int)
-  if i > nc(K.dad)
-    xi = K.dad.pontos_internos[i-nc(K.dad), 1]
-    yi = K.dad.pontos_internos[i-nc(K.dad), 2]
-  else
-    xi = K.dad.NOS[i, 1]
-    yi = K.dad.NOS[i, 2]
-  end
+    if i > nc(K.dad)
+        xi = K.dad.pontos_internos[i-nc(K.dad), 1]
+        yi = K.dad.pontos_internos[i-nc(K.dad), 2]
+    else
+        xi = K.dad.NOS[i, 1]
+        yi = K.dad.NOS[i, 2]
+    end
 
-  if i == j
-    return 0.0
-  end
+    if i == j
+        return 0.0
+    end
 
-  if j > nc(K.dad)
-    xj = K.dad.pontos_internos[j-nc(K.dad), 1]
-    yj = K.dad.pontos_internos[j-nc(K.dad), 2]
-  else
-    xj = K.dad.NOS[j, 1]
-    yj = K.dad.NOS[j, 2]
-  end
-  r = sqrt((xi - xj)^2 + (yi - yj)^2)
-  interpola(r)
+    if j > nc(K.dad)
+        xj = K.dad.pontos_internos[j-nc(K.dad), 1]
+        yj = K.dad.pontos_internos[j-nc(K.dad), 2]
+    else
+        xj = K.dad.NOS[j, 1]
+        yj = K.dad.NOS[j, 2]
+    end
+    r = sqrt((xi - xj)^2 + (yi - yj)^2)
+    interpola(r)
 end
 struct kernelD <: AbstractMatrix{Float64}
-  dad::DadosBEM
-  S::Vector{Float64}
+    dad::DadosBEM
+    S::Vector{Float64}
 end
 function Base.getindex(K::kernelD, i::Int, j::Int)
-  if i > nc(K.dad)
-    xi = K.dad.pontos_internos[i-nc(K.dad), 1]
-    yi = K.dad.pontos_internos[i-nc(K.dad), 2]
-  else
-    xi = K.dad.NOS[i, 1]
-    yi = K.dad.NOS[i, 2]
-  end
+    if i > nc(K.dad)
+        xi = K.dad.pontos_internos[i-nc(K.dad), 1]
+        yi = K.dad.pontos_internos[i-nc(K.dad), 2]
+    else
+        xi = K.dad.NOS[i, 1]
+        yi = K.dad.NOS[i, 2]
+    end
 
-  if i == j
-    return 0.0
-  end
+    if i == j
+        return 0.0
+    end
 
-  if j > nc(K.dad)
-    xj = K.dad.pontos_internos[j-nc(K.dad), 1]
-    yj = K.dad.pontos_internos[j-nc(K.dad), 2]
-  else
-    xj = K.dad.NOS[j, 1]
-    yj = K.dad.NOS[j, 2]
-  end
-  r = sqrt((xi - xj)^2 + (yi - yj)^2)
-  -log(r) / (2 * π * K.dad.k) * K.S[j]
+    if j > nc(K.dad)
+        xj = K.dad.pontos_internos[j-nc(K.dad), 1]
+        yj = K.dad.pontos_internos[j-nc(K.dad), 2]
+    else
+        xj = K.dad.NOS[j, 1]
+        yj = K.dad.NOS[j, 2]
+    end
+    r = sqrt((xi - xj)^2 + (yi - yj)^2)
+    -log(r) / (2 * π * K.dad.k) * K.S[j]
 end
 function corrige_diagonal_M!(Hmat::HMatrix, M1::Vector{Float64})
-  piv = pivot(Hmat)
-  diag = Hmat * ones(size(Hmat, 2)) - M1
+    piv = pivot(Hmat)
+    diag = Hmat * ones(size(Hmat, 2)) - M1
 
-  for block in AbstractTrees.PreOrderDFS(Hmat)
-    hasdata(block) || continue
-    !block.admissible || continue
-    irange = rowrange(block) .- piv[1] .+ 1
-    jrange = colrange(block) .- piv[2] .+ 1
+    for block in AbstractTrees.PreOrderDFS(Hmat)
+        hasdata(block) || continue
+        !block.admissible || continue
+        irange = rowrange(block) .- piv[1] .+ 1
+        jrange = colrange(block) .- piv[2] .+ 1
 
 
-    irangeg = rowperm(Hmat)[irange]
-    jrangeg = colperm(Hmat)[jrange]
+        irangeg = rowperm(Hmat)[irange]
+        jrangeg = colperm(Hmat)[jrange]
 
-    inds = indexin(irange, jrange)
-    for i = 1:size(irange, 1)
-      inds[i] !== nothing || continue
-      block.data[i, inds[i]] = -diag[irangeg[i]]
+        inds = indexin(irange, jrange)
+        for i = 1:size(irange, 1)
+            inds[i] !== nothing || continue
+            block.data[i, inds[i]] = -diag[irangeg[i]]
+        end
     end
-  end
 
 end
 # function calcMs(dad::potencial, npg)

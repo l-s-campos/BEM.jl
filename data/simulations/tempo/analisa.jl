@@ -2,14 +2,16 @@ using DataFrames
 using DrWatson
 using CairoMakie, MakiePublication
 CairoMakie.activate!()
-engastado = collect_results(datadir("simulations/tempo"); rexclude=[r"problema=sladek03_apoiado"])
-apoiado = collect_results(datadir("simulations/tempo"); rinclude=[r"problema=sladek03_apoiado"])
+engastado =
+    collect_results(datadir("simulations/tempo"); rexclude = [r"problema=sladek03_apoiado"])
+apoiado =
+    collect_results(datadir("simulations/tempo"); rinclude = [r"problema=sladek03_apoiado"])
 
-function plot_dis(data; figure_padding=(2, 6, 1, 6), legend_margin=((5, 0, 0, 0)))
+function plot_dis(data; figure_padding = (2, 6, 1, 6), legend_margin = ((5, 0, 0, 0)))
 
 
-    fig = Figure(figure_padding=figure_padding)
-    ax = Axis(fig[1, 1], xlabel=L"t/t_o", ylabel=L"w/w_{sta}")
+    fig = Figure(figure_padding = figure_padding)
+    ax = Axis(fig[1, 1], xlabel = L"t/t_o", ylabel = L"w/w_{sta}")
     for d in eachrow(data)
         # d=engastado[1,:]
         if d.metodo == "Monta_M_RIM"
@@ -24,7 +26,12 @@ function plot_dis(data; figure_padding=(2, 6, 1, 6), legend_margin=((5, 0, 0, 0)
         end
         lines!(ax, d.t, d.dis)
         i = rand(0:10)
-        CairoMakie.scatter!(ax, d.t[1+i:10:end], d.dis[1+i:10:end], label="$met - Number of boundary nodes  = $(d.nelem*12)")
+        CairoMakie.scatter!(
+            ax,
+            d.t[1+i:10:end],
+            d.dis[1+i:10:end],
+            label = "$met - Number of boundary nodes  = $(d.nelem*12)",
+        )
         # CairoMakie.scatter!(ax, d.t[1+i:10:end], d.dis[1+i:10:end], label="$met - ni = $(d.NPX^2) - nb = $(d.nelem*12)")
 
     end
@@ -32,13 +39,33 @@ function plot_dis(data; figure_padding=(2, 6, 1, 6), legend_margin=((5, 0, 0, 0)
 
     if data[1, :problema] == "sladek03_apoiado"
         # @infiltrate
-        lines!(mlpgapoiado[:, 1], mlpgapoiado[:, 2], label="MLPG - Sladek et al. (2006)", linestyle=".")
-        lines!(femapoiado[:, 1], femapoiado[:, 2], label="FEM - Sladek et al. (2006)", linestyle="-")
+        lines!(
+            mlpgapoiado[:, 1],
+            mlpgapoiado[:, 2],
+            label = "MLPG - Sladek et al. (2006)",
+            linestyle = ".",
+        )
+        lines!(
+            femapoiado[:, 1],
+            femapoiado[:, 2],
+            label = "FEM - Sladek et al. (2006)",
+            linestyle = "-",
+        )
     else
-        lines!(mlpgengastado[:, 1], mlpgengastado[:, 2], label="MLPG - Sladek et al. (2006)", linestyle=".")
-        lines!(femengastado[:, 1], femengastado[:, 2], label="FEM - Sladek et al. (2006)", linestyle="-")
+        lines!(
+            mlpgengastado[:, 1],
+            mlpgengastado[:, 2],
+            label = "MLPG - Sladek et al. (2006)",
+            linestyle = ".",
+        )
+        lines!(
+            femengastado[:, 1],
+            femengastado[:, 2],
+            label = "FEM - Sladek et al. (2006)",
+            linestyle = "-",
+        )
     end
-    Legend(fig[1, 2], ax, merge=true)
+    Legend(fig[1, 2], ax, merge = true)
     return fig
 end
 # myplot(apoiado, 10)
@@ -56,7 +83,7 @@ vals = [[3 11], ["Monta_M_RIM" "Monta_M_RIMd" "DRM"], [1 3 5], [10], [80]]
 filtro(npx, metodo, nelem, npg, nt) = filtrov(npx, metodo, nelem, npg, nt, vals)
 apoiadof = filter([:NPX, :metodo, :nelem, :npg, :nt] => filtro, apoiado)
 myplot_web() = plot_dis(apoiadof)
-save("apoiadonb.pdf", with_theme(myplot_web, theme_web(width=800)))
+save("apoiadonb.pdf", with_theme(myplot_web, theme_web(width = 800)))
 # engastadof = filter([:NPX, :metodo, :nelem, :npg, :nt] => filtro, engastado)
 # myplot_web() = plot_dis(engastadof)
 # save("engastadonb.pdf", with_theme(myplot_web, theme_web(width=800)))

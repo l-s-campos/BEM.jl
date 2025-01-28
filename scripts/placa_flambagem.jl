@@ -41,16 +41,18 @@ NPY = NPX
 entrada = getfield(Main, Symbol(problema))(nelem, 3)
 # entrada = getfield(Main, Symbol(problema))(nelem, 3, bc)
 
-tdad = @timed dad = format_dad(entrada[1], NPX, NPY, canto=true) # dados
+tdad = @timed dad = format_dad(entrada[1], NPX, NPY, canto = true) # dados
 tdadpe = @timed dadpe = format_dad(entrada[2], NPX, NPY) # dados
 tHeG = @timed H, G, q, It, dNs = calc_HeGeIt(dad, npg)  #importante
 tHeGpl = @timed Hpe, Gpe = calc_HeG(dadpe, npg)
 # dad = format_dad(placacomfuro(nelem),NPX,NPY) # dados
 # println("2. Montando a matriz A e o vetor b")
-nosrestritos = [floor(Int, nelem / 2)*3+2 1
+nosrestritos = [
+    floor(Int, nelem / 2)*3+2 1
     floor(Int, nelem / 2)*3+2+nelem*3 2
     floor(Int, nelem / 2)*3+2+nelem*6 1
-    floor(Int, nelem / 2)*3+2+nelem*9 2]
+    floor(Int, nelem / 2)*3+2+nelem*9 2
+]
 # nosrestritos = [1 1]
 A, b = aplicaCDC(Hpe, Gpe, dadpe) # Calcula a matriz A e o vetor b
 # @infiltrate
@@ -97,4 +99,3 @@ a, v = BEM.autovalor(H, G, dMit, dad)
 # [k1 k']
 # [k k1 k2]
 # =#
-

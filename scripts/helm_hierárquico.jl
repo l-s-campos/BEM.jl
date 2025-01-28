@@ -28,8 +28,7 @@ T, q = separa(dad, x) #importante
 
 T1 = real(T)
 q1 = real(q)
-dadL, k =
-    HM = BEM.Monta_M_Hd(dad, 10)
+dadL, k = HM = BEM.Monta_M_Hd(dad, 10)
 M = BEM.Monta_M_RIMd(dad, npg)
 
 # prob = [placa_moulton, potencial1d, dad_laquini1, dad_laquini2, dad_laquini3]
@@ -60,9 +59,9 @@ M = BEM.Monta_M_RIMd(dad, npg)
 #     tsolve = @timed x = A \ b
 #     tsolved = @timed xd = Ad \ bd
 
-#     tsolve = @timed x, f = gmres(A, b, rtol=1e-5, itmax=100) #GMRES nas matrizes 
-#     tsolved = @timed xd, f = gmres(Ad, bd, rtol=1e-5, itmax=100) #GMRES nas matrizes 
-#     tsolveHd = @timed xH, f = gmres(HH, bH, rtol=1e-5, itmax=100) #GMRES nas matrizes 
+#     tsolve = @timed x, f = gmres(A, b, rtol=1e-5, itmax=100) #GMRES nas matrizes
+#     tsolved = @timed xd, f = gmres(Ad, bd, rtol=1e-5, itmax=100) #GMRES nas matrizes
+#     tsolveHd = @timed xH, f = gmres(HH, bH, rtol=1e-5, itmax=100) #GMRES nas matrizes
 
 
 
@@ -105,4 +104,3 @@ M = BEM.Monta_M_RIMd(dad, npg)
 # # lines!(dad.NOS[:, 1], Td)
 # # lines!(dad.NOS[:, 1], Tana)
 # # p
-

@@ -28,7 +28,7 @@ function distance(rec1::HyperRectangle{N}, rec2::HyperRectangle{N}) where {N}
     rec2_low_corner = low_corner(rec2)
     rec2_high_corner = high_corner(rec2)
     # @infiltrate
-    for i in 1:N
+    for i = 1:N
         d2 +=
             max(0, rec1_low_corner[i] - rec2_high_corner[i])^2 +
             max(0, rec2_low_corner[i] - rec1_high_corner[i])^2

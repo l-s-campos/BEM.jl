@@ -68,14 +68,14 @@ function _lu!(M::HMatrix, compressor, threads, bufs = nothing)
         @assert !hasdata(M)
         chdM = children(M)
         m, n = size(chdM)
-        for i in 1:m
+        for i = 1:m
             _lu!(chdM[i, i], compressor, threads, bufs)
-            for j in (i+1):n
+            for j = (i+1):n
                 ldiv!(UnitLowerTriangular(chdM[i, i]), chdM[i, j], compressor, bufs)
                 rdiv!(chdM[j, i], UpperTriangular(chdM[i, i]), compressor, bufs)
             end
-            for j in (i+1):m
-                for k in (i+1):n
+            for j = (i+1):m
+                for k = (i+1):n
                     hmul!(chdM[j, k], chdM[j, i], chdM[i, k], -1, 1, compressor, bufs)
                 end
             end
@@ -111,10 +111,10 @@ function LinearAlgebra.ldiv!(L::HUnitLowerTriangular, y::AbstractVector)
         chdH = children(H)
         m, n = size(chdH)
         @assert m === n
-        for i in 1:m
+        for i = 1:m
             irows = colrange(chdH[i, i]) .- shift[2]
             bi = view(y, irows)
-            for j in 1:(i-1)# j<i
+            for j = 1:(i-1)# j<i
                 jrows = colrange(chdH[i, j]) .- shift[2]
                 bj = view(y, jrows)
                 _mul131!(bi, chdH[i, j], bj, -1)
@@ -137,10 +137,10 @@ function LinearAlgebra.ldiv!(U::HUpperTriangular, y::AbstractVector)
         chdH = children(H)
         m, n = size(chdH)
         @assert m === n
-        for i in m:-1:1
+        for i = m:-1:1
             irows = colrange(chdH[i, i]) .- shift[2]
             bi = view(y, irows)
-            for j in (i+1):n # j>i
+            for j = (i+1):n # j>i
                 jrows = colrange(chdH[i, j]) .- shift[2]
                 bj = view(y, jrows)
                 _mul131!(bi, chdH[i, j], bj, -1)

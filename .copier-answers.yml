@@ -1,0 +1,15 @@
+# Changes here will be overwritten by Copier
+AnswerStrategy: recommended
+Authors: Lucas
+CodeOfConductContact: Lucas Campos
+ConfigIndentation: 2
+JuliaIndentation: 4
+JuliaMinVersion: '1.10'
+License: MIT
+LicenseCopyrightHolders: Lucas Campos
+MarkdownIndentation: 2
+PackageName: BEM
+PackageOwner: l-s-campos
+PackageUUID: 9022a523-4c95-53bb-bd63-a5752cb1fbcd
+_commit: v0.14.1
+_src_path: https://github.com/JuliaBesties/BestieTemplate.jl

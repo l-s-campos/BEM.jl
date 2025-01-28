@@ -56,7 +56,7 @@ ana = (1 / ω * BEM.besselh(0, 2, ω) / BEM.besselh(1, 2, ω))
 #     qsf1[i], tsf1[i] = BEM.calsolfund(dad.NOS[i, :], dad.normal[i, :], dad)
 #     # @show i, tsf1[i]
 # end
-# # @show 
+# # @show
 # norm(H * tsf1 - G * qsf1), norm(H1 * tsf1 - G1 * qsf1)
 # H1[1, 1:4]'
 # @show H[1, 1], G[1, 1]

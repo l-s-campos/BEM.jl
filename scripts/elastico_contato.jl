@@ -50,7 +50,7 @@ end
 
 # corpo elástico - corpo rígido
 x0 = 0 * b2
-x = BEM.Contato_NL_newton(dad, x0, A2, b2, h, maxiter=10)
+x = BEM.Contato_NL_newton(dad, x0, A2, b2, h, maxiter = 10)
 u, t = separa(dad, x, nosrestritos, h)
 
 # corpo elástico - corpo elástico)
@@ -64,4 +64,4 @@ u, t = separa(dad, x, nosrestritos, h)
 # sol = solve(prob, NewtonRaphson(), abstol=1e-8);
 # u, t = separa(dad, sol.u, nosrestritos, h)
 
-mostra_deformação(dad, u, escala=1)
+mostra_deformação(dad, u, escala = 1)

@@ -6,7 +6,7 @@ include(scriptsdir("includes.jl"))
 NPX = 7#pontos internos na direção x
 nelem = 7
 npg = 16   #apenas números pares
-## Formatação dos dados 
+## Formatação dos dados
 # problema = "sladek03"
 # problema = "large1"
 # metodo = "Monta_M_RIM"
@@ -22,8 +22,8 @@ NPY = NPX
 # entrada = Putcha(nelem, 3, "SSSS")
 entrada = large1(nelem, 3, "SSSS")
 
-tdad = @timed dad = format_dad(entrada[1], NPX, NPY, canto=true) # dados
-tdadpe = @timed dadpe = format_dad(entrada[2], NPX, NPY, canto=true) # dados
+tdad = @timed dad = format_dad(entrada[1], NPX, NPY, canto = true) # dados
+tdadpe = @timed dadpe = format_dad(entrada[2], NPX, NPY, canto = true) # dados
 
 # tdad = @timed dad1 = format_dad(entrada1[1], NPX, NPY, canto=true) # dados
 # tdadpe = @timed dadpe1 = format_dad(entrada1[2], NPX, NPY, canto=true) # dados

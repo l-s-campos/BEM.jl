@@ -1,8 +1,10 @@
-function elastico1d(ne=15, tipo=2; nt=false)
-    PONTOS = [1 0 0
+function elastico1d(ne = 15, tipo = 2; nt = false)
+    PONTOS = [
+        1 0 0
         2 1 0
         3 1 1
-        4 0 1]
+        4 0 1
+    ]
     # Segmentos que definem a geometria
     # SEGMENTOS = [N° do segmento, N° do ponto inicial, N° do ponto final
     #                                                  Raio, tipo do elemento]
@@ -11,43 +13,46 @@ function elastico1d(ne=15, tipo=2; nt=false)
     #                   < 0 -> O centro é a direita do segmento (do ponto
     #                          inicial para o ponto final)
     #                   = 0 -> O segmento é uma linha reta
-    SEGMENTOS = [1 1 2 0
+    SEGMENTOS = [
+        1 1 2 0
         2 2 3 0
         3 3 4 0
-        4 4 1 0]
+        4 4 1 0
+    ]
     # Matriz para definição da malha
     # MALHA = [número do segmento, número de elementos no segmento]
-    MALHA = [1 ne tipo
+    MALHA = [
+        1 ne tipo
         2 2ne tipo
         3 ne tipo
-        4 2ne tipo]
+        4 2ne tipo
+    ]
     # Condições de contorno nos segmentos
     # CCSeg = [N° do segmento, tipo da CDCx, valor da CDCx, tipo da CDCy, valor da CDCy]
     # tipo da CDC = 0 => deslocamento é conhecido
     # tipo da CDC = 1 => força é conhecida
-    if nt
-        CCSeg = [1 1 0 0 0
-            2 1 1 1 0
-            3 1 0 1 0
-            4 0 0 1 0]
-    else
-        CCSeg = [1 1 0 0 0
-            2 1 1 1 0
-            3 1 0 1 0
-            4 0 0 1 0]
-    end
+
+    CCSeg = [
+        1 1 0 0 0
+        2 1 1 1 0
+        3 1 0 1 0
+        4 0 0 1 0
+    ]
+
 
     E = 1
     v = 0.3
     # Malha de pontos internos
-    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E=E, nu=v)
+    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E = E, nu = v)
 end
 
-function elastico1diga(ne=15, tipo=2)
-    PONTOS = [1 0 0
+function elastico1diga(ne = 15, tipo = 2)
+    PONTOS = [
+        1 0 0
         2 1 0
         3 1 1
-        4 0 1]
+        4 0 1
+    ]
     # Segmentos que definem a geometria
     # SEGMENTOS = [N° do segmento, N° do ponto inicial, N° do ponto final
     #                                                  Raio, tipo do elemento]
@@ -56,16 +61,20 @@ function elastico1diga(ne=15, tipo=2)
     #                   < 0 -> O centro é a direita do segmento (do ponto
     #                          inicial para o ponto final)
     #                   = 0 -> O segmento é uma linha reta
-    SEGMENTOS = [1 1 2 1
+    SEGMENTOS = [
+        1 1 2 1
         2 2 3 0
         3 3 4 0
-        4 4 1 0]
+        4 4 1 0
+    ]
     # Matriz para definição da malha
     # MALHA = [número do segmento, número de elementos no segmento]
-    MALHA = [1 ne tipo
+    MALHA = [
+        1 ne tipo
         2 ne tipo
         3 ne tipo
-        4 ne tipo]
+        4 ne tipo
+    ]
     # Condições de contorno nos segmentos
     # CCSeg = [N° do segmento, tipo da CDCx, valor da CDCx, tipo da CDCy, valor da CDCy]
     # tipo da CDC = 0 => deslocamento é conhecido
@@ -74,23 +83,27 @@ function elastico1diga(ne=15, tipo=2)
     #     2 1 1 1 0
     #     3 1 0 0 0
     #     4 0 0 1 0]
-    CCSeg = [1 0 0 0 0
+    CCSeg = [
+        1 0 0 0 0
         2 1 0 1 0
         3 1 0 1 1
-        4 1 0 1 0]
+        4 1 0 1 0
+    ]
     # Condutividade Térmica do material
     E = 1
     v = 0.0
     # Malha de pontos internos
-    return elastico_iga, PONTOS, SEGMENTOS, MALHA, CCSeg, (E=E, nu=v)
+    return elastico_iga, PONTOS, SEGMENTOS, MALHA, CCSeg, (E = E, nu = v)
 end
 
 
-function elastico_aniso_1d(ne=15, tipo=2)
-    PONTOS = [1 0 0
+function elastico_aniso_1d(ne = 15, tipo = 2)
+    PONTOS = [
+        1 0 0
         2 1 0
         3 1 1
-        4 0 1]
+        4 0 1
+    ]
     # Segmentos que definem a geometria
     # SEGMENTOS = [N° do segmento, N° do ponto inicial, N° do ponto final
     #                                                  Raio, tipo do elemento]
@@ -99,24 +112,30 @@ function elastico_aniso_1d(ne=15, tipo=2)
     #                   < 0 -> O centro é a direita do segmento (do ponto
     #                          inicial para o ponto final)
     #                   = 0 -> O segmento é uma linha reta
-    SEGMENTOS = [1 1 2 0
+    SEGMENTOS = [
+        1 1 2 0
         2 2 3 0
         3 3 4 0
-        4 4 1 0]
+        4 4 1 0
+    ]
     # Matriz para definição da malha
     # MALHA = [número do segmento, número de elementos no segmento]
-    MALHA = [1 ne tipo
+    MALHA = [
+        1 ne tipo
         2 ne tipo
         3 ne tipo
-        4 ne tipo]
+        4 ne tipo
+    ]
     # Condições de contorno nos segmentos
     # CCSeg = [N° do segmento, tipo da CDCx, valor da CDCx, tipo da CDCy, valor da CDCy]
     # tipo da CDC = 0 => deslocamento é conhecido
     # tipo da CDC = 1 => força é conhecida
-    CCSeg = [1 1 0 1 0
+    CCSeg = [
+        1 1 0 1 0
         2 1 1 1 0
         3 1 0 0 0
-        4 0 0 1 0]
+        4 0 0 1 0
+    ]
     # Condutividade Térmica do material
     Material = [1 1.001 1.0 0.5 0.0 0 1.0]
     # const_material = Compute_Material(Material)
@@ -131,11 +150,13 @@ function elastico_aniso_1d(ne=15, tipo=2)
 end
 
 
-function elastico_aniso_1d_iga(ne=15, tipo=2)
-    PONTOS = [1 0 0
+function elastico_aniso_1d_iga(ne = 15, tipo = 2)
+    PONTOS = [
+        1 0 0
         2 1 0
         3 1 1
-        4 0 1]
+        4 0 1
+    ]
     # Segmentos que definem a geometria
     # SEGMENTOS = [N° do segmento, N° do ponto inicial, N° do ponto final
     #                                                  Raio, tipo do elemento]
@@ -144,24 +165,30 @@ function elastico_aniso_1d_iga(ne=15, tipo=2)
     #                   < 0 -> O centro é a direita do segmento (do ponto
     #                          inicial para o ponto final)
     #                   = 0 -> O segmento é uma linha reta
-    SEGMENTOS = [1 1 2 1
+    SEGMENTOS = [
+        1 1 2 1
         2 2 3 0
         3 3 4 0
-        4 4 1 0]
+        4 4 1 0
+    ]
     # Matriz para definição da malha
     # MALHA = [número do segmento, número de elementos no segmento]
-    MALHA = [1 ne tipo
+    MALHA = [
+        1 ne tipo
         2 ne tipo
         3 ne tipo
-        4 ne tipo]
+        4 ne tipo
+    ]
     # Condições de contorno nos segmentos
     # CCSeg = [N° do segmento, tipo da CDCx, valor da CDCx, tipo da CDCy, valor da CDCy]
     # tipo da CDC = 0 => deslocamento é conhecido
     # tipo da CDC = 1 => força é conhecida
-    CCSeg = [1 1 0 1 0
+    CCSeg = [
+        1 1 0 1 0
         2 1 1 1 0
         3 1 0 0 0
-        4 0 0 1 0]
+        4 0 0 1 0
+    ]
     # Condutividade Térmica do material
     Material = [1 1.000001 1 1 1 0 1]
     # const_material = Compute_Material(Material)
@@ -174,15 +201,17 @@ function elastico_aniso_1d_iga(ne=15, tipo=2)
     # Malha de pontos internos
     return elastico_aniso_iga, PONTOS, SEGMENTOS, MALHA, CCSeg, Compute_Material(Material)
 end
-function Subregiao1d(ne=15, tipo=2)
+function Subregiao1d(ne = 15, tipo = 2)
     a = 1
 
-    PONTOS = [1 0 0
+    PONTOS = [
+        1 0 0
         2 a 0
         3 a a/2
         4 0 a/2
         5 a a
-        6 0 a]
+        6 0 a
+    ]
 
     # Segmentos que definem a geometria
     # SEGMENTOS = [N° do segmento, N° do ponto inicial, N° do ponto final
@@ -192,25 +221,29 @@ function Subregiao1d(ne=15, tipo=2)
     #                   < 0 -> O centro é a direita do segmento (do ponto
     #                          inicial para o ponto final)
     #                   = 0 -> O segmento é uma linha reta
-    SEGMENTOS = [1 1 2 0
+    SEGMENTOS = [
+        1 1 2 0
         2 2 3 0
         3 3 4 0
         4 4 1 0
         5 4 3 0
         6 3 5 0
         7 5 6 0
-        8 6 4 0]
+        8 6 4 0
+    ]
     # Matriz para definição da malha
     # MALHA = [número do segmento, número de elementos no segmento]
 
-    MALHA = [1 ne tipo
+    MALHA = [
+        1 ne tipo
         2 ne tipo
         3 ne tipo
         4 ne tipo
         5 ne tipo
         6 ne tipo
         7 ne tipo
-        8 ne tipo]
+        8 ne tipo
+    ]
     # Condições de contorno nos segmentos
     # CCSeg = [N° do segmento, tipo da CDCx, valor da CDCx, tipo da CDCy, valor da CDCy]
     # tipo da CDC = 0 => deslocamento é conhecido
@@ -220,14 +253,16 @@ function Subregiao1d(ne=15, tipo=2)
 
 
 
-    CCSeg = [1 1 0 0 0
+    CCSeg = [
+        1 1 0 0 0
         2 1 carga 1 0
         3 1 0 1 0
         4 0 0 1 0
         5 1 0 1 0
         6 1 carga 1 0
         7 1 0 1 0
-        8 0 0 1 0]
+        8 0 0 1 0
+    ]
 
 
     E = 1
@@ -238,9 +273,9 @@ function Subregiao1d(ne=15, tipo=2)
     subregioes = define_SubRegioes(SEGMENTOS, MALHA)
 
 
-    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E=[E, E], nu=[v, v]), subregioes
+    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E = [E, E], nu = [v, v]), subregioes
 end
-function dad_3PBT(ne=6, tipo=2)
+function dad_3PBT(ne = 6, tipo = 2)
 
     hs = 1.08
     L = 50
@@ -250,7 +285,8 @@ function dad_3PBT(ne=6, tipo=2)
     ha = 4
     d = 1
 
-    PONTOS = [1 -L/2 0 0
+    PONTOS = [
+        1 -L/2 0 0
         2 -e 0 0
         3 -f 0 0
         4 -l/2 0 0
@@ -263,7 +299,8 @@ function dad_3PBT(ne=6, tipo=2)
         11 -d/2 hs 0
         12 -L/2 hs 0
         13 -l/2 -(ha) 0
-        14 l/2 -(ha) 0]
+        14 l/2 -(ha) 0
+    ]
 
     # Segmentos que definem a geometria
     # SEGMENTOS = [N° do segmento, N° do ponto inicial, N° do ponto final
@@ -273,7 +310,8 @@ function dad_3PBT(ne=6, tipo=2)
     #                   < 0 -> O centro é a direita do segmento (do ponto
     #                          inicial para o ponto final)
     #                   = 0 -> O segmento é uma linha reta
-    SEGMENTOS = [1 1 2 0
+    SEGMENTOS = [
+        1 1 2 0
         2 2 3 0
         3 3 4 0
         4 4 5 0# interface
@@ -288,10 +326,12 @@ function dad_3PBT(ne=6, tipo=2)
         13 13 14 0
         14 14 5 0
         15 5 4 0# interface
-        16 4 13 0]
+        16 4 13 0
+    ]
     # Matriz para definição da malha
     # MALHA = [número do segmento, número de elementos no segmento]
-    MALHA = [1 2*ne tipo
+    MALHA = [
+        1 2*ne tipo
         2 ne tipo
         3 4*ne tipo
         4 20*ne tipo
@@ -306,7 +346,8 @@ function dad_3PBT(ne=6, tipo=2)
         13 8*ne tipo
         14 4*ne tipo
         15 20*ne tipo
-        16 4*ne tipo] # interface de cima
+        16 4*ne tipo
+    ] # interface de cima
     # Condições de contorno nos segmentos
     # CCSeg = [N° do segmento, tipo da CDCx, valor da CDCx, tipo da CDCy, valor da CDCy]
     # tipo da CDC = 0 => deslocamento é conhecido
@@ -315,7 +356,8 @@ function dad_3PBT(ne=6, tipo=2)
     carga = 1000 / 32
 
 
-    CCSeg = [1 1 0 1 0 0
+    CCSeg = [
+        1 1 0 1 0 0
         2 0 0 0 0 0
         3 1 0 1 0 0
         4 1 0 1 0 0
@@ -330,7 +372,8 @@ function dad_3PBT(ne=6, tipo=2)
         13 1 0 1 0 0
         14 1 0 1 0 0
         15 1 0 1 0 0
-        16 1 0 1 0 0]
+        16 1 0 1 0 0
+    ]
 
 
     # CCSeg = [1 0 1
@@ -349,9 +392,15 @@ function dad_3PBT(ne=6, tipo=2)
     subregioes = define_SubRegioes(SEGMENTOS, MALHA)
 
 
-    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E=[E, Ecola], nu=[v, vcola]), subregioes
+    return elastico,
+    PONTOS,
+    SEGMENTOS,
+    MALHA,
+    CCSeg,
+    (E = [E, Ecola], nu = [v, vcola]),
+    subregioes
 end
-function Subregiao(ne=15, tipo=2)
+function Subregiao(ne = 15, tipo = 2)
     hh = 0.2
     HH = 2
     L = 85
@@ -360,7 +409,8 @@ function Subregiao(ne=15, tipo=2)
     GR = 7.5
     thickness = 25
 
-    PONTOS = [1 -l/2 -(HH + hh / 2) 0
+    PONTOS = [
+        1 -l/2 -(HH + hh / 2) 0
         2 L-l/2 -(HH + hh / 2) 0
         3 (L-l/2) -hh/2 0
         4 l/2 -hh/2 0
@@ -373,7 +423,8 @@ function Subregiao(ne=15, tipo=2)
         11 L-l/2-GR -(HH + hh / 2) 0
         12 (L-l/2)-GR -hh/2 0
         13 -L+l/2+GR hh/2 0
-        14 -L+l/2+GR HH+hh/2 0]
+        14 -L+l/2+GR HH+hh/2 0
+    ]
 
     # Segmentos que definem a geometria
     # SEGMENTOS = [N° do segmento, N° do ponto inicial, N° do ponto final
@@ -383,7 +434,8 @@ function Subregiao(ne=15, tipo=2)
     #                   < 0 -> O centro é a direita do segmento (do ponto
     #                          inicial para o ponto final)
     #                   = 0 -> O segmento é uma linha reta
-    SEGMENTOS = [1 1 11 0
+    SEGMENTOS = [
+        1 1 11 0
         2 11 2 0
         3 2 3 0
         4 3 12 0
@@ -400,12 +452,14 @@ function Subregiao(ne=15, tipo=2)
         15 8 9 0
         16 9 13 0
         17 13 10 0
-        18 10 6 0]
+        18 10 6 0
+    ]
     # Matriz para definição da malha
     # MALHA = [número do segmento, número de elementos no segmento]
     ne = 6
     nead = 4 * ne #% ne da interface do adesivo
-    MALHA = [1 2*ne tipo
+    MALHA = [
+        1 2*ne tipo
         2 ne tipo
         3 2 tipo
         4 ne tipo
@@ -422,7 +476,8 @@ function Subregiao(ne=15, tipo=2)
         15 2 tipo
         16 ne tipo
         17 2*ne tipo
-        18 nead tipo]
+        18 nead tipo
+    ]
     # Condições de contorno nos segmentos
     # CCSeg = [N° do segmento, tipo da CDCx, valor da CDCx, tipo da CDCy, valor da CDCy]
     # tipo da CDC = 0 => deslocamento é conhecido
@@ -432,7 +487,8 @@ function Subregiao(ne=15, tipo=2)
 
     Area = 2 * thickness * GR
 
-    CCSeg = [1 1 0 1 0 0
+    CCSeg = [
+        1 1 0 1 0 0
         2 1 carga/Area 0 0 0
         3 1 0 1 0 0
         4 1 carga/Area 0 0 0
@@ -449,7 +505,8 @@ function Subregiao(ne=15, tipo=2)
         15 0 0 1 0 0
         16 1 0 0 0 0
         17 1 0 1 0 0
-        18 1 0 1 0 0]
+        18 1 0 1 0 0
+    ]
 
 
     # CCSeg = [1 0 1
@@ -468,16 +525,24 @@ function Subregiao(ne=15, tipo=2)
     subregioes = define_SubRegioes(SEGMENTOS, MALHA)
 
 
-    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E=[E, Ecola, E], nu=[v, vcola, v]), subregioes
+    return elastico,
+    PONTOS,
+    SEGMENTOS,
+    MALHA,
+    CCSeg,
+    (E = [E, Ecola, E], nu = [v, vcola, v]),
+    subregioes
 end
 
-function telastico1d(ne=15, tipo=2)
+function telastico1d(ne = 15, tipo = 2)
     x = 1
     y = 1
-    PONTOS = [1 0 0
+    PONTOS = [
+        1 0 0
         2 x 0
         3 x y
-        4 0 y]
+        4 0 y
+    ]
     # PONTOS = [1 -x/2 -y/2
     #     2 x/2 -y/2
     #     3 x/2 y/2
@@ -490,16 +555,20 @@ function telastico1d(ne=15, tipo=2)
     #                   < 0 -> O centro é a direita do segmento (do ponto
     #                          inicial para o ponto final)
     #                   = 0 -> O segmento é uma linha reta
-    SEGMENTOS = [1 1 2 0
+    SEGMENTOS = [
+        1 1 2 0
         2 2 3 0
         3 3 4 0
-        4 4 1 0]
+        4 4 1 0
+    ]
     # Matriz para definição da malha
     # MALHA = [número do segmento, número de elementos no segmento]
-    MALHA = [1 ne tipo
+    MALHA = [
+        1 ne tipo
         2 ne tipo
         3 ne tipo
-        4 ne tipo]
+        4 ne tipo
+    ]
     # Condições de contorno nos segmentos
     # CCSeg = [N° do segmento, tipo da CDCx, valor da CDCx, tipo da CDCy, valor da CDCy]
     # tipo da CDC = 0 => deslocamento é conhecido
@@ -512,26 +581,30 @@ function telastico1d(ne=15, tipo=2)
     #     2 0 0 1 0
     #     3 1 0 0 0
     #     4 0 0 1 0]
-    CCSeg = [1 0 0 0 0#engastado x e y 
+    CCSeg = [
+        1 0 0 0 0#engastado x e y
         2 0 0 0 0
         3 0 0 0 0
-        4 0 0 0 0]
+        4 0 0 0 0
+    ]
     # propriedades do material
     E = 1
     v = 0.3
     E = (1 - v^2) * E
     v = v / (1 + v)
     # Malha de pontos internos
-    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E=E, nu=v)
+    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E = E, nu = v)
 end
 
-function telasticogao(ne=15, tipo=2; planestress=false)
+function telasticogao(ne = 15, tipo = 2; planestress = false)
     H = 1
 
-    PONTOS = [1 -H 0.5
+    PONTOS = [
+        1 -H 0.5
         2 -H -0.5
         3 H -0.5
-        4 H 0.5]
+        4 H 0.5
+    ]
     # Segmentos que definem a geometria
     # SEGMENTOS = [N° do segmento, N° do ponto inicial, N° do ponto final
     #                                                  Raio, tipo do elemento]
@@ -540,24 +613,30 @@ function telasticogao(ne=15, tipo=2; planestress=false)
     #                   < 0 -> O centro é a direita do segmento (do ponto
     #                          inicial para o ponto final)
     #                   = 0 -> O segmento é uma linha reta
-    SEGMENTOS = [1 1 2 0
+    SEGMENTOS = [
+        1 1 2 0
         2 2 3 0
         3 3 4 0
-        4 4 1 0]
+        4 4 1 0
+    ]
     # Matriz para definição da malha
     # MALHA = [número do segmento, número de elementos no segmento]
-    MALHA = [1 ne tipo
+    MALHA = [
+        1 ne tipo
         2 2ne tipo
         3 ne tipo
-        4 2ne tipo]
+        4 2ne tipo
+    ]
     # Condições de contorno nos segmentos
     # CCSeg = [N° do segmento, tipo da CDCx, valor da CDCx, tipo da CDCy, valor da CDCy]
     # tipo da CDC = 0 => deslocamento é conhecido
     # tipo da CDC = 1 => força é conhecida
-    CCSeg = [1 0 0 1 0
+    CCSeg = [
+        1 0 0 1 0
         2 1 0 0 0
         3 0 0 1 0
-        4 1 0 1 0]
+        4 1 0 1 0
+    ]
     # CCSeg = [1 0 1
     # 2 0 1
     # 3 0 1
@@ -573,16 +652,18 @@ function telasticogao(ne=15, tipo=2; planestress=false)
     end
 
     # Malha de pontos internos
-    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E=E, nu=v, k=k)
+    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E = E, nu = v, k = k)
 end
 
-function telasticocilindro(ne=15, tipo=2; planestress=false)
+function telasticocilindro(ne = 15, tipo = 2; planestress = false)
     ri = 30
     re = 80
-    PONTOS = [1 ri 0.0
+    PONTOS = [
+        1 ri 0.0
         2 re 0.0
         3 0 re
-        4 0 ri]
+        4 0 ri
+    ]
     # Segmentos que definem a geometria
     # SEGMENTOS = [N° do segmento, N° do ponto inicial, N° do ponto final
     #                                                  Raio, tipo do elemento]
@@ -591,30 +672,38 @@ function telasticocilindro(ne=15, tipo=2; planestress=false)
     #                   < 0 -> O centro é a direita do segmento (do ponto
     #                          inicial para o ponto final)
     #                   = 0 -> O segmento é uma linha reta
-    SEGMENTOS = [1 1 2 0
+    SEGMENTOS = [
+        1 1 2 0
         2 2 3 re
         3 3 4 0
-        4 4 1 -ri]
+        4 4 1 -ri
+    ]
     # Matriz para definição da malha
     # MALHA = [número do segmento, número de elementos no segmento]
-    MALHA = [1 ne tipo
+    MALHA = [
+        1 ne tipo
         2 2ne tipo
         3 ne tipo
-        4 ne tipo]
+        4 ne tipo
+    ]
     # Condições de contorno nos segmentos
     # CCSeg = [N° do segmento, tipo da CDCx, valor da CDCx, tipo da CDCy, valor da CDCy]
     # tipo da CDC = 0 => deslocamento é conhecido
     # tipo da CDC = 1 => força é conhecida
-    CCSeg = [1 1 0 0 0
+    CCSeg = [
+        1 1 0 0 0
         2 1 0 1 0
         3 0 0 1 0
-        4 1 0 1 0]
+        4 1 0 1 0
+    ]
     Ti = 100
     Te = 0
-    CCSegterm = [1 1 0
+    CCSegterm = [
+        1 1 0
         2 0 Te
         3 1 0
-        4 0 Ti]
+        4 0 Ti
+    ]
     # CCSeg = [1 0 1
     # 2 0 1
     # 3 0 1
@@ -634,18 +723,23 @@ function telasticocilindro(ne=15, tipo=2; planestress=false)
         k = k / (1 + v)
     end
     # Malha de pontos internos
-    return [[elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E=E, nu=v, k=α)], [potencial, PONTOS, SEGMENTOS, MALHA, CCSegterm, k]]
+    return [
+        [elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E = E, nu = v, k = α)],
+        [potencial, PONTOS, SEGMENTOS, MALHA, CCSegterm, k],
+    ]
 end
 
 
-function telasticosquare(ne=15, tipo=2; planestress=false)
+function telasticosquare(ne = 15, tipo = 2; planestress = false)
 
     H = 0.5
 
-    PONTOS = [1 -H 0.5
+    PONTOS = [
+        1 -H 0.5
         2 -H -0.5
         3 H -0.5
-        4 H 0.5]
+        4 H 0.5
+    ]
     # Segmentos que definem a geometria
     # SEGMENTOS = [N° do segmento, N° do ponto inicial, N° do ponto final
     #                                                  Raio, tipo do elemento]
@@ -654,24 +748,30 @@ function telasticosquare(ne=15, tipo=2; planestress=false)
     #                   < 0 -> O centro é a direita do segmento (do ponto
     #                          inicial para o ponto final)
     #                   = 0 -> O segmento é uma linha reta
-    SEGMENTOS = [1 1 2 0
+    SEGMENTOS = [
+        1 1 2 0
         2 2 3 0
         3 3 4 0
-        4 4 1 0]
+        4 4 1 0
+    ]
     # Matriz para definição da malha
     # MALHA = [número do segmento, número de elementos no segmento]
-    MALHA = [1 ne tipo
+    MALHA = [
+        1 ne tipo
         2 ne tipo
         3 ne tipo
-        4 ne tipo]
+        4 ne tipo
+    ]
     # Condições de contorno nos segmentos
     # CCSeg = [N° do segmento, tipo da CDCx, valor da CDCx, tipo da CDCy, valor da CDCy]
     # tipo da CDC = 0 => deslocamento é conhecido
     # tipo da CDC = 1 => força é conhecida
-    CCSeg = [1 0 0 1 0
+    CCSeg = [
+        1 0 0 1 0
         2 1 0 0 0
         3 0 0 1 0
-        4 1 0 0 0]
+        4 1 0 0 0
+    ]
     # CCSeg = [1 0 1
     # 2 0 1
     # 3 0 1
@@ -687,17 +787,19 @@ function telasticosquare(ne=15, tipo=2; planestress=false)
     end
 
     # Malha de pontos internos
-    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E=E, nu=v, k=k)
+    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E = E, nu = v, k = k)
 end
 
-function telasticobar(ne=15, tipo=2; planestress=true)
+function telasticobar(ne = 15, tipo = 2; planestress = true)
 
     H = 0.5
     L = 4
-    PONTOS = [1 0 0
+    PONTOS = [
+        1 0 0
         2 L 0
         3 L H
-        4 0 H]
+        4 0 H
+    ]
     # Segmentos que definem a geometria
     # SEGMENTOS = [N° do segmento, N° do ponto inicial, N° do ponto final
     #                                                  Raio, tipo do elemento]
@@ -706,24 +808,30 @@ function telasticobar(ne=15, tipo=2; planestress=true)
     #                   < 0 -> O centro é a direita do segmento (do ponto
     #                          inicial para o ponto final)
     #                   = 0 -> O segmento é uma linha reta
-    SEGMENTOS = [1 1 2 0
+    SEGMENTOS = [
+        1 1 2 0
         2 2 3 0
         3 3 4 0
-        4 4 1 0]
+        4 4 1 0
+    ]
     # Matriz para definição da malha
     # MALHA = [número do segmento, número de elementos no segmento]
-    MALHA = [1 ne tipo
+    MALHA = [
+        1 ne tipo
         2 ne tipo
         3 ne tipo
-        4 ne tipo]
+        4 ne tipo
+    ]
     # Condições de contorno nos segmentos
     # CCSeg = [N° do segmento, tipo da CDCx, valor da CDCx, tipo da CDCy, valor da CDCy]
     # tipo da CDC = 0 => deslocamento é conhecido
     # tipo da CDC = 1 => força é conhecida
-    CCSeg = [1 1 0 0 0
+    CCSeg = [
+        1 1 0 0 0
         2 1 0 1 0
         3 1 0 1 0
-        4 0 0 1 0]
+        4 0 0 1 0
+    ]
 
     # Condutividade Térmica do material
     E = 210e9
@@ -736,13 +844,14 @@ function telasticobar(ne=15, tipo=2; planestress=true)
     end
 
     # Malha de pontos internos
-    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E=E, nu=v, k=k)
+    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E = E, nu = v, k = k)
 end
 
 
-function Turbina(ne=5, tipo=2)
+function Turbina(ne = 5, tipo = 2)
 
-    PONTOS = [1.0000 0.0000 -23.2303 0
+    PONTOS = [
+        1.0000 0.0000 -23.2303 0
         2.0000 0 0 0
         3.0000 -8.1100 -0.0000 0
         4.0000 -8.7042 -17.9864 0
@@ -755,9 +864,11 @@ function Turbina(ne=5, tipo=2)
         11.0000 -13.4925 -4.8307 0
         12.0000 -9.3883 -16.1070 0
         13.0000 -13.1470 -21.4751 0
-        14.0000 -22.1970 -21.4751 0]
+        14.0000 -22.1970 -21.4751 0
+    ]
 
-    SEGMENTOS = [1 1 2 0
+    SEGMENTOS = [
+        1 1 2 0
         2 2 3 0
         3 3 8 5
         4 8 12 0
@@ -772,9 +883,11 @@ function Turbina(ne=5, tipo=2)
         13 12 8 0
         14 8 11 0
         15 11 10 -20
-        16 10 9 0]
+        16 10 9 0
+    ]
 
-    CCSeg = [1 0 0 1 0
+    CCSeg = [
+        1 0 0 1 0
         2 1 0 1 0
         3 1 0 1 0
         4 1 0 1 0
@@ -789,10 +902,12 @@ function Turbina(ne=5, tipo=2)
         13 1 0 1 0
         14 1 0 1 0
         15 1 0 1 0
-        16 1 0 1 1]
+        16 1 0 1 1
+    ]
 
 
-    MALHA = [1 ne tipo
+    MALHA = [
+        1 ne tipo
         2 ne tipo
         3 ne tipo
         4 ne tipo # interface de baixo
@@ -820,5 +935,132 @@ function Turbina(ne=5, tipo=2)
     subregioes = define_SubRegioes(SEGMENTOS, MALHA)
 
 
-    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E=[E, E], nu=[ni, ni]), subregioes
+    return elastico,
+    PONTOS,
+    SEGMENTOS,
+    MALHA,
+    CCSeg,
+    (E = [E, E], nu = [ni, ni]),
+    subregioes
+end
+
+
+
+function cilindro(ne = 1, tipo = 2) #CILINDRO
+
+    a = 50e-3
+    b = 100e-3
+
+    PONTOS = [
+        1 a 0
+        2 b 0
+        3 0 b
+        4 0 a
+    ]
+
+    SEGMENTOS = [
+        1 1 2 0
+        2 2 3 b
+        3 3 4 0
+        4 4 1 -a
+    ]
+
+    MALHA = [
+        1 ne tipo
+        2 ne tipo
+        3 ne tipo
+        4 ne tipo
+    ]
+    p = -100
+    # Condições de contorno nos segmentos
+    # CCSeg = [N° do segmento, tipo da CDCx, valor da CDCx, tipo da CDCy, valor da CDCy]
+    # tipo da CDC = 0 => deslocamento é conhecido
+    # tipo da CDC = 1 => força é conhecida
+    CCSeg = [
+        1 1 0 0 0
+        2 1 0 1 0
+        3 0 0 1 0
+        4 1 p 1 p
+    ] # 4 2 -100 0 0
+
+    E = 200
+    v = 0.32
+
+    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E = E, nu = v)
+end
+
+function corrigeCDC_cilindro(dad::elastico, nelem, tipo)
+
+    # dad elastico_aniso_cilindro
+    p = -100
+    raio = 50e-3 # raio = SEGMENTOS[4,2]
+    # num_lin = length(SEGMENTOS[:,1])
+    for i = 3*nelem+1:length(dad.ELEM)
+        indices = dad.ELEM[i].indices
+        # cols    = [2*indices.-1 2*indices]'[:]
+        # @infiltrate
+        dad.ELEM[i].valorCDC = ((dad.NOS[indices, :])' .* p) ./ raio
+    end
+end
+function placa_furo(ne = 15, tipo = 2, L = 500)
+    R = 50
+    # L = 500
+    P = 1
+    PONTOS = [
+        1 R 0
+        2 L 0
+        3 L L
+        4 0 L
+        5 0 R
+    ]
+    # Segmentos que definem a geometria
+    # SEGMENTOS = [N° do segmento, N° do ponto inicial, N° do ponto final
+    #                                                  Raio, tipo do elemento]
+    # Raio do segmento: > 0 -> O centro é a esquerda do segmento (do ponto
+    #                          inicial para o ponto final)
+    #                   < 0 -> O centro é a direita do segmento (do ponto
+    #                          inicial para o ponto final)
+    #                   = 0 -> O segmento é uma linha reta
+    SEGMENTOS = [
+        1 1 2 0
+        2 2 3 0
+        3 3 4 0
+        4 4 5 0
+        5 5 1 -R
+    ]
+    # Matriz para definição da malha
+    # MALHA = [número do segmento, número de elementos no segmento]
+    MALHA = [
+        1 ne tipo
+        2 ne tipo
+        3 ne tipo
+        4 ne tipo
+        5 ne tipo
+    ]
+    # Condições de contorno nos segmentos
+    # CCSeg = [N° do segmento, tipo da CDCx, valor da CDCx, tipo da CDCy, valor da CDCy]
+    # tipo da CDC = 0 => deslocamento é conhecido
+    # tipo da CDC = 1 => força é conhecida
+    # CCSeg = [1 1 0 1 0
+    #     2 1 1 1 0
+    #     3 1 0 0 0
+    #     4 0 0 1 0]
+    CCSeg = [
+        1 1 0 0 0
+        2 1 P 1 0
+        3 1 0 1 0
+        4 0 0 1 0
+        5 1 0 1 0
+    ]
+
+    # Condutividade Térmica do material
+    E = 100
+    v = 0.25
+    v_plano = v / (1 + v)
+    E_plano = E * (1 - v_plano^2 / (1 + v_plano)^2)
+
+    E = E * (1 + 2 * v) / (1 + v)^2
+    v = v / (1 + v)
+    # Malha de pontos internos
+    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E = E_plano, nu = v_plano)
 end

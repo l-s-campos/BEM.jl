@@ -1,6 +1,6 @@
 
 function calc_ncont(SEGMENTOS)
-    # conta o número de contornos e o número de segmentos em cada contorno e 
+    # conta o número de contornos e o número de segmentos em cada contorno e
     #     cada linha inicia com o primeiro segmento daquele contorno
     num_seg = size(SEGMENTOS, 1)
     t = 1
@@ -33,8 +33,8 @@ function calc_ncont(SEGMENTOS)
     return contorno
 end
 
-# function format_dad_iga(PONTOS,SEGMENTOS) 
-function format_dad_iga(entrada, NPX=2, NPY=2)
+# function format_dad_iga(PONTOS,SEGMENTOS)
+function format_dad_iga(entrada, NPX = 2, NPY = 2)
     prob, PONTOS, SEGMENTOS, MALHA, CCSeg, k = entrada
 
     #   println("PONTOS = $PONTOS")
@@ -87,7 +87,8 @@ function format_dad_iga(entrada, NPX=2, NPY=2)
     for i = 1:ncrv
         degree = crv[i].order - 1
         if MALHA[i, 3] > degree
-            coefs, knots = bspdegelev(degree, crv[i].coefs, crv[i].knots, MALHA[i, 3] - degree)
+            coefs, knots =
+                bspdegelev(degree, crv[i].coefs, crv[i].knots, MALHA[i, 3] - degree)
             crv[i] = nrbmak(coefs, knots)
         end
     end
@@ -96,14 +97,15 @@ function format_dad_iga(entrada, NPX=2, NPY=2)
 
         h = MALHA[i, 2]
         if h > 0
-            novosnos = range(0, stop=1, length=h + 2)
+            novosnos = range(0, stop = 1, length = h + 2)
             degree = crv[i].order - 1
             coefs, knots = bspkntins(degree, crv[i].coefs, crv[i].knots, novosnos[2:end-1])
             crv[i] = nrbmak(coefs, knots)
         end
     end
     NOS = zeros(Float64, 0, 2)
-    indfonte, indcoluna, indbezier, tipoCDC, valorCDC, E, NOS, collocPts, sing = indices(crv, CCSeg)
+    indfonte, indcoluna, indbezier, tipoCDC, valorCDC, E, NOS, collocPts, sing =
+        indices(crv, CCSeg)
     pts_controle = hcat([crv[i].coefs for i = 1:ncrv]...)
     cont_el = 0
     num_elementos = size(indcoluna, 1)
@@ -131,11 +133,28 @@ function format_dad_iga(entrada, NPX=2, NPY=2)
             R = diagm(we) * Ce * Be / wb
             xf = (pts_controle_e ./ [we'; we']) * R # Calcula as coordenadas xy dos pontos de integração
             # @infiltrate
-            ELEM[cont_el] = bezier(indcoluna[cont_el], Ce, p, [x0 xf], Wb, sing[cont_el], collocPts[sing[cont_el]] * 2 .- 1)
+            ELEM[cont_el] = bezier(
+                indcoluna[cont_el],
+                Ce,
+                p,
+                [x0 xf],
+                Wb,
+                sing[cont_el],
+                collocPts[sing[cont_el]] * 2 .- 1,
+            )
         end
     end
     # @infiltrate
-    prob(NOS, pts_controle, gera_p_in(NPX, NPY, PONTOS, SEGMENTOS), tipoCDC, valorCDC, ELEM, k, E)
+    prob(
+        NOS,
+        pts_controle,
+        gera_p_in(NPX, NPY, PONTOS, SEGMENTOS),
+        tipoCDC,
+        valorCDC,
+        ELEM,
+        k,
+        E,
+    )
 
 
 end
@@ -239,8 +258,8 @@ function indices(crv, CCSeg)
         end
     end
 
-    nnos2 = cumsum([0 nnos'], dims=2)
-    nbezier2 = cumsum([0 nbezier'], dims=2)
+    nnos2 = cumsum([0 nnos'], dims = 2)
+    nbezier2 = cumsum([0 nbezier'], dims = 2)
 
 
     indfonte = Array{Int}(undef, z, 2)
@@ -251,8 +270,10 @@ function indices(crv, CCSeg)
     for i = 1:n
         for j = 1:size(crv[i].conn, 1)
             indbezier = [indbezier; i j]
-            indcoluna = [indcoluna
-                [(crv[i].conn[j] .+ nnos2[i])]]
+            indcoluna = [
+                indcoluna
+                [(crv[i].conn[j] .+ nnos2[i])]
+            ]
         end
     end
     k = 1
@@ -284,7 +305,9 @@ function indices(crv, CCSeg)
         for f in c.fontes
             collocCoord[cont, :] = f.coords[1:2]
             collocPts[cont] = f.pts
-            test = (collocPts[cont] .>= crv[ci].range[:, 1]) .& (collocPts[cont] .< crv[ci].range[:, 2])
+            test =
+                (collocPts[cont] .>= crv[ci].range[:, 1]) .&
+                (collocPts[cont] .< crv[ci].range[:, 2])
             # @infiltrate
             sing[cont] = (1:size(crv[ci].conn, 1))[test][1] + nbezier2[ci]
             cont += 1

@@ -36,9 +36,16 @@ function integraelemsing(pf, nf, x, eta, w, elem, dad::placa_fina, eet)
         d2xdqsi = d2N' * x # dx/dξ & dy/dξ
         gb2 = d2xdqsi * dxdqsi' / dgamadqsif^2#gamma/beta^2
         beta_m = 1 / dgamadqsif
-        inte = intgauss1 + (dpast * log(2 / beta_m) * sign(-eet) - past * (gb2 * sign(-eet) + 1 / 2))'
+        inte =
+            intgauss1 +
+            (dpast * log(2 / beta_m) * sign(-eet) - past * (gb2 * sign(-eet) + 1 / 2))'
     else
-        inte = intgauss1 + (dpast * log(1 - eet) - dpast * log(1 + eet) + past * (-1 / (1 - eet) - 1 / (1 + eet)))'
+        inte =
+            intgauss1 +
+            (
+                dpast * log(1 - eet) - dpast * log(1 + eet) +
+                past * (-1 / (1 - eet) - 1 / (1 + eet))
+            )'
     end
     # inte = intgauss1 + (dpast * log(1 - eet) - dpast * log(1 + eet) + past * (-1 / (1 - eet) - 1 / (1 + eet)))'
     intre = reshape(inte, 2, :)
@@ -50,7 +57,7 @@ function integraelemsing(pf, nf, x, eta, w, elem, dad::elastico, eet)
     hs = zeros(Float64, 2 * 2 * size(elem), npg)
     gs = zeros(Float64, 2 * 2 * size(elem), npg)
     Nm = zeros(Float64, 2, 2 * size(elem))
-    ForwardDiff.derivative(g, pi/4)integrando(eet)
+    ForwardDiff.derivative(g, pi / 4)integrando(eet)
     # @infiltrate
     d = (eta .- eet)
     hsd = [hs' gs'] .* d .^ 2
@@ -70,9 +77,16 @@ function integraelemsing(pf, nf, x, eta, w, elem, dad::elastico, eet)
         d2xdqsi = d2N' * x # dx/dξ & dy/dξ
         gb2 = d2xdqsi * dxdqsi' / dgamadqsif^2#gamma/beta^2
         beta_m = 1 / dgamadqsif
-        inte = intgauss1 + (dpast * log(2 / beta_m) * sign(-eet) - past * (gb2 * sign(-eet) + 1 / 2))'
+        inte =
+            intgauss1 +
+            (dpast * log(2 / beta_m) * sign(-eet) - past * (gb2 * sign(-eet) + 1 / 2))'
     else
-        inte = intgauss1 + (dpast * log(1 - eet) - dpast * log(1 + eet) + past * (-1 / (1 - eet) - 1 / (1 + eet)))'
+        inte =
+            intgauss1 +
+            (
+                dpast * log(1 - eet) - dpast * log(1 + eet) +
+                past * (-1 / (1 - eet) - 1 / (1 + eet))
+            )'
     end
     # inte = intgauss1 + (dpast * log(1 - eet) - dpast * log(1 + eet) + past * (-1 / (1 - eet) - 1 / (1 + eet)))'
     intre = reshape(inte, 2, :)

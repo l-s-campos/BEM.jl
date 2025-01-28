@@ -74,9 +74,15 @@ function define_SubRegioes(LINHA, DISCRE)
         n2 = cnnos[interfaces[i][5]]+1:cnnos[interfaces[i][5]+1]
         # @infiltrate
         if interfaces[i][7] == 1
-            equivale = [equivale; [n1 n2 repeat([i interfaces[i][2] interfaces[i][3]], length(n1))]]
+            equivale = [
+                equivale
+                [n1 n2 repeat([i interfaces[i][2] interfaces[i][3]], length(n1))]
+            ]
         else
-            equivale = [equivale; [n1 n2[end:-1:1] repeat([i interfaces[i][2] interfaces[i][3]], length(n1))]]
+            equivale = [
+                equivale
+                [n1 n2[end:-1:1] repeat([i interfaces[i][2] interfaces[i][3]], length(n1))]
+            ]
         end
     end
     elem_reg = ones(celem[end])
@@ -136,7 +142,7 @@ function regiao_NO(dad)
     regs
 end
 
-function define_SubRegioes_contato(DISCRE, CDC, limite=[4, 8])
+function define_SubRegioes_contato(DISCRE, CDC, limite = [4, 8])
     nlim = size(limite, 1)
     nlinhas = size(CDC, 1)
 
@@ -165,7 +171,10 @@ function define_SubRegioes_contato(DISCRE, CDC, limite=[4, 8])
         n1 = cnnos[interfaces[i][4]]+1:cnnos[interfaces[i][4]+1]
         n2 = cnnos[interfaces[i][5]]+1:cnnos[interfaces[i][5]+1]
         # @infiltrate
-        equivale = [equivale; [n1 n2[end:-1:1] repeat([i interfaces[i][2] interfaces[i][3]], length(n1))]]
+        equivale = [
+            equivale
+            [n1 n2[end:-1:1] repeat([i interfaces[i][2] interfaces[i][3]], length(n1))]
+        ]
     end
     elem_reg = ones(celem[end])
     for i = 2:size(celem, 1)
@@ -178,14 +187,16 @@ end
 
 function calc_gap(dad::DadosBEM)
     if temsubregioes(dad)
-        inds = BEM.tipoCDC(dad)[1:2:2*nc(dad)] .== 2 .&& BEM.valorCDC(dad)[2:2:2*nc(dad)] .== 0
-        inds2 = BEM.tipoCDC(dad)[1:2:2*nc(dad)] .== 2 .&& BEM.valorCDC(dad)[2:2:2*nc(dad)] .== 1
+        inds =
+            BEM.tipoCDC(dad)[1:2:2*nc(dad)] .== 2 .&& BEM.valorCDC(dad)[2:2:2*nc(dad)] .== 0
+        inds2 =
+            BEM.tipoCDC(dad)[1:2:2*nc(dad)] .== 2 .&& BEM.valorCDC(dad)[2:2:2*nc(dad)] .== 1
 
         nncont = sum(inds)
-        # h(número do nó,número do nó2, gap do contato,normal_média) 
+        # h(número do nó,número do nó2, gap do contato,normal_média)
 
         h = (zeros(Int, nncont), zeros(Int, nncont), zeros(nncont), zeros(nncont, 2))  # Distância entre os nós que podem entrar em contato até o corpo rígido (obstáculo).
-        for i in 1:nncont
+        for i = 1:nncont
             ino = (1:nc(dad))[inds][i]
             ino2 = (1:nc(dad))[inds2][nncont+1-i]
             x1 = dad.NOS[ino, :]
@@ -205,10 +216,10 @@ function calc_gap(dad::DadosBEM)
     else
         inds = tipoCDC(dad)[1:2:2*nc(dad)] .== 2
         nncont = sum(inds)
-        # h(número do nó, gap do contato) 
+        # h(número do nó, gap do contato)
         h = (zeros(Int, nncont), zeros(nncont))  # Distância entre os nós que podem entrar em contato até o corpo rígido (obstáculo).
 
-        for i in 1:nncont
+        for i = 1:nncont
             ino = (1:nc(dad))[inds][i]
             y = dad.NOS[ino, 2]
             h[1][i] = ino
@@ -217,4 +228,3 @@ function calc_gap(dad::DadosBEM)
     end
     return h
 end
-

@@ -34,12 +34,14 @@ function sinhtrans(u, a, b)
     return x, J
 end
 
-function calc_points_quadsing(par1::Float64, par2::Float64, xx1, ww1, xx2, ww2, b=1e-3)
-    X = [-1 -1
+function calc_points_quadsing(par1::Float64, par2::Float64, xx1, ww1, xx2, ww2, b = 1e-3)
+    X = [
+        -1 -1
         1 -1
         1 1
         -1 1
-        -1 -1]
+        -1 -1
+    ]
 
     npg1 = length(xx1)
     npg2 = length(xx2)
@@ -47,7 +49,7 @@ function calc_points_quadsing(par1::Float64, par2::Float64, xx1, ww1, xx2, ww2, 
     pesos = zeros(npg1 * npg2 * 4, 3)
     cont = 1
 
-    for kk in 1:4
+    for kk = 1:4
         r1 = [X[kk, 1] - par1, X[kk, 2] - par2]
         r2 = [X[kk+1, 1] - par1, X[kk+1, 2] - par2]
         nr1 = norm(r1)
@@ -55,8 +57,8 @@ function calc_points_quadsing(par1::Float64, par2::Float64, xx1, ww1, xx2, ww2, 
         ang = acos((nr1^2 + nr2^2 - 4) / (2 * nr1 * nr2))
         ang1 = asin(nr2 * sin(ang) / 2)
 
-        for i in 1:npg1
-            for j in 1:npg2
+        for i = 1:npg1
+            for j = 1:npg2
                 t = (xx2[j] + 1) / 2 * ang  # theta
                 d = sin(t) * nr1 / sin(π - t - ang1)
                 px = X[kk, 1] - (X[kk, 1] - X[kk+1, 1]) * d / 2
@@ -70,7 +72,7 @@ function calc_points_quadsing(par1::Float64, par2::Float64, xx1, ww1, xx2, ww2, 
                 pesos[cont, 1] = ri[1] * (nx + 1) / 2 + par1
                 pesos[cont, 2] = ri[2] * (nx + 1) / 2 + par2
 
-                # pesos[cont, 1] = ri[1] * (xx1[i] + 1) / 2 + par1 
+                # pesos[cont, 1] = ri[1] * (xx1[i] + 1) / 2 + par1
                 # pesos[cont, 2] = ri[2] * (xx1[i] + 1) / 2 + par2
 
                 # Je = ang / 2 * nri / 2 * nri * (xx1[i] + 1) / 2 * Jt

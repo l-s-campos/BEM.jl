@@ -142,9 +142,9 @@ function LinearAlgebra.mul!(
     r = rank(Rk)
     tmp = Rk.Bt * F
     rmul!(C, b)
-    for k in 1:r
+    for k = 1:r
         tmp[k] *= a
-        for i in 1:m
+        for i = 1:m
             C[i] += Rk.A[i, k] * tmp[k]
         end
     end

@@ -38,7 +38,7 @@ function Monta_M_RIMd(dad::potencial, npg)
 end
 
 
-function Finterp(dad, Tree1, Tree2, block; ninterp=3, compressão=true, ϵ=1e-3)
+function Finterp(dad, Tree1, Tree2, block; ninterp = 3, compressão = true, ϵ = 1e-3)
     # arg = [NOS1,NOS_GEO1,tipoCDC,valorCDC,normal,ELEM1,k]
     #         1      2        3      4        5     6   7
     n = size(block, 1)               # Quantidade de Submatrizes
@@ -65,7 +65,7 @@ function Finterp(dad, Tree1, Tree2, block; ninterp=3, compressão=true, ϵ=1e-3)
     return Faca, Daca
 end
 
-function FeD(dad, b1=0, b2=0)
+function FeD(dad, b1 = 0, b2 = 0)
     nodes = [dad.NOS; dad.pontos_internos]
     if b1 == 0
         n_pontos = size(nodes, 1)
@@ -96,12 +96,12 @@ end
 
 
 
-function FeDinterp(dad::potencial, b1, b2, npg=8, ninterp=3)
+function FeDinterp(dad::potencial, b1, b2, npg = 8, ninterp = 3)
     nodes = [dad.NOS; dad.pontos_internos][b1, :]
 
     nodes2 = [dad.NOS; dad.pontos_internos][b2, :]
-    xmax = maximum(nodes, dims=1)
-    xmin = minimum(nodes, dims=1)
+    xmax = maximum(nodes, dims = 1)
+    xmin = minimum(nodes, dims = 1)
 
     xs = criapontosinterp(ninterp)
     fontes, L, ninterp1, ninterp2 = gera_interpolação(ninterp, nodes, xmax, xmin, xs)
@@ -139,7 +139,7 @@ end
 
 
 
-function Monta_M_RIM(dad::placa_fina, npg1=10, npg2=10)
+function Monta_M_RIM(dad::placa_fina, npg1 = 10, npg2 = 10)
     n_nos = size(dad.NOS, 1)
     nelem = size(dad.ELEM, 1)
     n_noi = size(dad.pontos_internos, 1) #Number of internal nodes
@@ -180,10 +180,10 @@ function Monta_M_RIM(dad::placa_fina, npg1=10, npg2=10)
             caso = "canto"
         end
         pr = nodes[i, :]
-        for x = [:R0, :S0, :dRdx0, :dRdy0, :dSdx0, :dSdy0]
+        for x in [:R0, :S0, :dRdx0, :dRdy0, :dSdx0, :dSdy0]
             @eval $x = zeros(2)
         end
-        pre = [zeros(2) for idx in 1:6]
+        pre = [zeros(2) for idx = 1:6]
         for j = 1:n_pontos #Laço dos pontos fontes
             pr = nodes[j, :]
             for el = 1:nelem
@@ -287,9 +287,11 @@ function compute_domainterms(r, theta, nf, dad::Union{placa_fina}, pre)
 
     H = (dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1] - dad.k.e[2])^2
 
-    C1 = ((dad.k.d[1] - dad.k.d[2])^2 - (dad.k.e[1]^2 - dad.k.e[1]^2)) / (G * H * dad.k.e[1])
+    C1 =
+        ((dad.k.d[1] - dad.k.d[2])^2 - (dad.k.e[1]^2 - dad.k.e[1]^2)) / (G * H * dad.k.e[1])
 
-    C2 = ((dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1]^2 - dad.k.e[1]^2)) / (G * H * dad.k.e[2])
+    C2 =
+        ((dad.k.d[1] - dad.k.d[2])^2 + (dad.k.e[1]^2 - dad.k.e[1]^2)) / (G * H * dad.k.e[2])
 
     C3 = 4 * (dad.k.d[1] - dad.k.d[2]) / (G * H)
 
@@ -297,17 +299,116 @@ function compute_domainterms(r, theta, nf, dad::Union{placa_fina}, pre)
 
 
     for i = 1:2
-        R[i] = r^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 - dad.k.e[i]^2 * sin(theta)^2) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 3) - 4 * r^2 * dad.k.e[i] * sin(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        R[i] =
+            r^2 *
+            ((cos(theta) + dad.k.d[i] * sin(theta))^2 - dad.k.e[i]^2 * sin(theta)^2) *
+            (
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) - 3
+            ) -
+            4 *
+            r^2 *
+            dad.k.e[i] *
+            sin(theta) *
+            (cos(theta) + dad.k.d[i] * sin(theta)) *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        S[i] = r^2 * dad.k.e[i] * sin(theta) * (cos(theta) + dad.k.d[i] * sin(theta)) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 3) + r^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 - dad.k.e[i]^2 * sin(theta)^2) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        S[i] =
+            r^2 *
+            dad.k.e[i] *
+            sin(theta) *
+            (cos(theta) + dad.k.d[i] * sin(theta)) *
+            (
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) - 3
+            ) +
+            r^2 *
+            ((cos(theta) + dad.k.d[i] * sin(theta))^2 - dad.k.e[i]^2 * sin(theta)^2) *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        dRdx[i] = 2 * r * (cos(theta) + dad.k.d[i] * sin(theta)) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 2) - 4 * r * dad.k.e[i] * sin(theta) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        dRdx[i] =
+            2 *
+            r *
+            (cos(theta) + dad.k.d[i] * sin(theta)) *
+            (
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) - 2
+            ) -
+            4 *
+            r *
+            dad.k.e[i] *
+            sin(theta) *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        dRdy[i] = 2 * r * (dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) - dad.k.e[i]^2 * sin(theta)) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 2) - 4 * r * dad.k.e[i] * (cos(theta) + 2 * dad.k.d[i] * sin(theta)) * atan((dad.k.e[i] * sin(theta)), (cos(theta) + dad.k.d[i] * sin(theta)))
+        dRdy[i] =
+            2 *
+            r *
+            (
+                dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) -
+                dad.k.e[i]^2 * sin(theta)
+            ) *
+            (
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) - 2
+            ) -
+            4 *
+            r *
+            dad.k.e[i] *
+            (cos(theta) + 2 * dad.k.d[i] * sin(theta)) *
+            atan((dad.k.e[i] * sin(theta)), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        dSdx[i] = r * dad.k.e[i] * sin(theta) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 2) + 2 * r * (cos(theta) + dad.k.d[i] * sin(theta)) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        dSdx[i] =
+            r *
+            dad.k.e[i] *
+            sin(theta) *
+            (
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) - 2
+            ) +
+            2 *
+            r *
+            (cos(theta) + dad.k.d[i] * sin(theta)) *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
 
-        dSdy[i] = r * dad.k.e[i] * (cos(theta) + 2 * dad.k.d[i] * sin(theta)) * (log(r^2 / a^2 * ((cos(theta) + dad.k.d[i] * sin(theta))^2 + dad.k.e[i]^2 * sin(theta)^2)) - 2) + 2 * r * (dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) - dad.k.e[i]^2 * sin(theta)) * atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
+        dSdy[i] =
+            r *
+            dad.k.e[i] *
+            (cos(theta) + 2 * dad.k.d[i] * sin(theta)) *
+            (
+                log(
+                    r^2 / a^2 * (
+                        (cos(theta) + dad.k.d[i] * sin(theta))^2 +
+                        dad.k.e[i]^2 * sin(theta)^2
+                    ),
+                ) - 2
+            ) +
+            2 *
+            r *
+            (
+                dad.k.d[i] * (cos(theta) + dad.k.d[i] * sin(theta)) -
+                dad.k.e[i]^2 * sin(theta)
+            ) *
+            atan(dad.k.e[i] * sin(theta), (cos(theta) + dad.k.d[i] * sin(theta)))
     end
 
 
