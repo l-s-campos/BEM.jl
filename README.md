@@ -1,34 +1,24 @@
 # BEM
 
 [![Stable Documentation](https://img.shields.io/badge/docs-stable-blue.svg)](https://l-s-campos.github.io/BEM.jl/stable)
-[![In development documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://l-s-campos.github.io/BEM.jl/dev)
-[![Build Status](https://github.com/l-s-campos/BEM.jl/workflows/Test/badge.svg)](https://github.com/l-s-campos/BEM.jl/actions)
-[![Test workflow status](https://github.com/l-s-campos/BEM.jl/actions/workflows/Test.yml/badge.svg?branch=main)](https://github.com/l-s-campos/BEM.jl/actions/workflows/Test.yml?query=branch%3Amain)
-[![Lint workflow Status](https://github.com/l-s-campos/BEM.jl/actions/workflows/Lint.yml/badge.svg?branch=main)](https://github.com/l-s-campos/BEM.jl/actions/workflows/Lint.yml?query=branch%3Amain)
-[![Docs workflow Status](https://github.com/l-s-campos/BEM.jl/actions/workflows/Docs.yml/badge.svg?branch=main)](https://github.com/l-s-campos/BEM.jl/actions/workflows/Docs.yml?query=branch%3Amain)
-[![Coverage](https://codecov.io/gh/l-s-campos/BEM.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/l-s-campos/BEM.jl)
-[![DOI](https://zenodo.org/badge/DOI/FIXME)](https://doi.org/FIXME)
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
-[![All Contributors](https://img.shields.io/github/all-contributors/l-s-campos/BEM.jl?labelColor=5e1ec7&color=c0ffee&style=flat-square)](#contributors)
-[![BestieTemplate](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/JuliaBesties/BestieTemplate.jl/main/docs/src/assets/badge.json)](https://github.com/JuliaBesties/BestieTemplate.jl)
 
-## How to Cite
+This code base is using the Julia Language and [DrWatson](https://juliadynamics.github.io/DrWatson.jl/stable/)
+to make a reproducible scientific project named
+> BEM
 
-If you use BEM.jl in your work, please cite using the reference given in [CITATION.cff](https://github.com/l-s-campos/BEM.jl/blob/main/CITATION.cff).
+To (locally) reproduce this project, do the following:
 
-## Contributing
+1. Download this code base. Notice that raw data are typically not included in the
+   git-history and may need to be downloaded independently.
+2. Open a Julia console and do:
 
-If you want to make contributions of any kind, please first that a look into our [contributing guide directly on GitHub](docs/src/90-contributing.md) or the [contributing page on the website](https://l-s-campos.github.io/BEM.jl/dev/90-contributing/)
+   ```Julia
+   using Pkg
 
----
+   Pkg.activate(pwd())
 
-### Contributors
+   Pkg.instantiate()
 
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-
-<!-- markdownlint-restore -->
-<!-- prettier-ignore-end -->
-
-<!-- ALL-CONTRIBUTORS-LIST:END -->
+This will install all necessary packages for you to be able to run the scripts and
+everything should work out of the box.
+Then run a script from the scripts folder to run the simulation
