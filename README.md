@@ -1,7 +1,7 @@
 # BEM
 
 [![Stable Documentation](https://img.shields.io/badge/docs-stable-blue.svg)](https://l-s-campos.github.io/BEM.jl/stable)
-[![In development documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://l-s-campos.github.io/BEM.jl/dev)
+<!-- [![In development documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://l-s-campos.github.io/BEM.jl/dev) -->
 [![Build Status](https://github.com/l-s-campos/BEM.jl/workflows/Test/badge.svg)](https://github.com/l-s-campos/BEM.jl/actions)
 [![Test workflow status](https://github.com/l-s-campos/BEM.jl/actions/workflows/Test.yml/badge.svg?branch=main)](https://github.com/l-s-campos/BEM.jl/actions/workflows/Test.yml?query=branch%3Amain)
 [![Lint workflow Status](https://github.com/l-s-campos/BEM.jl/actions/workflows/Lint.yml/badge.svg?branch=main)](https://github.com/l-s-campos/BEM.jl/actions/workflows/Lint.yml?query=branch%3Amain)
@@ -16,9 +16,9 @@
 
 If you use BEM.jl in your work, please cite using the reference given in [CITATION.cff](https://github.com/l-s-campos/BEM.jl/blob/main/CITATION.cff).
 
-## Contributing
+<!-- ## Contributing
 
-If you want to make contributions of any kind, please first that a look into our [contributing guide directly on GitHub](docs/src/90-contributing.md) or the [contributing page on the website](https://l-s-campos.github.io/BEM.jl/dev/90-contributing/)
+If you want to make contributions of any kind, please first that a look into our [contributing guide directly on GitHub](docs/src/90-contributing.md) or the [contributing page on the website](https://l-s-campos.github.io/BEM.jl/dev/90-contributing/) -->
 
 ---
 
