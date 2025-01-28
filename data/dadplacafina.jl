@@ -1546,7 +1546,7 @@ function placa_com_furo(ne = 15, tipo = 2, bc = "SSSS")
     ]
 end
 
-function placa_furo(ne = 15, tipo = 2, bc = "SSSS")
+function placa_fina_furo(ne = 15, tipo = 2, bc = "SSSS")
     d = 0.1
     a = 1
     POINTS = [
