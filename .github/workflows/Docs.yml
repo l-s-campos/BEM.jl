@@ -3,20 +3,9 @@ name: Docs
 on:
   push:
     branches:
-      - master
-    paths:
-      - "docs/**"
-      - "src/**"
-      - "*.toml"
-    tags: ["*"]
+      - master # update to match your development branch (master, main, dev, trunk, ...)
+    tags: '*'
   pull_request:
-    branches:
-      - master
-    paths:
-      - "docs/**"
-      - "src/**"
-      - "*.toml"
-    types: [opened, synchronize, reopened]
 
 concurrency:
   # Skip intermediate builds: always.
