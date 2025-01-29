@@ -2,7 +2,7 @@ module BEM
 using DrWatson
 using LinearAlgebra, Statistics, FastGaussQuadrature, SparseArrays, StaticArrays
 using TimerOutputs#, FFTW,ForwardDiff, Optim,Printf
-using GLMakie, DelaunayTriangulation#, WriteVTK,Distances
+using CairoMakie, DelaunayTriangulation#, WriteVTK,Distances
 export lines, lines!, scatter, scatter!, tricontourf
 using Infiltrator, ParallelKMeans, LowRankApprox
 using PolynomialRoots, SpecialFunctions

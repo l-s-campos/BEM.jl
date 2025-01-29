@@ -1,10 +1,6 @@
 using BEM
 using Revise, Infiltrator
 using TimerOutputs
-# using Plots
-# gaston()
-# using GLMakie
-# Makie.inline!(false)
 using FileIO, LinearAlgebra, Statistics
 using Krylov, SparseArrays, NonlinearSolve
 
