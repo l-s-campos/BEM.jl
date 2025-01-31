@@ -28,6 +28,7 @@ O Método dos Elementos de Contorno (BEM), como qualquer outro método numérico
 4. Resultados precisos no caso de concentrações de tensões devido a fissuras ou cargas concentradas.
 
 Por outro lado, as desvantagens do método dos elementos de contorno são as seguintes:
+
 1. As matrizes do sistema são não simétricas e totalmente preenchidas.
 2. As soluções fundamentais nem sempre são fáceis de obter.
 3. A dificuldade em tratar estruturas delgadas.
@@ -41,10 +42,9 @@ Desafios que precisam ser enfrentados para que o método tenha uma maior adesão
 4. Programas de uso geral e pequenos programas disponíveis para engenheiros.
 5. Acoplamento entre elementos de contorno e elementos finitos.
 
-
 ## Por que JULIA?
 
-A escolha da linguagem JULIA é justificada por várias razões. JULIA é uma linguagem de programação de alto desempenho, projetada especificamente para computação científica e análise numérica. Suas bibliotecas e funcionalidades são otimizadas para realizar cálculos complexos de forma eficiente, o que é crucial para a implementação de métodos como o Método dos Elementos de Contorno (BEM). Além disso, JULIA possui uma sintaxe simples e intuitiva, o que facilita a escrita e a leitura de códigos, tornando o processo de desenvolvimento mais ágil. 
+A escolha da linguagem JULIA é justificada por várias razões. JULIA é uma linguagem de programação de alto desempenho, projetada especificamente para computação científica e análise numérica. Suas bibliotecas e funcionalidades são otimizadas para realizar cálculos complexos de forma eficiente, o que é crucial para a implementação de métodos como o Método dos Elementos de Contorno (BEM). Além disso, JULIA possui uma sintaxe simples e intuitiva, o que facilita a escrita e a leitura de códigos, tornando o processo de desenvolvimento mais ágil.
 
 **Desempenho:** JULIA é projetada para ter um desempenho superior em cálculos numéricos e científicos, superando Python em termos de velocidade. Isso se deve à sua capacidade de compilar código em tempo de execução, o que resulta em execução mais rápida. Python, por outro lado, pode ser mais lento devido à sua natureza interpretada, embora existam bibliotecas como Cython que ajudam a melhorar o desempenho.
 
@@ -80,7 +80,6 @@ ela pode ser rescrita de maneira simplificada como:
 ```
 
 onde $'$ representa a derivada. O primeiro termo do lado direito pode ser rescrito levando em conta o **contorno**. No caso unidimensional isso consiste exatamente nos pontos $x_1$ e $x_2$.
-
 
 ```math
 \begin{aligned}\left[u(x) v(x)\right]_{x=x_{1}}^{x=x_{2}}& =\left[u(x) v(x) n(x)\right]_{ x=x_{2}}+\left[u(x) v(x) n(x)\right]_{ x=x_{1}} \\&\Rightarrow\sum_{x=x_{1},x_{2}}u(x)v(x)n(x)\Rightarrow\int_{\Gamma}u(x)v(x)n(x)d\Gamma \end{aligned}
@@ -175,14 +174,14 @@ xf=1
 l=xf-x0
 A1=[0.5 -.5 0 l/2
 -.5 .5 -l/2 0
-1 0 0 0 
+1 0 0 0
 0 1 0 0]
 b=[0,0,100,0]
 x1=A1\b
 
 A2=[0.5 -.5 0 l/2
 -.5 .5 -l/2 0
-1 0 0 0 
+1 0 0 0
 0 0 1 0]
 b=[0,0,100,0]
 x2=A2\b
@@ -201,7 +200,7 @@ plot(xs,T,legend=false,xlabel="x",ylabel="T",marker=:c)
 
 ## Exercícios
 
-1. Uma outra possível condição de contorno é a convecção:
+* Uma outra possível condição de contorno é a convecção:
 
 ```math
 q=h (T-T_{\infty})
@@ -209,14 +208,13 @@ q=h (T-T_{\infty})
 
 considere o problema onde o lado direito está exposto a $T_{\infty}=20°\text{C}$, no lado esquerdo $T(0)=100°\text{C}$, e $h= 3\text{W/°C}$. Resolva esse problema analicamente e numericamente usando BEM.
 
-2. Quando existe uma fonte de calor distribuída $b$ mais um termo aparece na equação integral:
+* Quando existe uma fonte de calor distribuída $b$ mais um termo aparece na equação integral:
 
 ```math
 -T(x_d)= T(x_f)Q^*(x_f,x_d)-T^*(x_f,x_d)Q(x_f)-T(x_0)Q^*(x_0,x_d)+T^*(x_0,x_d)Q(x_0)+\int_{x_0}^{x_f}T^*(x,x_d)bdx.
 ```
 
 Considere uma carga constante(isso torna a integral restante muito fácil de ser integrada analiticamente) e resolva um problema de uma grande placa de espessura L = 2 cm com condutividade térmica constante k = 1 W/m.K e geração uniforme de calor b = 1000 kW/m3. As faces A e B estão a temperaturas de 100C e 200C, respectivamente. Compare com a solução analítica:
-
 
 ```math
 T=\left[\frac{T_B-T_A}{L}+\frac{b}{2k}(L-x)\right]x+T_A

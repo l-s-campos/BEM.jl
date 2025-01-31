@@ -1,6 +1,6 @@
 # BEM
 
-[![Stable Documentation](https://img.shields.io/badge/docs-stable-blue.svg)](https://l-s-campos.github.io/BEM.jl/stable)
+[![In development documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://l-s-campos.github.io/BEM.jl/dev)
 
 This code base is using the Julia Language and [DrWatson](https://juliadynamics.github.io/DrWatson.jl/stable/)
 to make a reproducible scientific project named

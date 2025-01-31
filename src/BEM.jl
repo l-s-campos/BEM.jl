@@ -15,7 +15,6 @@ include("estruturas.jl")
 include("./Hmat/HMatrices.jl")
 
 include("integra.jl")
-
 include("calc_HeG_elastico.jl")
 export Contato_sem_atrito_NL
 include("calc_HeG_elastico_superposicao.jl")

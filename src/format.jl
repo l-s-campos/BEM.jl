@@ -374,9 +374,9 @@ end
 
 function aplicaCDC(H, G, dad::Union{elastico,elastico_aniso}, nosrestritos = [])
     nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
-    n = size(dad.NOS, 1)
+    n = size(H, 1)
     A = deepcopy(H)
-    b = zeros(2 * n)
+    b = zeros(n)
     if typeof(dad) == elastico_aniso
         scale = dad.k.A3[3, 3]
     else
