@@ -12,7 +12,7 @@ println("1. Formatando os dados");
 dad = format_dad(placa_furo(nelem, tipo), NPX, NPY) # dados
 
 println("2. Montando a matriz A e o vetor b")
-H, G = calc_HeG(dad, npg)  #importante
+H, G = calc_HeG(dad, npg, interno = true)  #importante
 
 
 A, b = BEM.aplicaCDC(H, G, dad) # Calcula a matriz A e o vetor b
@@ -23,6 +23,21 @@ println("4. Separando fluxo e temperatura")
 u, t = separa(dad, x) #importante
 tens_int = calc_tens_int(dad, u, t)
 tens_cont, tens_nt = calc_tens_cont(dad, u, t)
+
+Hx, Gx, Hy, Gy = BEM.calc_dHedG(dad, 8)
+ux = Hx * u'[:] - Gx * t'[:]
+uy = Hy * u'[:] - Gy * t'[:]
+
+
+ut = [u; x[2nc(dad)+1:2:end] x[2nc(dad)+2:2:end]]
+~, Fx, Fy = BEM.montaFs([dad.NOS; dad.pontos_internos], smooth = 1e-8)
+ux2 = [Fx * ut[:, 1] Fx * ut[:, 2]]'[:]
+uy2 = [Fy * ut[:, 1] Fy * ut[:, 2]]'[:]
+
+[ux ux2 uy uy2]
+
+Mx, My = BEM.Monta_deriv_M_RIMd(dad, 8)
+
 
 # S, D = calc_SeD(dad)
 # fatorcontorno = [fill(2, nc(dad)); ones(ni(dad))]

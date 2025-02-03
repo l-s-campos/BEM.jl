@@ -93,6 +93,38 @@ function integraelemsing_num(
     h, g
 end
 
+function integra_deriv_elemsing_num(pf, x, elem, dad::Union{elastico}, xi0, npg = 30)
+    hx = zeros(Float64, 2, 2 * size(elem))
+    gx = zeros(Float64, 2, 2 * size(elem))
+
+    hy = zeros(Float64, 2, 2 * size(elem))
+    gy = zeros(Float64, 2, 2 * size(elem))
+    Nm = zeros(Float64, 2, 2 * size(elem))
+    eta, w = novelquad(3, xi0, npg)
+    # @infiltrate
+
+    for k = 1:size(w, 1)
+
+        # @infiltrate
+        N, dN = calc_fforma(eta[k], elem)
+        pg = N' * x # Ponto de gauss interpolador
+        dxdqsi = dN' * x # dx/dξ & dy/dξ
+        dgamadqsi = norm(dxdqsi) # dΓ/dξ = J(ξ) Jacobiano
+        sx = dxdqsi[1] / dgamadqsi # vetor tangente dx/dΓ
+        sy = dxdqsi[2] / dgamadqsi # vetor tangente dy/dΓ
+        Ux, Tx, Uy, Ty = calc_deriv_solfund(pg', pf, [sy, -sx], dad, elem.regiao)
+        Nm[1, 1:2:end] = N
+        Nm[2, 2:2:end] = N
+
+        hx += Tx * Nm * dgamadqsi * w[k]
+        gx += Ux * Nm * dgamadqsi * w[k]
+        hy += Ty * Nm * dgamadqsi * w[k]
+        gy += Uy * Nm * dgamadqsi * w[k]
+
+    end
+    hx, gx, hy, gy
+end
+
 
 function integradelemsing_num(pf, x, elem, dad::Union{elastico}, xi0, npg = 30)
     d = zeros(Float64, 3, 2 * size(elem))

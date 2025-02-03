@@ -2113,3 +2113,350 @@ function verifica_contato_incremental2(x, h, dad, u, t)
 
     return contato
 end
+
+
+################# Função calc_derivX_solfund ###############################
+function calc_deriv_solfund(pg, pf, n, dad::Union{elastico,elastico_iga}, regiao = 0)
+    # @infiltrate
+    if regiao == 0
+        E, ni = dad.k.E, dad.k.nu
+    else
+        E, ni = dad.k.E[regiao], dad.k.nu[regiao]
+    end
+    r = pg - pf      # Distancia entre ponto de gauss e ponto fonte
+
+    #Calcula as derivadas em x das soluções fundamentais
+
+    mi = E / (2 * (1 + ni))
+
+    # Distance of source and field points
+    r1 = r[1]
+    r2 = r[2]
+    R = norm(r)
+    nx = n[1]
+    ny = n[2]
+
+    # Derivada em x das soluções fundamentais
+
+    C1 = 1 / (8 * pi * (1 - ni) * mi)
+
+    u11x = (C1 * (2 * r1 - (2 * r1^3) / R^2 + r1 * (4 * ni - 3))) / R^2
+    u12x = (C1 * (r2 - (2 * r1^2 * r2) / R^2)) / R^2
+    u21x = (C1 * (r2 - (2 * r1^2 * r2) / R^2)) / R^2
+    u22x = (C1 * (r1 * (4 * ni - 3) - (2 * r1 * r2^2) / R^2)) / R^2
+
+    C2 = -1 / (4 * pi * (1 - ni))
+    C3 = (1 / R) * (r1 * nx + r2 * ny)
+
+    t11x =
+        (
+            C2 * (
+                (2 * nx * r1^2) / R^2 - nx * (2 * ni - 1) +
+                (2 * C3 * (2 * r1 - (4 * r1^3) / R^2 + r1 * (2 * ni - 1))) / R
+            )
+        ) / R^2
+    t12x =
+        (
+            C2 * (
+                ny * (2 * ni - 1) -
+                (2 * ((2 * ni - 1) * (ny * r1^2 - nx * r2 * r1) - nx * r1 * r2)) / R^2 +
+                (2 * C3 * (r2 - (4 * r1^2 * r2) / R^2)) / R
+            )
+        ) / R^2
+    t21x =
+        (
+            C2 * (
+                (2 * ((2 * ni - 1) * (ny * r1^2 - nx * r2 * r1) + nx * r1 * r2)) / R^2 -
+                ny * (2 * ni - 1) + (2 * C3 * (r2 - (4 * r1^2 * r2) / R^2)) / R
+            )
+        ) / R^2
+    t22x =
+        (
+            C2 * (
+                (2 * C3 * (r1 * (2 * ni - 1) - (4 * r1 * r2^2) / R^2)) / R -
+                nx * (2 * ni - 1) + (2 * nx * r2^2) / R^2
+            )
+        ) / R^2
+
+    C1 = 1 / (8 * pi * (1 - ni) * mi)
+
+    u11y = (C1 * (r2 * (4 * ni - 3) - (2 * r1^2 * r2) / R^2)) / R^2
+    u12y = (C1 * (r1 - (2 * r1 * r2^2) / R^2)) / R^2
+    u21y = (C1 * (r1 - (2 * r1 * r2^2) / R^2)) / R^2
+    u22y = (C1 * (2 * r2 - (2 * r2^3) / R^2 + r2 * (4 * ni - 3))) / R^2
+
+    C2 = -1 / (4 * pi * (1 - ni))
+    C3 = (1 / R) * (r1 * nx + r2 * ny)
+
+    t11y =
+        (
+            C2 * (
+                (2 * C3 * (r2 * (2 * ni - 1) - (4 * r1^2 * r2) / R^2)) / R -
+                ny * (2 * ni - 1) + (2 * ny * r1^2) / R^2
+            )
+        ) / R^2
+    t12y =
+        (
+            C2 * (
+                (2 * ((2 * ni - 1) * (nx * r2^2 - ny * r1 * r2) + ny * r1 * r2)) / R^2 -
+                nx * (2 * ni - 1) + (2 * C3 * (r1 - (4 * r1 * r2^2) / R^2)) / R
+            )
+        ) / R^2
+    t21y =
+        (
+            C2 * (
+                nx * (2 * ni - 1) -
+                (2 * ((2 * ni - 1) * (nx * r2^2 - ny * r1 * r2) - ny * r1 * r2)) / R^2 +
+                (2 * C3 * (r1 - (4 * r1 * r2^2) / R^2)) / R
+            )
+        ) / R^2
+    t22y =
+        (
+            C2 * (
+                (2 * ny * r2^2) / R^2 - ny * (2 * ni - 1) +
+                (2 * C3 * (2 * r2 - (4 * r2^3) / R^2 + r2 * (2 * ni - 1))) / R
+            )
+        ) / R^2
+
+    # Assembly of matrices that contain fundamental solutions.
+    uasty = [
+        u11y u12y
+        u21y u22y
+    ]
+
+    tasty = [
+        t11y t12y
+        t21y t22y
+    ]
+
+    # Assembly of matrices that contain fundamental solutions.
+    uastx = [
+        u11x u12x
+        u21x u22x
+    ]
+
+    tastx = [
+        t11x t12x
+        t21x t22x
+    ]
+
+    return uastx, tastx, uasty, tasty
+end
+
+
+function calc_dHedG(dad::Union{elastico,elastico_aniso}, npg = 8)
+    np = nc(dad)    # Quantidade de elementos discretizados no contorno
+    npi = ni(dad)
+    qsi, w = gausslegendre(npg)    # Quadratura de gauss
+    n = npi + np
+    Hx = zeros(2n, 2np)
+    Hy = zeros(2n, 2np)
+    Gx = zeros(2n, 2np)
+    Gy = zeros(2n, 2np)
+    for i = 1:n
+        if i <= np
+            pf = dad.NOS[i, :]   # Coordenada (x,y)  dos pontos fonte
+        else
+            pf = dad.pontos_internos[i-np, :]   # Coordenada (x,y)  dos pontos fonte
+        end
+        for elem_j in dad.ELEM  #Laço dos elementos
+            x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
+            Δelem = x[end, :] - x[1, :]     # Δx e Δy entre o primeiro e ultimo nó geometrico
+            eet =
+                (elem_j.ξs[end] - elem_j.ξs[1]) * dot(Δelem, pf .- x[1, :]) /
+                norm(Δelem)^2 + elem_j.ξs[1]
+            N_geo = calc_fforma(eet, elem_j, false)
+            ps = N_geo' * x
+            b = norm(ps' - pf) / norm(Δelem)
+            eta, Jt = sinhtrans(qsi, eet, b)
+            # eta,Jt=telles(qsi,eet)
+            nosing = elem_j.indices .== i
+            if sum(nosing) == 1
+                no_pf = findfirst(nosing)
+                xi0 = elem_j.ξs[no_pf]
+                hx, gx, hy, gy = integra_deriv_elemsing_num(pf, x, elem_j, dad, xi0, 100)
+                # @infiltrate
+            else
+                hx, gx, hy, gy = integra_deriv_elem(pf, x, eta, w .* Jt, elem_j, dad)
+            end
+            # nosing = elem_j.indices .== i
+            cols = [2elem_j.indices .- 1 2elem_j.indices]'[:]
+            # @infiltrate
+            if i <= np
+                Hx[2i-1:2i, cols] = hx * 2
+                Gx[2i-1:2i, cols] = gx * 2
+                Hy[2i-1:2i, cols] = hy * 2
+                Gy[2i-1:2i, cols] = gy * 2
+            else
+                Hx[2i-1:2i, cols] = hx
+                Gx[2i-1:2i, cols] = gx
+                Hy[2i-1:2i, cols] = hy
+                Gy[2i-1:2i, cols] = gy
+
+            end
+        end
+    end
+
+    # for i = 1:n                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
+    #   H[2i-1:2i,2i-1:2i].=0
+    #   H[2i-1:2i,2i-1:2i]=-[sum(H[2i-1:2i,1:2:end],dims=2) sum(H[2i-1:2i,2:2:end],dims=2)]
+    # end
+    Hx, Gx, Hy, Gy
+end
+
+
+function integra_deriv_elem(pf, x, eta, w, elem, dad::Union{elastico,elastico_aniso})
+    hx = zeros(Float64, 2, 2 * size(elem))
+    gx = zeros(Float64, 2, 2 * size(elem))
+
+    hy = zeros(Float64, 2, 2 * size(elem))
+    gy = zeros(Float64, 2, 2 * size(elem))
+    Nm = zeros(Float64, 2, 2 * size(elem))
+    for k = 1:size(w, 1)
+        N, dN = calc_fforma(eta[k], elem)
+        pg = N' * x    # Ponto de gauss interpolador
+        dxdqsi = dN' * x   # dx/dξ & dy/dξ
+        dgamadqsi = norm(dxdqsi)  # dΓ/dξ = J(ξ) Jacobiano
+        sx = dxdqsi[1] / dgamadqsi # vetor tangente dx/dΓ
+        sy = dxdqsi[2] / dgamadqsi # vetor tangente dy/dΓ
+        Ux, Tx, Uy, Ty = calc_deriv_solfund(pg', pf, [sy, -sx], dad, elem.regiao)
+        Nm[1, 1:2:end] = N
+        Nm[2, 2:2:end] = N
+
+        # @infiltrate
+        hx += Tx * Nm * dgamadqsi * w[k]
+        gx += Ux * Nm * dgamadqsi * w[k]
+        hy += Ty * Nm * dgamadqsi * w[k]
+        gy += Uy * Nm * dgamadqsi * w[k]
+
+    end
+    hx, gx, hy, gy
+end
+
+
+
+function Monta_deriv_M_RIMd(dad::Union{elastico,elastico_aniso}, npg = 10)
+    n_nos = size(dad.NOS, 1)
+    n_noi = size(dad.pontos_internos, 1) #Number of internal nodes
+    # n_canto = size(dad.k.cantos, 1)
+
+    n_pontos = n_nos + n_noi
+    if haskey(dad.k, :cantos)
+        nodes = [dad.NOS; dad.pontos_internos; dad.k.cantos[:, 2:3]]
+    else
+        nodes = [dad.NOS; dad.pontos_internos]
+    end
+
+    F = zeros(n_pontos, n_pontos)
+    Dx = zeros(2n_pontos, 2n_pontos)
+    Dy = zeros(2n_pontos, 2n_pontos)
+
+    M1 = zeros(n_pontos)
+    M2x = zeros(2n_pontos, 2)
+    M2y = zeros(2n_pontos, 2)
+
+    # Cálculo da matriz [F]
+    @showprogress "Montando F e D" for i = 1:n_pontos
+        if i <= n_nos
+            pf = dad.NOS[i, :] # Coordenada (x,y)dos pontos fonte
+            nf = dad.normal[i, :]
+            caso = "contorno"
+        elseif i <= n_nos + n_noi
+            pf = dad.pontos_internos[i-n_nos, :] # Coordenada (x,y)
+            nf = zeros(2)
+            caso = "interno"
+        end
+        for j = 1:n_pontos
+            # @show i, j
+            pr = nodes[j, :]
+            r = pr - pf
+            R = norm(r)
+            # @infiltrate
+            F[i, j] = interpola(R)
+            if i == j
+                continue
+            end
+            Ux, Uy = calc_deriv_solfund(pr, pf, [0, 0], dad)[[1, 3]]
+
+            Dx[2i-1:2i, 2j-1:2j] = Ux
+            Dy[2i-1:2i, 2j-1:2j] = Uy
+        end
+        qsi, w = gausslegendre(npg)
+
+        for elem_j in dad.ELEM  #Laço dos elementos
+            x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
+            # @infiltrate
+            m_el, m_el1x, m_el1y = calc_deriv_md(x, pf, qsi, w, elem_j, dad)
+            M1[i] = M1[i] + m_el
+            M2x[2i-1:2i, :] = M2x[2i-1:2i, :] + m_el1x
+            M2y[2i-1:2i, :] = M2y[2i-1:2i, :] + m_el1y
+        end
+    end
+
+    aux = M1' / F
+    aux = [aux; aux][:]'
+    Ax = aux .* Dx
+    Ay = aux .* Dy
+
+    for i = 1:n_pontos #Laço dos pontos radiais
+        Ax[2i-1:2i, 2i-1:2i] =
+            -[sum(Ax[2i-1:2i, 1:2:end], dims = 2) sum(Ax[2i-1:2i, 2:2:end], dims = 2)] +
+            M2x[2i-1:2i, :]
+        Ay[2i-1:2i, 2i-1:2i] =
+            -[sum(Ay[2i-1:2i, 1:2:end], dims = 2) sum(Ay[2i-1:2i, 2:2:end], dims = 2)] +
+            M2y[2i-1:2i, :]
+    end
+
+    Ax, Ay
+end
+
+
+function calc_deriv_md(x, pf, qsi, w, elem, dad::elastico)
+    npg = length(w)
+    m_el, m_el1x, m_el1y = 0, zeros(2, 2), zeros(2, 2)
+
+    for i = 1:npg
+        N, dN_geo = calc_fforma(qsi[i], elem)
+        pg = N' * x    # Ponto de gauss interpolador
+        r = pg' - pf      # Distancia entre ponto de gauss e ponto fonte
+        dxdqsi = dN_geo' * x   # dx/dξ & dy/dξ
+        dgamadqsi = norm(dxdqsi)  # dΓ/dξ = J(ξ) Jacobiano
+        sx = dxdqsi[1] / dgamadqsi # vetor tangente dx/dΓ
+        sy = dxdqsi[2] / dgamadqsi # vetor tangente dy/dΓ
+
+        nx = sy # Componente x do vetor normal unit�rio
+        ny = -sx # Componente y do vetor normal unit�rio
+        # @infiltrate
+        R = norm(r)
+        m = int_interpolaρdρ(R)
+        m1x, m1y = calcula_deriv_F(pf, pg, qsi, w, dad)
+        # calcula_Fd(pr, pf, pg, [nx,ny], k, qsi2, w2);
+        # @infiltrate
+        m_el += dot([nx, ny], r) / norm(r)^2 * m * dgamadqsi * w[i]
+        m_el1x += dot([nx, ny], r) / norm(r)^2 * m1x * dgamadqsi * w[i]
+        m_el1y += dot([nx, ny], r) / norm(r)^2 * m1y * dgamadqsi * w[i]
+
+    end
+    return m_el, m_el1x, m_el1y
+end
+
+function calcula_deriv_F(pf, pg, qsi, w, dad::elastico) #
+    npg = length(w)
+    R = (pg' - pf)
+    r = norm(R)
+    drodqsi = r / 2 # Jacobiano da transforma��o de vari�vel de r
+    #    para qsi (dr/dqsi)
+    Fx = zeros(2, 2) # Inicializa a integral de F_area
+    Fy = zeros(2, 2) # Inicializa a integral de F_area
+    # theta = atan(R[2], R[1])
+    for i = 1:npg # Percorre os pontos de integra��o
+        ro = r / 2 * (qsi[i] + 1)
+        xc = pf + R / 2 * (qsi[i] + 1) # ro=ro(qsi)
+        Ux, Uy = calc_deriv_solfund(xc, pf, [0, 0], dad)[[1, 3]]
+
+        # @infiltrate
+        Fx = Fx + Ux * ro * drodqsi * w[i]# Integral de F_area
+        Fy = Fy + Uy * ro * drodqsi * w[i]# Integral de F_area
+    end
+    return Fx, Fy
+end
