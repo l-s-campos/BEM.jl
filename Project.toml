@@ -32,4 +32,5 @@ TimerOutputs = "a759f4b9-e2f1-59dc-863e-4aeb61b1ea8f"
 [compat]
 CairoMakie = "0.12.18"
 IterativeSolvers = "0.9"
+Krylov = "0.9"
 julia = "1.10"
