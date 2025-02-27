@@ -200,7 +200,7 @@ function Base.getindex(K::kernelH, i::Int, j::Int)
     if j > nc(K.dad)
         return 0.0
     end
-    Qast, Tast = calsolfund([xj - xi, yj - yi], k.dad.normal[j, :], K.dad)
+    Qast, Tast = calsolfund([xj - xi, yj - yi], K.dad.normal[j, :], K.dad)
     return Qast * K.integralelem[j]
 end
 function Base.getindex(K::kernelG, i::Int, j::Int)

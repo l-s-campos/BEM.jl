@@ -2429,7 +2429,8 @@ function calc_deriv_md(x, pf, qsi, w, elem, dad::elastico)
         # @infiltrate
         R = norm(r)
         m = int_interpolaρdρ(R)
-        m1x, m1y = calcula_deriv_F(pf, pg, qsi, w, dad)
+        # m1x, m1y = calcula_deriv_F(pf, pg, qsi, w, dad)
+        m1x, m1y = intradial_deriv_solfund(pg', pf, dad)
         # calcula_Fd(pr, pf, pg, [nx,ny], k, qsi2, w2);
         # @infiltrate
         m_el += dot([nx, ny], r) / norm(r)^2 * m * dgamadqsi * w[i]
@@ -2459,4 +2460,53 @@ function calcula_deriv_F(pf, pg, qsi, w, dad::elastico) #
         Fy = Fy + Uy * ro * drodqsi * w[i]# Integral de F_area
     end
     return Fx, Fy
+end
+
+
+
+################# Função calc_derivX_solfund ###############################
+function intradial_deriv_solfund(pg, pf, dad::Union{elastico,elastico_iga}, regiao = 0)
+    # @infiltrate
+    if regiao == 0
+        E, ni = dad.k.E, dad.k.nu
+    else
+        E, ni = dad.k.E[regiao], dad.k.nu[regiao]
+    end
+    r = pg - pf      # Distancia entre ponto de gauss e ponto fonte
+
+    #Calcula as derivadas em x das soluções fundamentais
+
+    mi = E / (2 * (1 + ni))
+
+    # Distance of source and field points
+    r1 = r[1]
+    r2 = r[2]
+    R = norm(r)
+
+    # Derivada em x das soluções fundamentais
+
+    C1 = 1 / (8 * pi * (1 - ni) * mi)
+
+    u11x = (C1 * (2 * r1 - (2 * r1^3) / R^2 + r1 * (4 * ni - 3)))
+    u12x = (C1 * (r2 - (2 * r1^2 * r2) / R^2))
+    u21x = (C1 * (r2 - (2 * r1^2 * r2) / R^2))
+    u22x = (C1 * (r1 * (4 * ni - 3) - (2 * r1 * r2^2) / R^2))
+
+    u11y = (C1 * (r2 * (4 * ni - 3) - (2 * r1^2 * r2) / R^2))
+    u12y = (C1 * (r1 - (2 * r1 * r2^2) / R^2))
+    u21y = (C1 * (r1 - (2 * r1 * r2^2) / R^2))
+    u22y = (C1 * (2 * r2 - (2 * r2^3) / R^2 + r2 * (4 * ni - 3)))
+
+    # Assembly of matrices that contain fundamental solutions.
+    uasty = [
+        u11y u12y
+        u21y u22y
+    ]
+
+    # Assembly of matrices that contain fundamental solutions.
+    uastx = [
+        u11x u12x
+        u21x u22x
+    ]
+    return uastx, uasty
 end

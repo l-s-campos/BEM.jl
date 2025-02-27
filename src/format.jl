@@ -419,7 +419,7 @@ function aplicaCDC(H, G, dad::Union{elastico,elastico_aniso}, nosrestritos = [])
     end
     A, b
 end
-function aplicaCDC(H, G, dad::Union{potencial,helmholtz})
+function aplicaCDC(H::Array, G::Array, dad::Union{potencial,helmholtz})
     # nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
     n = size(H, 1)
     A = deepcopy(H)

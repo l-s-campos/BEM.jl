@@ -3,9 +3,9 @@
 # Pkg.activate(pwd())
 # Pkg.instantiate()
 using DataFrames, CSV
-# using DrWatson
+using DrWatson
 # @quickactivate "BEM"
-# include(scriptsdir("includes.jl"))
+include(scriptsdir("includes.jl"))
 nelem = 20  #Numero de elementos
 order = 2
 NPX = 10 #pontos internos na direção x

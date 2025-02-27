@@ -1,6 +1,6 @@
 # Entrada de dados para análise do problemade helmholtz pelo
 # método dos elementos de contorno
-function helm1d(ne = 15, tipo = 2)
+function helm1d(ne = 15, tipo = 2, FR = 1)
     PONTOS = [1 0 0; 2 1 0; 3 1 1; 4 0 1]
     SEGMENTOS = [1 1 2 0; 2 2 3 0; 3 3 4 0; 4 4 1 0]
     MALHA = [
@@ -25,7 +25,7 @@ function helm1d(ne = 15, tipo = 2)
     GE = 1.E0    # M�dulo el�stico do meio (RGE=1 no caso de ac�stica)
     RO = 1       # Densidade do meio  (RO = 1 no caso de ac�stica)
     CW = sqrt(GE / RO) # Velocidade de propagação de onda
-    FR = 0.1
+    # FR = 0.1
 
     # Malha de pontos internos
     return helmholtz, PONTOS, SEGMENTOS, MALHA, CCSeg, (FR = FR, CW = CW, GE = GE)

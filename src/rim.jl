@@ -1,6 +1,7 @@
 
 
 function interpola(r; tipo = "tps")
+    e = 5
     if tipo == "tps"
         if r == 0
             return 0
@@ -8,12 +9,34 @@ function interpola(r; tipo = "tps")
         return r^2 * log(r)
     elseif tipo == "r"
         return r
-    elseif tipo == "d4"
-        C = 1
-        return (2C - r) / (r + C)^4
+    elseif tipo == "r3"
+        return r^3
+    elseif tipo == "linearIMQ"
+        return (2 - (e * r)^2) / ((e * r)^2 + 1)^4
+    elseif tipo == "quadIMQ"
+        return (3 - 6(e * r)^2 + (e * r)^4) / ((e * r)^2 + 1)^6
+    elseif tipo == "gaussian"
+        return exp(-(e * r)^2)
+    elseif tipo == "IMQ"
+        return 1 / (1 + (e * r)^2)^(1 / 2)
+    elseif tipo == "genIMQ"
+        return 1 / (1 + (e * r)^2)^2
+    elseif tipo == "IQ"
+        return 1 / (1 + (e * r)^2)^1
+    elseif tipo == "Matern"
+        return exp(-e * r)
+    elseif tipo == "linearMatern"
+        return exp(-e * r) * (1 + e * r)
+    elseif tipo == "quadMatern"
+        return exp(-e * r) * (3 + 3 * e * r + e^2 * r^2)
+    elseif tipo == "CubicMatern"
+        return exp(-e * r) * (15 + 15 * e * r + 6 * e^2 * r^2 + e^3 * r^3)
     end
+
 end
 function int_interpolaρdρ(r; tipo = "tps")
+    e = 5
+
     if tipo == "tps"
         if r == 0
             return 0
@@ -21,10 +44,56 @@ function int_interpolaρdρ(r; tipo = "tps")
         return (4 * r^4 * log(r) - r^4) / 16 # int r^3 * log(r)
     elseif tipo == "r"
         return r^3 / 3
-    elseif tipo == "d4"
-        C = 1
-        return r^2 / (r + C)^3
+    elseif tipo == "r3"
+        return r^5 / 5
+    elseif tipo == "linearIMQ"
+        return -(1 - (e * r)^2) / ((e * r)^2 + 1)^3 / (4 * e^2)
+    elseif tipo == "quadIMQ"
+        return -(1 - 4(e * r)^2 + (e * r)^4) / ((e * r)^2 + 1)^5 / (6 * e^2)
+    elseif tipo == "gaussian"
+        return ((-1 // 2) * exp(-(e^2) * (r^2))) / (e^2)
+    elseif tipo == "IMQ"
+        return ((1 // 4) * log(1 + (e^2) * (r^2))) / (e^2)
+    elseif tipo == "genIMQ"
+        return -1 / ((2 // 1) * (e^2) + (2 // 1) * (e^4) * (r^2))
+    elseif tipo == "IQ"
+        return ((1 // 2) * log(1 + (e^2) * (r^2))) / (e^2)
+    elseif tipo == "Matern"
+        return (-exp(-e * r) - e * r * exp(-e * r)) / (e^2)
+    elseif tipo == "linearMatern"
+        return (
+            -(2 // 1) * exp(-e * r) - (2 // 1) * e * r * exp(-e * r) -
+            (e^2) * (r^2) * exp(-e * r)
+        ) / (e^2) + (-exp(-e * r) - e * r * exp(-e * r)) / (e^2)
+    elseif tipo == "quadMatern"
+        return (-(3 // 1) * exp(-e * r) - (3 // 1) * e * r * exp(-e * r)) / (e^2) +
+               (
+                   -(6 // 1) * exp(-e * r) - (6 // 1) * e * r * exp(-e * r) -
+                   (3 // 1) * (e^2) * (r^2) * exp(-e * r) - (e^3) * (r^3) * exp(-e * r)
+               ) / (e^2) +
+               (
+                   -(6 // 1) * exp(-e * r) - (6 // 1) * e * r * exp(-e * r) -
+                   (3 // 1) * (e^2) * (r^2) * exp(-e * r)
+               ) / (e^2)
+    elseif tipo == "CubicMatern"
+        return (-(15 // 1) * exp(-e * r) - (15 // 1) * e * r * exp(-e * r)) / (e^2) +
+               (
+                   -(24 // 1) * exp(-e * r) - (24 // 1) * e * r * exp(-e * r) -
+                   (12 // 1) * (e^2) * (r^2) * exp(-e * r) -
+                   (4 // 1) * (e^3) * (r^3) * exp(-e * r) - (e^4) * (r^4) * exp(-e * r)
+               ) / (e^2) +
+               (
+                   -(30 // 1) * exp(-e * r) - (30 // 1) * e * r * exp(-e * r) -
+                   (15 // 1) * (e^2) * (r^2) * exp(-e * r)
+               ) / (e^2) +
+               (
+                   -(36 // 1) * exp(-e * r) - (36 // 1) * e * r * exp(-e * r) -
+                   (18 // 1) * (e^2) * (r^2) * exp(-e * r) -
+                   (6 // 1) * (e^3) * (r^3) * exp(-e * r)
+               ) / (e^2)
+
     end
+
 end
 function int_interpola(r; tipo = "tps")
     if tipo == "tps"
@@ -34,6 +103,8 @@ function int_interpola(r; tipo = "tps")
         return (1 / 3) * (r^3) * log(r) - (1 / 9) * (r^3)#  integrate(r^2 * log(r))
     elseif tipo == "r"
         return r^2 / 2
+    elseif tipo == "r3"
+        return r^4 / 4
     elseif tipo == "d4"
         C = 1
         return (-C + r) / (2 * (C + r)^3)

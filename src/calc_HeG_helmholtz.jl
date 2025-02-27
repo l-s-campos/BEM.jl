@@ -28,7 +28,7 @@ function calc_HeG(dad::helmholtz, npg = 8)
     G = zeros(Complex, n, n)
     qsi, w = gausslegendre(npg)    # Quadratura de gauss
     # contafonte=1
-    for i = 1:n  #Laço dos pontos fontes
+    @showprogress "Montando H e G" for i = 1:n  #Laço dos pontos fontes
         # for ind_elem = elem_i.indices
         pf = dad.NOS[i, :]   # Coordenada (x,y)  dos pontos fonte
         for elem_j in dad.ELEM#[4:4]  #Laço dos elementos

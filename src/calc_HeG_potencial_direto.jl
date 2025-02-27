@@ -68,7 +68,7 @@ function calc_HeG_Hd(dad::potencial; npg = 3, atol = 1e-4)
     comp = PartialACA(; atol)
 
     KG = BEM.kernelG(dad, intelems)
-    KH = BEM.kernelH(dad, normal_fonte, intelems)
+    KH = BEM.kernelH(dad, intelems)
     HG = assemble_hmat(KG, Xclt, Yclt; adm, comp)
     HH = assemble_hmat(KH, Xclt, Yclt; adm, comp)
     # @infiltrate
@@ -131,7 +131,7 @@ function corrige_diagonais!(
 end
 
 
-function aplicaCDC(HH::HMatrix, HG::HMatrix, dad::DadosBEM)
+function aplicaCDC(HH::HMatrix, HG::HMatrix, dad::Union{helmholtz,potencial})
     tipoCDC = BEM.tipoCDC(dad)
     valorCDC = [BEM.valorCDC(dad); zeros(ni(dad))]
 
