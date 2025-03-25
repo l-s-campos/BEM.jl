@@ -1513,18 +1513,20 @@ function verifica_contato(x, h, dad)
         # verdade, o nó não se encontra em contato
         # @infiltrate
         # @show un, h[2][k], un - h[2][k]
+
         if un < h[2][k] - 1e-10 || tn > 0
             # Se entrou aqui o nó não encontra-se em contato
             contato[k] = 1         # O nó está livre
-        elseif dad.k.μ == 0 || (abs(tt / tn) - 1e-10 < dad.k.μ && ut * tt > 0)
+        elseif abs(tt / tn) + 1e-10 > dad.k.μ || ut * tt < 0
+            # elseif dad.k.μ == 0 || (abs(tt / tn) + 1e-10 > dad.k.μ && ut * tt < 0)
             # Se entrou aqui o nó encontra-se em contato  e escorregamento
             contato[k] = sign(tt) * 2         # O nó está em contato
         else
             contato[k] = 3         # O nó está em contato e adesão
-
+            # @show abs(tt / tn) / dad.k.μ
         end
     end
-
+    # @show contato
     return contato
 end
 """
@@ -1797,13 +1799,11 @@ end
 function newton_passo_de_carga(dad, x0, A2, b2, h, u, t, maxiter, tol, i)
     #Tolerância para o erro para parar do método de Newton
     x = deepcopy(x0)
-    print("\n newton_passo_de_carga\n")
+    # print("\n newton_passo_de_carga\n")
     for i = 1:maxiter
         # Verifica a condição de contato de cada nó
         contato = verifica_contato_incremental(x0, h, dad, u, t, i)
-
-        print("\n Contato = ", contato)
-
+        # print("\n Contato = ", contato)
         # Aplica a condição de contato em cada nó
         aplica_contato_incremental!(h, contato, A2, b2, dad, u, t, i)
         y0 = A2 * x0 - b2
@@ -1817,9 +1817,6 @@ function newton_passo_de_carga(dad, x0, A2, b2, h, u, t, maxiter, tol, i)
     end
     x0
 end
-
-
-
 
 """
 aplica contato com superfície rígida
@@ -1838,7 +1835,7 @@ function aplica_contato_incremental!(h, contato, A, b, dad, u, t, i)
         posty = nlinhas + 2 * k       # Posição da coluna da matriz A2 referente à força de superfície na direção t
 
         if (i == 2)
-            @show posux, posuy, postx, posty
+            # @show posux, posuy, postx, posty
             # @infiltrate
         end
 
@@ -1854,13 +1851,17 @@ function aplica_contato_incremental!(h, contato, A, b, dad, u, t, i)
             A[postx, posuy] = 1#
             A[posty, posux] = 1
             b[postx] = -h[2][k] + u[no_contato, 2] # un = gap
-            b[posty] = u[no_contato, 1]  # un = gap
+        # b[postx] = -h[2][k]  # uy = -gap
+
+        # b[posty] = u[no_contato, 1]  # un = gap
         else #escorregamento
             A[posty, posty] = -dad.k.μ * sign(tipocontato)
             A[posty, postx] = 1
-            A[postx, posuy] = -1
+            A[postx, posuy] = 1
             b[postx] = -h[2][k] + u[no_contato, 2]
             b[posty] = -t[no_contato, 2] * dad.k.μ * sign(tipocontato) - t[no_contato, 1]
+            # b[postx] = h[2][k]
+
 
         end
     end
@@ -1902,7 +1903,8 @@ function verifica_contato_incremental(x, h, dad, u, t, i)
         if un < h[2][k] || tn > 0
             # Se entrou aqui o nó não encontra-se em contato
             contato[k] = 1         # O nó está livre
-        elseif dad.k.μ == 0 || (abs(tt / tn) - 1e-10 < dad.k.μ && ut * tt > 0)
+        elseif dad.k.μ == 0 || abs(tt / tn) + 1e-10 > dad.k.μ || ut * tt < 0
+            # elseif abs(tt / tn) + 1e-10 > dad.k.μ
             # Se entrou aqui o nó encontra-se em contato  e escorregamento
             contato[k] = sign(tt) * 2         # O nó está em contato
         else

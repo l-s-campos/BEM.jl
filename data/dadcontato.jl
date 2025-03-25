@@ -52,7 +52,7 @@ function sapata(ref = 11, tipo = 2)
 
     E = 73.4e3  # Módulo de Elasticidade
     v = 0.33   # Coeficiente de Poisson
-    μ = 0.1  # Coeficiente de atrito
+    μ = 0.3  # Coeficiente de atrito
 
     return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E = E, nu = v, μ = μ)
 end

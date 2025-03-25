@@ -28,16 +28,21 @@ T = zeros(length(A[:, 1]), Int(pontos_t) + 4)
 
 for i in range(4, length(T[1, :]) - 1)
     x = A \ (b + M * (-18 * T[:, i] + 9 * T[:, i-1] - 2 * T[:, i-2]) / (6 * Δt))
-
     T_aux, q = separa(dad, x) #format 479
     Ti = x[nc(dad)+1:end]
-
     T[:, i+1] = [T_aux; Ti]
 end
 
-it = 5
-lines(T[1:nc(dad), 5])
-lines!(ana_difusao_placa.(t[it-3], dad.NOS[:, 2]))
-BEM.current_figure()
+it = BEM.Observable(5)
+
+ys_1 = BEM.@lift(T[1:nc(dad), $it])
+ys_2 = BEM.@lift(ana_difusao_placa.(t[$it-3], dad.NOS[:, 2]))
+
+fig = lines(ys_1)
+scatter!(ys_2)
+
+BEM.record(fig, "teste.mp4", 5:pontos_t) do t
+    it[] = t
+end
 
 
