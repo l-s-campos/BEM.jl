@@ -50,29 +50,42 @@ end
 
 # corpo elástico - corpo rígido
 x0 = 0 * b2
-x = BEM.Contato_NL_newton(dad, x0, A2, b2, h, maxiter = 10)
+x = BEM.Contato_NL_newton(dad, x0, A2, b2, h, maxiter = 100)
+
+contato = BEM.verifica_contato(x, h, dad)
 
 u, t = separa(dad, x, nosrestritos, h)
-npassos = 1
-u, t =
-    BEM.Contato_NL_newton_incremental(dad, x0, A2, b2, h, 10, 1e-8, npassos, nosrestritos)
+begin
+    npassos = 2
+    u, t = BEM.Contato_NL_newton_incremental(
+        dad,
+        x0,
+        A2,
+        b2,
+        h,
+        10,
+        1e-8,
+        npassos,
+        nosrestritos,
+        contato,
+    )
 
-# # corpo elástico - corpo elástico)
-# x0 = A2 \ b2
-# x = BEM.Contato_NL_newton2(dad, x0, A2, b2, h, maxiter=100)
-# u, t = separa(dad, x, nosrestritos, h)
+    # # corpo elástico - corpo elástico)
+    # x0 = A2 \ b2
+    # x = BEM.Contato_NL_newton2(dad, x0, A2, b2, h, maxiter=100)
+    # u, t = separa(dad, x, nosrestritos, h)
 
-# prob = NonlinearProblem(Contato_sem_atrito_NL, x0, (A2, b2, h, dad))
+    # prob = NonlinearProblem(Contato_sem_atrito_NL, x0, (A2, b2, h, dad))
 
-# sol = solve(prob, NewtonRaphson(autodiff=AutoForwardDiff()), abstol=1e-8);
-# sol = solve(prob, NewtonRaphson(), abstol=1e-8);
-# u, t = separa(dad, sol.u, nosrestritos, h)
+    # sol = solve(prob, NewtonRaphson(autodiff=AutoForwardDiff()), abstol=1e-8);
+    # sol = solve(prob, NewtonRaphson(), abstol=1e-8);
+    # u, t = separa(dad, sol.u, nosrestritos, h)
 
-# mostra_deformação(dad, u, escala = 10)
-lines(dad.NOS[h[1], 1], t[h[1], 2] * dad.k.μ)
-scatter!(dad.NOS[h[1], 1], abs.(t[h[1], 1]))
-BEM.current_figure()
-
-lines(dad.NOS[h[1], 1], u[h[1], 1])
-scatter!(dad.NOS[h[1], 1], u[h[1], 2])
-BEM.current_figure()
+    # mostra_deformação(dad, u, escala = 10)
+    lines(dad.NOS[h[1], 1], t[h[1], 2])
+    BEM.scatter!(dad.NOS[h[1], 1], abs.(t[h[1], 1]) / dad.k.μ)
+    BEM.current_figure()
+end
+# lines(dad.NOS[h[1], 1], u[h[1], 1])
+# BEM.scatter!(dad.NOS[h[1], 1], u[h[1], 2])
+# BEM.current_figure()

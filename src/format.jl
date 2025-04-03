@@ -488,8 +488,8 @@ function separa(dad::Union{elastico,elastico_aniso}, x, nosrestritos = [], h = [
     # T = vetor que contêm as temperaturas nos nós
     # q = vetor que contêm o fluxo nos nós
     n = size(dad.NOS, 1)
-    T = zeros(2n)
-    q = zeros(2n)
+    T = zeros(typeof(x[1]), 2n)
+    q = zeros(typeof(x[1]), 2n)
     if typeof(dad) == elastico_aniso
         scale = dad.k.A3[3, 3]
     else
@@ -916,7 +916,7 @@ function aplicaCDC(H, G, dad::placa_espessa_isotropica)
     A, B, bcval
 end
 function tipoCDC(dad::elastico)
-    tipos = fill(1, ni(dad) + 2 * nc(dad))
+    tipos = fill(1, 2 * ni(dad) + 2 * nc(dad))
     for i in dad.ELEM
         tipos[2*i.indices.-1] .= i.tipoCDC[1]
         tipos[2*i.indices] .= i.tipoCDC[2]

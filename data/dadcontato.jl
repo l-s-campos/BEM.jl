@@ -35,7 +35,7 @@ function sapata(ref = 11, tipo = 2)
         4 1*ref tipo
     ]
 
-    cargav = 136.8551 / 2  # Carga vertical
+    cargav = 136.8551  # Carga vertical
 
     # Condições de contorno nos segmentos
     # CCSeg=[Segmento,tipo da CDC em n, valor da CDC em n , tipo da CDC em t, valor da CDC em t]
@@ -53,6 +53,9 @@ function sapata(ref = 11, tipo = 2)
     E = 73.4e3  # Módulo de Elasticidade
     v = 0.33   # Coeficiente de Poisson
     μ = 0.3  # Coeficiente de atrito
+
+    v = v / (1 + v)
+    E = (1 - v^2) * E
 
     return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E = E, nu = v, μ = μ)
 end

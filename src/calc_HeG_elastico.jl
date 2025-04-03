@@ -1772,18 +1772,32 @@ function Contato_NL_newton_incremental(
     tol,
     npassos,
     nosrestritos,
+    contato_certo,
 )
     #Tolerância para o erro para parar do método de Newton
     nnos = size(dad.NOS)[1]
     nelem = size(dad.ELEM)[1]
     u = zeros(nnos, 2)
     t = zeros(nnos, 2)
+    bdiv = b2 / npassos
     for i = 1:npassos
 
         # Resolve a equação não linear usando o método de Newton
 
 
-        x = newton_passo_de_carga(dad, x0, A2, b2, h, u, t, maxiter, tol, i)
+        x = newton_passo_de_carga(
+            dad,
+            x0,
+            A2,
+            bdiv,
+            h,
+            u,
+            t,
+            maxiter,
+            tol,
+            i,
+            contato_certo,
+        )
 
         # Reordena deslocamentos e forças de superfície de acordo com as condições
         # de contorno
@@ -1796,14 +1810,16 @@ function Contato_NL_newton_incremental(
     end
     u, t
 end
-function newton_passo_de_carga(dad, x0, A2, b2, h, u, t, maxiter, tol, i)
+function newton_passo_de_carga(dad, x0, A2, b2, h, u, t, maxiter, tol, ii, contato_certo)
     #Tolerância para o erro para parar do método de Newton
     x = deepcopy(x0)
     # print("\n newton_passo_de_carga\n")
     for i = 1:maxiter
         # Verifica a condição de contato de cada nó
         contato = verifica_contato_incremental(x0, h, dad, u, t, i)
-        # print("\n Contato = ", contato)
+        if ii == 2
+            contato = contato_certo
+        end        # print("\n Contato = ", contato)
         # Aplica a condição de contato em cada nó
         aplica_contato_incremental!(h, contato, A2, b2, dad, u, t, i)
         y0 = A2 * x0 - b2
@@ -1850,7 +1866,7 @@ function aplica_contato_incremental!(h, contato, A, b, dad, u, t, i)
         elseif tipocontato == 3  # Zona em contato e adesão ut=0 un=gap
             A[postx, posuy] = 1#
             A[posty, posux] = 1
-            b[postx] = -h[2][k] + u[no_contato, 2] # un = gap
+            b[postx] = -h[2][k] - u[no_contato, 2] # un = gap
         # b[postx] = -h[2][k]  # uy = -gap
 
         # b[posty] = u[no_contato, 1]  # un = gap
@@ -1858,8 +1874,8 @@ function aplica_contato_incremental!(h, contato, A, b, dad, u, t, i)
             A[posty, posty] = -dad.k.μ * sign(tipocontato)
             A[posty, postx] = 1
             A[postx, posuy] = 1
-            b[postx] = -h[2][k] + u[no_contato, 2]
-            b[posty] = -t[no_contato, 2] * dad.k.μ * sign(tipocontato) - t[no_contato, 1]
+            b[postx] = -h[2][k] - u[no_contato, 2]
+            b[posty] = t[no_contato, 2] * dad.k.μ * sign(tipocontato) - t[no_contato, 1]
             # b[postx] = h[2][k]
 
 
@@ -1888,9 +1904,9 @@ function verifica_contato_incremental(x, h, dad, u, t, i)
         deltaun = -x[posuy]
         deltaut = x[posux]
 
-        tn = t[no_contato, 2] + deltatn
+        tn = -t[no_contato, 2] + deltatn
         tt = t[no_contato, 1] + deltatt
-        un = u[no_contato, 2] + deltaun
+        un = -u[no_contato, 2] + deltaun
         ut = u[no_contato, 1] + deltaut
 
 

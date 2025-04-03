@@ -1621,3 +1621,141 @@ end
 
 
 #________________________
+
+function passo_não_linear(
+    x,
+    dad,
+    H,
+    G,
+    M,
+    dNx,
+    dNy;
+    Re = 1,
+    relaxation = 0.01,
+    erro_vel_min = 1e-6,
+    maxiter = 1000,
+)
+    iter = 0
+    erro_vel = 1
+    nolinear = zeros(typeof(x[1]), 2 * (ni(dad) + nc(dad)))
+
+    interno = nc(dad)+1:nc(dad)+ni(dad)
+    contorno = 1:nc(dad)
+    u = zeros(nc(dad) + ni(dad), 2)
+    u[contorno, :], t = separa(dad, x)
+    u[interno, 1] = x[2*nc(dad)+1:2:end]
+    u[interno, 2] = x[2*nc(dad)+2:2:end]
+
+    A, b = BEM.aplicaCDC(H, Re * G, dad)
+    u_before = deepcopy(u)
+
+    prog = BEM.ProgressThresh(erro_vel_min; desc = "Re: $Re; erro_vel =")
+
+    while erro_vel > erro_vel_min && iter < maxiter
+
+        dudx = dNx * u[:, 1]
+        dudy = dNy * u[:, 1]
+
+        dvdx = dNx * u[:, 2]
+        dvdy = dNy * u[:, 2]
+
+        nolinear[1:2:2*n] = u[:, 1] .* dudx + u[:, 2] .* dudy
+        nolinear[2:2:2*n] = u[:, 1] .* dvdx + u[:, 2] .* dvdy
+
+        x = A \ (b - Re * M * nolinear)
+
+
+        u[contorno, :] = u[contorno, :] * (1 - relaxation) + relaxation * separa(dad, x)[1]
+        t = t * (1 - relaxation) + relaxation * separa(dad, x)[2]
+
+        u[interno, 1] = u[interno, 1] * (1 - relaxation) + relaxation * x[2*nc(dad)+1:2:end]
+        u[interno, 2] = u[interno, 2] * (1 - relaxation) + relaxation * x[2*nc(dad)+2:2:end]
+
+        erro_vel = nrmse(u_before, u)
+
+        BEM.update!(prog, erro_vel)
+
+        # println("Re: $Re; Iteração: $iter; erro_vel = $erro_vel")
+        # @show norm(x)
+        u_before = deepcopy(u)
+        iter = iter + 1
+    end
+    x
+end
+
+
+
+function passo_não_linear2(
+    x,
+    dad,
+    H,
+    G,
+    M,
+    dNx,
+    dNy;
+    Re = 1,
+    relaxation = 1,
+    erro_vel_min = 1e-6,
+    maxiter = 1000,
+)
+    interno = nc(dad)+1:nc(dad)+ni(dad)
+    contorno = 1:nc(dad)
+    u = zeros(typeof(x[1]), nc(dad) + ni(dad), 2)
+    nolinear = zeros(typeof(x[1]), 2 * (ni(dad) + nc(dad)))
+    dnl = zeros(typeof(x[1]), 2 * (ni(dad) + nc(dad)), 2 * (ni(dad) + nc(dad)))
+    dnl2 = zeros(typeof(x[1]), 2 * (ni(dad) + nc(dad)))
+
+    u[contorno, :], t = separa(dad, x)
+    u[interno, 1] = x[2*nc(dad)+1:2:end]
+    u[interno, 2] = x[2*nc(dad)+2:2:end]
+
+    A, b = BEM.aplicaCDC(H, Re * G, dad)
+    u_before = deepcopy(u)
+
+    iter = 0
+    erro_vel = 1
+    prog = BEM.ProgressThresh(erro_vel_min; desc = "Re: $Re; erro_vel =")
+    while erro_vel > erro_vel_min && iter < maxiter
+
+        dudx = dNx * u[:, 1]
+        dudy = dNy * u[:, 1]
+
+        dvdx = dNx * u[:, 2]
+        dvdy = dNy * u[:, 2]
+
+        nolinear[1:2:2*n] = u[:, 1] .* dudx + u[:, 2] .* dudy
+        nolinear[2:2:2*n] = u[:, 1] .* dvdx + u[:, 2] .* dvdy
+        for i = 1:n
+            if BEM.tipoCDC(dad)[i] .== 0
+                continue
+            end
+            dnl[2i-1, 2i-1] = dudx[i]
+            dnl[2i-1, 2i] = dvdx[i]
+            dnl[2i, 2i-1] = dudy[i]
+            dnl[2i, 2i] = dvdy[i]
+        end
+
+        Residuo = A * x - (b - Re * M * nolinear)
+        jacobiano = A - Re * M * dnl
+        x = x - jacobiano \ Residuo
+
+
+        u[contorno, :] = u[contorno, :] * (1 - relaxation) + relaxation * separa(dad, x)[1]
+        t = t * (1 - relaxation) + relaxation * separa(dad, x)[2]
+
+        u[interno, 1] = u[interno, 1] * (1 - relaxation) + relaxation * x[2*nc(dad)+1:2:end]
+        u[interno, 2] = u[interno, 2] * (1 - relaxation) + relaxation * x[2*nc(dad)+2:2:end]
+
+        erro_vel = nrmse(u_before, u)
+
+        BEM.update!(prog, erro_vel)
+
+        # println("Re: $Re; Iteração: $iter; erro_vel = $erro_vel")
+        # @show norm(x)
+        u_before .= u
+        iter = iter + 1
+    end
+    # Residuo = x - A \ (b - Re * M * nolinear)
+    # jacobiano = I - A \ (Re * M * dnl)
+    x
+end
