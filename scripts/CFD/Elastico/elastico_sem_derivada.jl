@@ -7,19 +7,19 @@ include(scriptsdir("includes.jl"))
 
 #Dados de entrada
 
-nelem = 20 #Numero de elementos
-order = 2
+nelem = 50 #Numero de elementos
+order = 3
 nelem_circle = 20
 
-NPX = 30 #pontos internos na direção x
+NPX = 40 #pontos internos na direção x
 NPY = NPX #pontos internos na direção y
-npg = 10    #apenas números pares
+npg = 20    #apenas números pares
 
 L = 1
-Re = 400 # Na verdade é o 1/ν ou 1/μ
+Re = 1 # Na verdade é o 1/ν ou 1/μ
 
-λ = 10^5
 caso = "Cavidade"
+λ = 10^6
 
 
 ## Formatação dos dados ________________________________________________
@@ -195,8 +195,8 @@ begin
     H, G = calc_HeG(dad, npg, interno = true)  #importante
     #Hx, Gx, Hy, Gy = BEM.calc_dHedG(dad, 8)
 
-    #M = BEM.Monta_M_RIMd(dad, npg)
-    Mx, My = BEM.Monta_deriv_M_RIMd(dad, 8)
+    M = BEM.Monta_M_RIMd(dad, npg)
+    Mx, My = BEM.Monta_deriv_M_RIMd(dad, npg)
 
     A, b = BEM.aplicaCDC(H, G, dad)
 end
@@ -264,6 +264,26 @@ dNx, dNy = BEM.montaFs([dad.NOS; dad.pontos_internos], [dad.NOS; dad.pontos_inte
 
 
 # ==============Solução===============#
+u = [dad.NOS; dad.pontos_internos]
+u[:, 2] = -u[:, 2]
+
+c1 =
+    (dad.normal[:, 1] .* u[contorno, 1] + dad.normal[:, 2] .* u[contorno, 2]) .*
+    u[contorno, :]
+c2x = u[:, 1] .* u
+c2y = u[:, 2] .* u
+testeDT = -G * c1'[:] + Mx * c2x'[:] + My * c2y'[:]
+dudx = dNx * u[:, 1]
+dudy = dNy * u[:, 1]
+
+dvdx = dNx * u[:, 2]
+dvdy = dNy * u[:, 2]
+
+nolinear[1:2:2*n] = u[:, 1] .* dudx + u[:, 2] .* dudy
+nolinear[2:2:2*n] = u[:, 1] .* dvdx + u[:, 2] .* dvdy
+testedN = -Re * M * nolinear
+#____________________________________
+[testeDT testedN testeDT - testedN]
 
 begin
 
@@ -272,15 +292,11 @@ begin
         while erro_vel > 10^-10
 
             # Derivadas 
-
             c1 =
                 (dad.normal[:, 1] .* u[contorno, 1] + dad.normal[:, 2] .* u[contorno, 2]) .*
                 u[contorno, :]
             c2x = u[:, 1] .* u
             c2y = u[:, 2] .* u
-
-
-            #____________________________________
 
             # Solution
 
@@ -364,3 +380,4 @@ Plots.scatter!(
     marker = (3, :x, :red),
     label = "Numérico",
 )
+

@@ -1,12 +1,12 @@
 module BEM
 using DrWatson
-using LinearAlgebra, Statistics, FastGaussQuadrature, SparseArrays, StaticArrays
+using LinearAlgebra, Statistics, FastGaussQuadrature, SparseArrays, StaticArrays, Krylov
 using TimerOutputs#, FFTW,ForwardDiff, Optim,Printf
 using CairoMakie, DelaunayTriangulation#, WriteVTK,Distances
 export lines, lines!, scatter, scatter!, tricontourf
 using Infiltrator, ParallelKMeans, LowRankApprox
 using PolynomialRoots, SpecialFunctions
-using LinearSolve, IterativeSolvers, NonlinearSolve
+using Krylov, NonlinearSolve
 using ProgressMeter
 using Distributed
 using AbstractTrees, Printf
@@ -16,6 +16,7 @@ include("./Hmat/HMatrices.jl")
 
 include("integra.jl")
 include("calc_HeG_elastico.jl")
+include("calc_HeG_elastico_direto.jl")
 export Contato_sem_atrito_NL
 include("calc_HeG_elastico_superposicao.jl")
 include("calc_HeG_potencial.jl")
@@ -23,6 +24,7 @@ include("calc_HeG_potencial_direto.jl")
 include("calc_HeG_potencial_tudoemu.jl")
 include("calc_HeG_helmholtz.jl")
 include("casca.jl")
+
 export calc_HeG,
     format_dad,
     separa,
@@ -39,9 +41,13 @@ export calc_HeG,
     calc_gap,
     verifica_contato_sem_atrito,
     muda_nt!,
-    muda_nt
+    muda_nt,
+    transforma_tensao
 include("termoelasticidade.jl")
 export termoelasticidade
+
+include("CFD.jl")
+export passo_não_linear, passo_não_linear_Hmat
 
 include("format.jl")
 include("gera_p_in.jl")

@@ -5,15 +5,28 @@ include(scriptsdir("includes.jl"))
 nelem = 10  #Numero de elementos
 NPX = 2 #pontos internos na direção x
 NPY = 2 #pontos internos na direção y
-npg = 30    #apenas números pares
+npg = 20    #apenas números pares
 tipo = 3
 ## Formatação dos dados ________________________________________________
 println("1. Formatando os dados");
-dad = format_dad(placa_furo(nelem, tipo), NPX, NPY) # dados
+dad = format_dad(viga(nelem, tipo), NPX, NPY) # dados
 
 println("2. Montando a matriz A e o vetor b")
-H, G = calc_HeG(dad, npg, interno = true)  #importante
+H, G = calc_HeG(dad, npg, interno = false)  #importante
+# H, G = calc_HeG(dad, npg, interno = true)  #importante
+Hd, Gd = BEM.calc_HeGd(dad, 3)
 
+# us, ts = BEM.gera_ut(dad)
+# LD = H * us - G * ts
+
+# BEM.corrige_diagonais!(dad, H, G)
+# G
+
+# LDd = Hd * us - Gd * ts
+# [H * us G * ts]
+
+Ad, bd = aplicaCDC(Hd, Gd, dad) # Calcula a matriz A e o vetor b
+xd = Ad \ bd
 
 A, b = BEM.aplicaCDC(H, G, dad) # Calcula a matriz A e o vetor b
 # A, b = aplicaCDC(H, G, dad) # Calcula a matriz A e o vetor b
@@ -21,6 +34,9 @@ println("3. Resolvendo o sistema linear")
 x = A \ b
 println("4. Separando fluxo e temperatura")
 u, t = separa(dad, x) #importante
+ud, t = separa(dad, xd) #importante
+
+
 tens_int = calc_tens_int(dad, u, t)
 tens_cont, tens_nt = calc_tens_cont(dad, u, t)
 

@@ -85,13 +85,14 @@ function format_dad(entrada, NPX = 2, NPY = 2, afasta = 1; canto = false)
     # @infiltrate
     if length(entrada) == 6
         prob, PONTOS, SEGMENTOS, MALHA, CCSeg, k = entrada
-        subregioes = 0
+        subregioes = 1
     elseif length(entrada) == 7
         prob, PONTOS, SEGMENTOS, MALHA, CCSeg, k, subregioes = entrada
         k = (; k..., subregioes)
     else
         println("Erro")
     end
+    # @infiltrate
     CORNERS = [PONTOS zeros(size(PONTOS, 1), 6)]
     num_elementos = sum(MALHA[:, 2])
     if prob == potencial
@@ -204,28 +205,31 @@ function format_dad(entrada, NPX = 2, NPY = 2, afasta = 1; canto = false)
                 ys = yc .+ r1 * sin.(tet1 .+ (i - 1 .+ qsi) * sig * divtet)
             end
             NOS = [NOS; [xs ys]]
-
+            # @show NOS
             cont_el = cont_el + 1
             nos = (cont_el-1)*tipo_elem+1:cont_el*tipo_elem
             # qsis = range(-1 + afasta / tipo_elem, stop=1 - afasta / tipo_elem, length=tipo_elem) # Parametrização de -1 a 1
             # qsis = [-0.77, 0.77] # Parametrização de -1 a 1
-            qsis, ~ = gausslegendre(tipo_elem) # Parametrização de -1 a 1
+            qsis, ~ = gausslegendre(tipo_elem) # Parametrização de ;-1 a 1
             # @infiltrate
-            N1, dN1 = calc_fforma_gen(pontosg[1], qsis)
-            N2, dN2 = calc_fforma_gen(pontosg[2], qsis)
-            tamanho = norm(dN1' * [xs ys]) * pesosg[1] + norm(dN2' * [xs ys]) * pesosg[2]
+            N1, dN1 = calc_fforma_gen(pontosg[1], qsi)
+            N2, dN2 = calc_fforma_gen(pontosg[2], qsi)
+            # @show dN1, [xs ys]
+            # @show N1' * [xs ys]
+            tamanho =
+                (norm(dN1' * [xs ys]) * pesosg[1] + norm(dN2' * [xs ys]) * pesosg[2]) / 2
             # tamanho=norm(N1'*[xs ys]+N2'*[xs ys])
             # @infiltrate
             # @infiltrate
             if prob == potencial || prob == helmholtz
-                if subregioes == 0
+                if subregioes == 1
                     ELEM[cont_el] = elemento(
                         nos,
                         CCSeg[t, 2],
                         fill(CCSeg[t, 3], tipo_elem),
                         qsis,
                         tamanho,
-                        0,
+                        1,
                     )
                 else
                     ELEM[cont_el] = elemento(
@@ -242,14 +246,15 @@ function format_dad(entrada, NPX = 2, NPY = 2, afasta = 1; canto = false)
                    prob == elastico_aniso ||
                    prob == placa_fina ||
                    prob == placa_fina_isotropica
-                if subregioes == 0
+                if subregioes == 1
+                    # @infiltrate
                     ELEM[cont_el] = elementov(
                         nos,
                         CCSeg[t, [2, 4]],
                         repeat(CCSeg[t, [3, 5]], 1, tipo_elem),
                         qsis,
                         tamanho,
-                        0,
+                        1,
                     )
                 else
                     ELEM[cont_el] = elementov(
@@ -262,14 +267,14 @@ function format_dad(entrada, NPX = 2, NPY = 2, afasta = 1; canto = false)
                     )
                 end
             else
-                if subregioes == 0
+                if subregioes == 1
                     ELEM[cont_el] = elementov(
                         nos,
                         CCSeg[t, [2, 4, 6]],
                         repeat(CCSeg[t, [3, 5, 7]], 1, tipo_elem),
                         qsis,
                         tamanho,
-                        0,
+                        1,
                     )
                 else
                     ELEM[cont_el] = elementov(
@@ -311,12 +316,24 @@ function format_dad(entrada, NPX = 2, NPY = 2, afasta = 1; canto = false)
         for i = 1:size(ELEM1, 1)
             if prob == potencial
                 # @infiltrate
-                ELEM[i] =
-                    elemento(ELEMn[i, :], ELEM[i].tipoCDC, ELEM[i].valorCDC, ELEM[i].ξs, 0)
+                ELEM[i] = elemento(
+                    ELEMn[i, :],
+                    ELEM[i].tipoCDC,
+                    ELEM[i].valorCDC,
+                    ELEM[i].ξs,
+                    1,
+                    1,
+                )
             else
                 prob == elastico
-                ELEM[i] =
-                    elementov(ELEMn[i, :], ELEM[i].tipoCDC, ELEM[i].valorCDC, ELEM[i].ξs, 0)
+                ELEM[i] = elementov(
+                    ELEMn[i, :],
+                    ELEM[i].tipoCDC,
+                    ELEM[i].valorCDC,
+                    ELEM[i].ξs,
+                    1,
+                    1,
+                )
             end
         end
         return prob(NOSn, gera_p_in(NPX, NPY, PONTOS, SEGMENTOS), ELEM, k)
@@ -364,8 +381,18 @@ function format_dad(entrada, NPX = 2, NPY = 2, afasta = 1; canto = false)
         dad.normal = normais
         # prob(NOS, gera_p_in(NPX, NPY, PONTOS, SEGMENTOS), ELEM, merge(k,(cantos=CORNERS),))
     else
-        # @infiltrate
-        dad = prob(NOS, gera_p_in(NPX, NPY, PONTOS, SEGMENTOS), ELEM, normais, k)
+        if prob == elastico || prob == elastico_iga
+            dad = prob(
+                NOS = NOS,
+                pontos_internos = gera_p_in(NPX, NPY, PONTOS, SEGMENTOS),
+                ELEM = ELEM,
+                normal = normais,
+                E = [k[1]],
+                ν = [k[2]],
+            )
+        else
+            dad = prob(NOS, gera_p_in(NPX, NPY, PONTOS, SEGMENTOS), ELEM, normais, k)
+        end
         normais = calc_normais(dad)
         dad.normal = normais
     end
@@ -537,6 +564,33 @@ function separa(dad::Union{elastico,elastico_aniso}, x, nosrestritos = [], h = [
 
     end
     [T[1:2:end] T[2:2:end]], [q[1:2:end] q[2:2:end]]
+end
+
+
+
+function separa!(dad::elastico, x, u, t)
+    # ncdc = número de linhas da matriz CDC
+    # T = vetor que contêm as temperaturas nos nós
+    # q = vetor que contêm o fluxo nos nós
+    # @show eltype(t), eltype(x)
+    for elem_i in dad.ELEM, i = 1:2   # Laço dos pontos fontes
+        for ind = 1:length(elem_i.indices)
+            ind_elem = elem_i.indices[ind]
+            if elem_i.tipoCDC[i] == 0
+                u[ind_elem, i] = elem_i.valorCDC[i, ind] # A temperatura é a condição de contorno
+                t[ind_elem, i] = x[2ind_elem.+(i-2)] # O fluxo é o valor calculado
+            elseif elem_i.tipoCDC[i] == 1
+                u[ind_elem, i] = x[2ind_elem.+(i-2)] #
+                t[ind_elem, i] = elem_i.valorCDC[i, 1]
+            end
+        end
+    end
+
+    for i = 1:ni(dad)
+        u[nc(dad)+i, 1] = x[2*nc(dad)+2i-1]
+        u[nc(dad)+i, 2] = x[2*nc(dad)+2i]
+    end
+    nothing
 end
 
 function separa(dad::Union{potencial,helmholtz}, x)
@@ -820,7 +874,9 @@ function calc_normais(dad; tangente = false)
             ξ = elem_j.ξs[i]
             N_geo, dN = calc_fforma(ξ, elem_j)
             dxdqsi = dN' * x
+            # @show dxdqsi, dN, x
             dgamadqsi = norm(dxdqsi) # dΓ/dξ = J(ξ) Jacobiano
+
             sx = dxdqsi[1] / dgamadqsi # vetor tangente dx/dΓ
             sy = dxdqsi[2] / dgamadqsi # vetor tangente dy/dΓ
             normais[elem_j.indices[i], :] = [sy, -sx]

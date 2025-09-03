@@ -11,8 +11,6 @@ function radial(xj, xi)
     # f = r^2 * log(r)
     # dfdx = dx * (log(r) + 1)
     # dfdy = dy * (log(r) + 1)
-
-
     # f = r
     # dfdx = dx
     # dfdy = dy
@@ -21,9 +19,9 @@ function radial(xj, xi)
         dfdyy = 0
         dfdxy = 0
     else
-        dfdxx = 3 * (2dx^2 + dy^2) / r
-        dfdyy = 3 * (dx^2 + 2dy^2) / r
-        dfdxy = 3 * (dx * dy) / r
+        dfdxx = 3 * (r + dx^2 / r)
+        dfdyy = 3 * (r + dy^2 / r)
+        dfdxy = 3 * (dx * dy / r)
     end
     f, dfdx, dfdy, dfdxx, dfdyy, dfdxy
 end
@@ -96,13 +94,13 @@ end
 using LinearAlgebra
 
 
-function montaFs(nos, nosi = nos; smooth = 0.0)
+function montaFs(nos, nosi = nos; smooth = 0.0, aug = true)
     # F, dFdx, dFdy, dFdxx, dFdyy, dFdxy = montaF(nos, nosi)
     # P, dPx, dPy, dPxx, dPyy, dPxy = montaP(nos, nosi)
-    F1, dFdx, dFdy, dFdxx, dFdyy, dFdxy = montaF(nosi, nosi)
-    P1, dPx, dPy, dPxx, dPyy, dPxy = montaP(nosi, nosi)
-    F, dFdx, dFdy, dFdxx, dFdyy, dFdxy = montaF(nos, nosi)
-    P, dPx, dPy, dPxx, dPyy, dPxy = montaP(nos, nosi)
+    F1, dFdx, dFdy, dFdxx, dFdyy, dFdxy = BEM.montaF(nosi, nosi)
+    P1, dPx, dPy, dPxx, dPyy, dPxy = BEM.montaP(nosi, nosi)
+    F, dFdx, dFdy, dFdxx, dFdyy, dFdxy = BEM.montaF(nos, nosi)
+    P, dPx, dPy, dPxx, dPyy, dPxy = BEM.montaP(nos, nosi)
     In = Matrix{}(I, size(F1))
     F1 = F1 + I * smooth
     W = F1 \ P1 / (P1' / F1 * P1)
@@ -114,9 +112,12 @@ function montaFs(nos, nosi = nos; smooth = 0.0)
     # dNxx = aux * dFdxx + W * dPxx'
     # dNyy = aux * dFdyy + W * dPyy'
     # dNxy = aux * dFdxy + W * dPxy'
+    if aug
+        return N', dNx', dNy'
+    else
+        return -F / F1, -dFdx / F1, -dFdy / F1
+    end
 
-    N', dNx', dNy'
-    # dNx', dNy', dNxx', dNyy', dNxy'
 end
 
 # pint = range(0, 1, length=10)

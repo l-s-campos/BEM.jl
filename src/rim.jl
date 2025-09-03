@@ -1,6 +1,6 @@
 
 
-function interpola(r; tipo = "tps")
+function interpola(r; tipo = "r3")
     e = 5
     if tipo == "tps"
         if r == 0
@@ -34,7 +34,7 @@ function interpola(r; tipo = "tps")
     end
 
 end
-function int_interpolaρdρ(r; tipo = "tps")
+function int_interpolaρdρ(r; tipo = "r3")
     e = 5
 
     if tipo == "tps"
@@ -95,7 +95,7 @@ function int_interpolaρdρ(r; tipo = "tps")
     end
 
 end
-function int_interpola(r; tipo = "tps")
+function int_interpola(r; tipo = "r3")
     if tipo == "tps"
         if r == 0
             return 0
@@ -1824,4 +1824,21 @@ function compute_domain_d_terms(r, theta, nf, n, dad::placa_fina_isotropica, pre
     # @infiltrate
     [dwdx dwdy d2wdx2 d2wdxdy; d2wdmdx d2wdmdy d2wdxdy d2wdy2],
     [d2wdx2 d2wdy2 d2wdxdy; d3wdx2dm d3wdy2dm d3wdxdydm]
+end
+
+
+function criacelulas(dad)
+    div = Int(length(dad.ELEM) / 4)
+    xi = dad.ELEM[1].ξs
+    dive = length(xi)
+    r = range(0, 1, div + 1)
+    xs = dad.NOS[1:div*dive, 1]
+    npg = 2
+    Y = ones(length(xs) + 2) * [0; xs; 1]'
+    X = [0; xs; 1] * ones(length(xs) + 2)'
+
+    pgx = (X[1:end-1, 1:end-1] + X[2:end, 2:end]) / 2
+    pgy = (Y[1:end-1, 1:end-1] + Y[2:end, 2:end]) / 2
+
+    pgs
 end

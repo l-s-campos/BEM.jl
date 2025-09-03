@@ -39,7 +39,7 @@ function potencial1d(ne = 15, tipo = 2)
     #     4 0 0]
     CCSeg = [
         1 1 0
-        2 0 1
+        2 1 -1
         3 1 0
         4 0 0
     ]

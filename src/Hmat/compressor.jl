@@ -113,9 +113,12 @@ function _aca_partial(K, irange, jrange, atol, rmax, rtol, istart, buffer_ = not
     er = Inf
     est_norm = 0 # approximate norm of K[irange,jrange]
     r = 0 # current rank
-    while er > max(atol, rtol * est_norm) && r < rmax && sum(I) > 0
+    while er > max(atol, rtol * est_norm) && r < rmax && sum(I) > 0 || r < 5
         # remove index i from allowed row
-        #   @show I
+        # @show i
+        if i === nothing
+            break
+        end
         I[i] = false
         # pre-allocate row and column
         a = newcol!(A)
@@ -247,11 +250,12 @@ Base.@kwdef struct TSVD
     rtol::Float64 = atol > 0 || rank < typemax(Int) ? 0 : sqrt(eps(Float64))
 end
 
-function (tsvd::TSVD)(K, rowtree::ClusterTree, coltree::ClusterTree)
+function (tsvd::TSVD)(K, rowtree::ClusterTree, coltree::ClusterTree, bufs = nothing)
     irange = index_range(rowtree)
     jrange = index_range(coltree)
     return tsvd(K, irange, jrange)
 end
+
 
 function (tsvd::TSVD)(K, irange::UnitRange, jrange::UnitRange)
     M = K[irange, jrange]
@@ -268,6 +272,9 @@ the `qr-svd` strategy to efficiently compute `svd(R)` when `rank(R) ≪
 min(size(R))`.
 """
 function compress!(R::RkMatrix, tsvd::TSVD)
+    if rank(R) == 0
+        return R
+    end
     m, n = size(R)
     QA, RA = qr!(R.A)
     QB, RB = qr!(R.B)
@@ -312,3 +319,4 @@ function compress!(M::Base.Matrix, tsvd::TSVD)
     end
     return RkMatrix(A, B)
 end
+

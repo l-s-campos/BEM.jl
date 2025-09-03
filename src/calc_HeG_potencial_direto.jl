@@ -69,8 +69,8 @@ function calc_HeG_Hd(dad::potencial; npg = 3, atol = 1e-4)
 
     KG = BEM.kernelG(dad, intelems)
     KH = BEM.kernelH(dad, intelems)
-    HG = assemble_hmat(KG, Xclt, Yclt; adm, comp)
-    HH = assemble_hmat(KH, Xclt, Yclt; adm, comp)
+    HG = assemble_hmatrix(KG, Xclt, Yclt; adm, comp)
+    HH = assemble_hmatrix(KH, Xclt, Yclt; adm, comp)
     # @infiltrate
     corrige_diagonais!(dad, HH, HG, normal_fonte)
     HH, HG

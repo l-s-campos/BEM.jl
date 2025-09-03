@@ -2,7 +2,7 @@ using BEM
 using Revise, Infiltrator
 using TimerOutputs
 using FileIO, LinearAlgebra, Statistics
-using Krylov, SparseArrays, NonlinearSolve
+using SparseArrays, NonlinearSolve
 
 includet(datadir("dadpotencial.jl"))
 includet(datadir("dadelastico.jl"))

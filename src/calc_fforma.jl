@@ -29,7 +29,11 @@ function calc_fforma(ξ, elem, deriv = true) # funções de forma gerais para m 
                 # @infiltrate
                 if (ξ - ξs[j]) == 0
                     ξ = ξ + 1e-12
+                    # N[i] = 0 #Eq. interpolador de lagrange
+                    # cte[i] += @views 1
                 end
+
+                # else
                 N[i] = @views N[i] * (ξ - ξs[j]) / (ξs[i] - ξs[j]) #Eq. interpolador de lagrange
                 cte[i] += @views 1 / (ξ - ξs[j])
             end
@@ -65,7 +69,7 @@ function calc_fforma_gen(ξ, ξs, deriv = true) # funções de forma gerais para
             if j != i
                 # @infiltrate
                 N[i] = N[i] * (ξ - ξs[j]) / (ξs[i] - ξs[j]) #Eq. interpolador de lagrange
-                cte[i] += 1 / (ξ - ξs[j])
+                cte[i] += 1 / (ξ - ξs[j] + 1e-12)
             end
         end
     end

@@ -540,7 +540,7 @@ A função realiza os seguintes passos:
 9. Retorna a matriz `A` somada com a matriz diagonal `M1`.
 
 """
-function Monta_M_RIMd(dad::potencial, npg; tiporadial = "tps")
+function Monta_M_RIMd(dad::potencial, npg; tiporadial = "tps", aug = false)
     n_nos = size(dad.NOS, 1)
     nelem = size(dad.ELEM, 1)
     n_noi = size(dad.pontos_internos, 1) #Number of internal nodes
@@ -552,14 +552,35 @@ function Monta_M_RIMd(dad::potencial, npg; tiporadial = "tps")
     M1 = zeros(n_pontos)
     F, D = FeD(dad, nodes, tiporadial)
     M, M1 = calcMs(dad, npg, tiporadial)
+    # lu!(F)
     # @show size(M)
     # @show length(M)
-    A = ones(length(M)) * M' / F .* D
-    for i = 1:n_pontos #Laço dos pontos radiais
-        A[i, i] = 0
-        A[i, i] = -sum(A[i, :])
+    if aug
+        P, Pint = calcPs(dad, npg)
+        # In = Matrix{}(I, size(F))
+        W = F \ P / (P' / F * P)
+        # aux = (In - W * P') / F
+        Mf = M' / F
+        # @infiltrate
+        # A = (Mf - W * (P' * (Mf) - Pint')) .* D
+        A = (Mf - Mf * P * W' + Pint' * W') .* D
+        # @infiltrate
+        for i = 1:n_pontos #Laço dos pontos radiais
+            A[i, i] = 0
+            A[i, i] = -sum(A[i, :])
+        end
+        return A + diagm(0 => M1)
+
+    else
+        A = M' / F .* D
+        for i = 1:n_pontos #Laço dos pontos radiais
+            A[i, i] = 0
+            A[i, i] = -sum(A[i, :])
+        end
+        return A + diagm(0 => M1)
     end
-    A + diagm(0 => M1)
+
+
     # M, M1, F, D
 end
 """
@@ -676,4 +697,242 @@ function calc_md(x, pf, k, qsi, w, elem, tiporadial)
         m_el1 += dot([nx, ny], r) / norm(r)^2 * m1 * dgamadqsi * w[i]
     end
     return m_el, m_el1
+end
+
+
+"""
+    calcPs(dad::potencial, npg)
+
+Calcula os valores das matrizes `P` e `Pint` para um dado potencial `dad` utilizando a quadratura de Gauss-Legendre com `npg` pontos.
+
+# Parâmetros
+- `dad::potencial`: Estrutura contendo os dados do problema, incluindo nós (`NOS`), pontos internos (`pontos_internos`), elementos (`ELEM`) e constante `k`.
+- `npg`: Número de pontos de Gauss-Legendre a serem utilizados na quadratura.
+
+# Retorno
+- `P`: Vetor com as funções polinomiais para cada ponto fonte.
+- `Pint`: Vetor com as integrais de cada polinomio.
+
+"""
+function calcPs(dad::potencial, npg)
+    nodes = [dad.NOS; dad.pontos_internos]
+    n_pontos = size(nodes, 1)
+    P = zeros(n_pontos, 3)
+    Pint = zeros(3)
+    qsi, w = gausslegendre(npg)
+
+    for i = 1:n_pontos #Laço dos pontos radiais
+        pf = nodes[i, :]
+        P[i, :] = [1 pf[1] pf[2]]
+    end
+    pf = nodes[1, :]
+    for elem_j in dad.ELEM  #Laço dos elementos
+        x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
+        for k = 1:npg
+            N, dN_geo = calc_fforma(qsi[k], elem_j)
+            pg = N' * x    # Ponto de gauss interpolador
+            r = pg' - pf      # Distancia entre ponto de gauss e ponto fonte
+            dxdqsi = dN_geo' * x   # dx/dξ & dy/dξ
+            dgamadqsi = norm(dxdqsi)  # dΓ/dξ = J(ξ) Jacobiano
+            sx = dxdqsi[1] / dgamadqsi # vetor tangente dx/dΓ
+            sy = dxdqsi[2] / dgamadqsi # vetor tangente dy/dΓ
+
+            nx = sy # Componente x do vetor normal unit�rio
+            ny = -sx # Componente y do vetor normal unit�rio
+            # @infiltrate
+            R = norm(r)
+            p1 = [
+                R^2 / 2,
+                R^2 / 3 * r[1] + pf[1] * R^2 / 2,
+                R^2 / 3 * r[2] + pf[2] * R^2 / 2,
+            ]
+            # @infiltrate
+            Pint += dot([nx, ny], r) / norm(r)^2 * p1 * dgamadqsi * w[k]
+        end
+    end
+    P, Pint
+end
+
+
+"""
+    Monta_M_RIMd(dad::potencial, npg)
+
+Função que monta a matriz M utilizando o DIBEM (Direct interpolation method).
+
+# Parâmetros
+- `dad::potencial`: Estrutura de dados contendo as informações do problema potencial.
+- `npg`: Número de pontos de Gauss para integração.
+
+# Retorno
+- Matriz `A` resultante da montagem utilizando o método RIMd.
+
+# Descrição
+A função realiza os seguintes passos:
+1. Calcula o número de nós (`n_nos`), elementos (`nelem`) e nós internos (`n_noi`).
+5. Calcula as matrizes de funções radiais `F`  e das soluções fundamentais `D` utilizando a função `FeD`.
+6. Calcula as matrizes `M` e `M1` utilizando a função `calcMs`.
+7. Monta a matriz `A` utilizando as matrizes `M`, `F` e `D`.
+8. Ajusta os elementos da diagonal principal de `A`.
+9. Retorna a matriz `A` somada com a matriz diagonal `M1`.
+
+"""
+function Monta_M_RIMd_hermite(dad::potencial, npg)
+    n_nos = size(dad.NOS, 1)
+    nelem = size(dad.ELEM, 1)
+    n_noi = size(dad.pontos_internos, 1) #Number of internal nodes
+
+    n_pontos = n_nos + n_noi
+    nodes = [dad.NOS; dad.pontos_internos]
+    M = zeros(n_pontos)
+    M1 = zeros(n_pontos)
+    F, Fx, Fy, Fxx, Fyy, Fxy, D, Dx, Dy = BEM.FeD2(dad, nodes)
+    M, Mx, My, M1 = BEM.calcMs2(dad, npg)
+    # @show [M1x[1:5] M1y[1:5]]
+    Falt = [
+        F Fx Fy
+        Fx Fxx Fxy
+        Fy Fxy Fyy
+    ]
+    Malt = [M; Mx; My]
+
+    S = Malt' / Falt
+    A = S[1:n_pontos] .* D + S[n_pontos+1:2n_pontos] .* Dx + S[2n_pontos+1:3n_pontos] .* Dy
+    Ax = S[n_pontos+1:2n_pontos] .* D
+    Ay = S[2n_pontos+1:3n_pontos] .* D
+    for i = 1:n_pontos #Laço dos pontos radiais
+        A[i, i] = 0
+        Ax[i, i] = 0
+        Ay[i, i] = 0
+        A[i, i] = -sum(A[i, :])
+        Ax[i, i] = -sum(A[i, :] .* (nodes[:, 1] .- nodes[i, 1])) - sum(Ax[i, :])
+        Ay[i, i] = -sum(A[i, :] .* (nodes[:, 2] .- nodes[i, 2])) - sum(Ay[i, :])
+    end
+    M, Mx, My =
+        A + diagm(0 => M1[:, 1]), Ax + diagm(0 => M1[:, 2]), Ay + diagm(0 => M1[:, 3])
+    ~, Nx, Ny = BEM.montaFs(nodes, aug = true)
+    Mfinal = M + Mx * Nx + My * Ny
+    # M, M1, F, D
+end
+
+"""
+A função `FeD` calcula duas matrizes, `F` e `D`, com base nas coordenadas dos nós fornecidos.
+
+# Parâmetros
+- `dad`: Estrutura de dados `k`.
+- `nodes`: Matriz `n x 2` onde cada linha representa as coordenadas `(x, y)` de um nó.
+
+# Retorno
+- `F`: Matriz `n x n` onde cada elemento `F[i, j]` é o resultado da função `interpola` aplicada à distância entre os nós `i` e `j`.
+- `D`: Matriz `n x n` onde cada elemento `D[i, j]` é o valor `-log(r) / (2 * π * dad.k)`, sendo `r` a distância entre os nós `i` e `j`.
+
+# Notas
+- A função ignora a diagonal principal das matrizes `F` e `D` (onde `i == j`).
+- A função `interpola` deve ser definida em outro lugar no código.
+"""
+function FeD2(dad, nodes)
+    n = size(nodes, 1)
+    F = zeros(n, n)
+    Fx = zeros(n, n)
+    Fxx = zeros(n, n)
+    Fy = zeros(n, n)
+    Fyy = zeros(n, n)
+    Fxy = zeros(n, n)
+    D = zeros(n, n)
+    Dx = zeros(n, n)
+    Dy = zeros(n, n)
+
+    for i = 1:n
+        xi = nodes[i, :]
+        for j = 1:n
+            if i == j
+                continue
+            end
+            xj = nodes[j, :]
+
+            r = xj - xi
+            R = norm(r)
+            # F[i, j] = R^2 * log(R)
+            # Fx[i, j] = r[1] * (2log(R) + 1)
+            # Fy[i, j] = r[2] * (2log(R) + 1)
+            # Fxx[i, j] = log(R^2) + 1 + 2 * r[1]^2 / R^2
+            # Fxy[i, j] = 2 * r[1] * r[2] / R^2
+            # Fyy[i, j] = log(R^2) + 1 + 2 * r[2]^2 / R^2
+
+            F[i, j] = R^3
+            Fx[i, j] = 3 * R * r[1]
+            Fy[i, j] = 3 * R * r[2]
+            Fxx[i, j] = 3R + 3r[1]^2 / R
+            Fxy[i, j] = 3 * r[1] * r[2] / R
+            Fyy[i, j] = 3R + 3r[2]^2 / R
+
+
+
+            D[i, j] = -log(R) / (2 * π * dad.k)
+            Dx[i, j] = -r[1] / R^2 / (2 * π * dad.k)
+            Dy[i, j] = -r[2] / R^2 / (2 * π * dad.k)
+
+        end
+    end
+    F, Fx, Fy, Fxx, Fyy, Fxy, D, Dx, Dy
+end
+
+function calcMs2(dad::potencial, npg)
+    nodes = [dad.NOS; dad.pontos_internos]
+    n_pontos = size(nodes, 1)
+    M = zeros(n_pontos)
+    Mx = zeros(n_pontos)
+    My = zeros(n_pontos)
+    M1 = zeros(n_pontos, 3)
+
+    qsi, w = gausslegendre(npg)
+
+    for i = 1:n_pontos #Laço dos pontos radiais
+        pf = nodes[i, :]
+        for elem_j in dad.ELEM  #Laço dos elementos
+            x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
+            m_el, m_elx, m_ely, m_el1 = calc_md2(x, pf, dad.k, qsi, w, elem_j)
+            M[i] += m_el
+            Mx[i] += m_elx
+            My[i] += m_ely
+            M1[i, :] += m_el1
+
+        end
+    end
+
+    M, Mx, My, M1
+end
+
+function calc_md2(x, pf, k, qsi, w, elem)
+    npg = length(w)
+    m_el, m_elx, m_ely = 0, 0, 0
+    m_el1 = zeros(SVector{3})
+
+    for i = 1:npg
+        N, dN_geo = calc_fforma(qsi[i], elem)
+        pg = N' * x    # Ponto de gauss interpolador
+        r = pg' - pf      # Distancia entre ponto de gauss e ponto fonte
+        dxdqsi = dN_geo' * x   # dx/dξ & dy/dξ
+        dgamadqsi = norm(dxdqsi)  # dΓ/dξ = J(ξ) Jacobiano
+        sx = dxdqsi[1] / dgamadqsi # vetor tangente dx/dΓ
+        sy = dxdqsi[2] / dgamadqsi # vetor tangente dy/dΓ
+
+        nx = sy # Componente x do vetor normal unit�rio
+        ny = -sx # Componente y do vetor normal unit�rio
+        # @infiltrate
+        R = norm(r)
+        m = R^5 / 5
+        mx = r[1] * R^3 * 3 / 4
+        my = r[2] * R^3 * 3 / 4
+        m1 = -(2 * R^2 * log(R) - R^2) / 4 / (2 * π * k)
+        m1x = -(3 * R^2 * log(R) - R^2) / 9 / (2 * π * k) * r[1]
+        m1y = -(3 * R^2 * log(R) - R^2) / 9 / (2 * π * k) * r[2]
+
+        # calcula_Fd(pr, pf, pg, [nx,ny], k, qsi2, w2);
+        m_el += dot([nx, ny], r) / norm(r)^2 * m * dgamadqsi * w[i]
+        m_elx += dot([nx, ny], r) / norm(r)^2 * mx * dgamadqsi * w[i]
+        m_ely += dot([nx, ny], r) / norm(r)^2 * my * dgamadqsi * w[i]
+        m_el1 += dot([nx, ny], r) / norm(r)^2 * [m1, m1x, m1y] * dgamadqsi * w[i]
+
+    end
+    return m_el, m_elx, m_ely, m_el1
 end

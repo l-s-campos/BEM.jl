@@ -63,6 +63,8 @@ function calc_HeG(dad::elastico, npg = 8; interno = false, subcheia = false)
         # H[2i, 2i-1] = -sum(H[2i, 1:2:end])
         # H[2i-1, 2i-1] += 0.5
         # H[2i, 2i] += 0.5
+        # H[2i-1, 2i-1] = 0.5
+        # H[2i, 2i] = 0.5
     end
     if interno
         ni = size(dad.pontos_internos, 1)
@@ -401,13 +403,10 @@ function integrabezier(
 end
 
 
-function calsolfund(pg, pf, n, dad::Union{elastico,elastico_iga}, regiao = 0)
+function calsolfund(pg, pf, n, dad::Union{elastico,elastico_iga}, regiao = 1)
     # @infiltrate
-    if regiao == 0
-        E, v = dad.k.E, dad.k.nu
-    else
-        E, v = dad.k.E[regiao], dad.k.nu[regiao]
-    end
+
+    E, v = dad.E[regiao], dad.ν[regiao]
     r = pg - pf      # Distancia entre ponto de gauss e ponto fonte
     # @infiltrate
     GE = E / (2 * (1 + v))
@@ -560,8 +559,8 @@ function calc_tens_cont(dad::elastico, uc, t)
     for elem_j in dad.ELEM  #Laço dos elementos
 
         x = dad.NOS[elem_j.indices, :]
-        ni = dad.k.nu
-        E = dad.k.E
+        E, v = dad.E[elem_j.regiao], dad.ν[elem_j.regiao]
+
         for i = 1:size(elem_j.indices, 1)
             N, dN = calc_fforma(elem_j.ξs[i], elem_j)
             dxdqsi = dN' * x
@@ -579,11 +578,10 @@ function calc_tens_cont(dad::elastico, uc, t)
             s11 = tr_loc[1]
             s12 = tr_loc[2]
             du = uc[elem_j.indices, :]' * dN
-
             dudqsi = lij * du
             e22 = dudqsi[2] ./ dgamadqsi
             # @infiltrate
-            s22 = E * e22 + ni * s11
+            s22 = E * e22 + v * s11
             # s22 = E * e22 / (1 - ni^2) + ni * (1 + ni) / (1 - ni^2) * s11
             s = [s11 s12; s12 s22]
             sigma = lij * s * lij'
@@ -845,12 +843,8 @@ function integradelem(pf, x, eta, w, elem, dad::Union{elastico,elastico_aniso})
 end
 
 function caldsolfund(pg, pf, n, dad::Union{elastico,elastico_iga}, regiao = 0)
-    # @infiltrate
-    if regiao == 0
-        E, v = dad.k.E, dad.k.nu
-    else
-        E, v = dad.k.E[regiao], dad.k.nu[regiao]
-    end
+    E, v = dad.E[regiao], dad.ν[regiao]
+
     R = pg - pf      # Distancia entre ponto de gauss e ponto fonte
     # @infiltrate
     GEL = E / (2 * (1 + v))
@@ -902,9 +896,21 @@ function caldsolfund(pg, pf, n, dad::Union{elastico,elastico_iga}, regiao = 0)
 end
 
 
-vonmises(tens) =
-    sqrt.(tens[:, 1] .^ 2 - tens[:, 1] * tens[:, 2] + tens[:, 2] .^ 2 + 2 * tens[:, 3] .^ 2)
-
+function vonmises(dad,tens,planestrain=true) 
+      sigx = tens[:,1]
+            sigy = tens[:,2]
+            tauxy = tens[:,3]
+            if planestrain
+                sigz=0;
+                tauxz=0;
+                tauyz=0;
+            else
+                sigz=dad.ν[1]*(sigx+sigy);
+                tauxz=0;
+                tauyz=0;
+            end
+        @. sqrt((sigx-sigy)^2+(sigy-sigz)^2+(sigx-sigz)^2+ 6*(tauxy^2+tauyz^2+tauxz^2))
+end
 
 function Monta_M_RIM(dad::Union{elastico,elastico_aniso}, npg1 = 10)
     n_nos = size(dad.NOS, 1)
@@ -1009,10 +1015,10 @@ function Monta_M_RIMd(dad::Union{elastico,elastico_aniso}, npg)
 
 
     n_pontos = n_nos + n_noi
-    if haskey(dad.k, :cantos)
-        nodes = [dad.NOS; dad.pontos_internos; dad.k.cantos[:, 2:3]]
-    else
+    if isempty(dad.cantos)
         nodes = [dad.NOS; dad.pontos_internos]
+    else
+        nodes = [dad.NOS; dad.pontos_internos; dad.k.cantos[:, 2:3]]
     end
 
     F = zeros(n_pontos, n_pontos)
@@ -1127,7 +1133,8 @@ function calc_md(x, pf, qsi, w, elem, dad::Union{elastico,elastico_aniso})
         # @infiltrate
         R = norm(r)
         m = int_interpolaρdρ(R)
-        m1 = calcula_F1(pf, pg, qsi, w, dad)
+        # m1 = calcula_F1(pf, pg, qsi, w, dad)
+        m1 = intradial_solfund(pg, pf, dad)
         # calcula_Fd(pr, pf, pg, [nx,ny], k, qsi2, w2);
         # @infiltrate
         m_el += dot([nx, ny], r) / norm(r)^2 * m * dgamadqsi * w[i]
@@ -1136,7 +1143,35 @@ function calc_md(x, pf, qsi, w, elem, dad::Union{elastico,elastico_aniso})
     end
     return m_el, m_el1
 end
+function intradial_solfund(pg, pf, dad::elastico, regiao = 1)
+    E, v = dad.E[regiao], dad.ν[regiao]
 
+    # @infiltrate
+    r = pg' - pf      # Distancia entre ponto de gauss e ponto fonte
+    # @infiltrate
+    GE = E / (2 * (1 + v))
+    # Distance of source and field points
+    R = norm(r)
+
+    # Components of the unity vector in the radial direction
+    r1 = r / R
+
+    # Plane elasticity fundamental solutions
+    prod1 = 4 * pi * (1 - v)
+    #prod2 = (3 - 4 * v) * log(1 / R)
+    prod2 = (3 - 4 * v) * (-R^2 * log(R) / 2 + R^2 / 4)
+
+    u11 = (prod2 + R^2 / 2 * r1[1]^2) / (2 * prod1 * GE)
+    u22 = (prod2 + R^2 / 2 * r1[2]^2) / (2 * prod1 * GE)
+    u12 = R^2 / 2 * (r1[1] * r1[2]) / (2 * prod1 * GE)
+    u21 = u12
+
+    uast = [
+        u11 u12
+        u21 u22
+    ]
+    return uast
+end
 function calcula_F1(pf, pg, qsi, w, dad::Union{elastico,elastico_aniso}) #
     npg = length(w)
     R = (pg' - pf)
@@ -2134,13 +2169,10 @@ end
 
 
 ################# Função calc_derivX_solfund ###############################
-function calc_deriv_solfund(pg, pf, n, dad::Union{elastico,elastico_iga}, regiao = 0)
+function calc_deriv_solfund(pg, pf, n, dad::Union{elastico,elastico_iga}, regiao = 1)
     # @infiltrate
-    if regiao == 0
-        E, ni = dad.k.E, dad.k.nu
-    else
-        E, ni = dad.k.E[regiao], dad.k.nu[regiao]
-    end
+    E, ni = dad.E[regiao], dad.ν[regiao]
+
     r = pg - pf      # Distancia entre ponto de gauss e ponto fonte
 
     #Calcula as derivadas em x das soluções fundamentais
@@ -2359,11 +2391,11 @@ function Monta_deriv_M_RIMd(dad::Union{elastico,elastico_aniso}, npg = 10)
     # n_canto = size(dad.k.cantos, 1)
 
     n_pontos = n_nos + n_noi
-    if haskey(dad.k, :cantos)
-        nodes = [dad.NOS; dad.pontos_internos; dad.k.cantos[:, 2:3]]
-    else
-        nodes = [dad.NOS; dad.pontos_internos]
-    end
+    # if haskey(dad.k, :cantos)
+    #     nodes = [dad.NOS; dad.pontos_internos; dad.k.cantos[:, 2:3]]
+    # else
+    # end
+    nodes = [dad.NOS; dad.pontos_internos]
 
     F = zeros(n_pontos, n_pontos)
     Dx = zeros(2n_pontos, 2n_pontos)
@@ -2451,9 +2483,9 @@ function calc_deriv_md(x, pf, qsi, w, elem, dad::elastico)
         m1x, m1y = intradial_deriv_solfund(pg', pf, dad)
         # calcula_Fd(pr, pf, pg, [nx,ny], k, qsi2, w2);
         # @infiltrate
-        m_el += dot([nx, ny], r) / norm(r)^2 * m * dgamadqsi * w[i]
-        m_el1x += dot([nx, ny], r) / norm(r)^2 * m1x * dgamadqsi * w[i]
-        m_el1y += dot([nx, ny], r) / norm(r)^2 * m1y * dgamadqsi * w[i]
+        m_el += dot([nx, ny], r) / R^2 * m * dgamadqsi * w[i]
+        m_el1x += dot([nx, ny], r) / R^2 * m1x * dgamadqsi * w[i]
+        m_el1y += dot([nx, ny], r) / R^2 * m1y * dgamadqsi * w[i]
 
     end
     return m_el, m_el1x, m_el1y
@@ -2483,13 +2515,10 @@ end
 
 
 ################# Função calc_derivX_solfund ###############################
-function intradial_deriv_solfund(pg, pf, dad::Union{elastico,elastico_iga}, regiao = 0)
+function intradial_deriv_solfund(pg, pf, dad::Union{elastico,elastico_iga}, regiao = 1)
     # @infiltrate
-    if regiao == 0
-        E, ni = dad.k.E, dad.k.nu
-    else
-        E, ni = dad.k.E[regiao], dad.k.nu[regiao]
-    end
+    E, ni = dad.E[regiao], dad.ν[regiao]
+
     r = pg - pf      # Distancia entre ponto de gauss e ponto fonte
 
     #Calcula as derivadas em x das soluções fundamentais
@@ -2527,4 +2556,16 @@ function intradial_deriv_solfund(pg, pf, dad::Union{elastico,elastico_iga}, regi
         u21x u22x
     ]
     return uastx, uasty
+end
+
+function transforma_tensao(θ, σ)
+    σx = σ[:,1]
+    σy = σ[:,2]
+    τxy = σ[:,3]
+
+    σbemr = (σx .+ σy)./2 .+ ((σx .- σy)./2).*cos.(2*θ) .+ τxy .*sin.(2*θ)
+    σbemtheta = (σx .+ σy)./2 .- ((σx .- σy)./2).*cos.(2*θ) .- τxy .*sin.(2*θ)
+    τbemrtheta = .- ((σx .- σy)./2).*sin.(2*θ) .- τxy .*sin.(2*θ)
+
+    return σbemr, σbemtheta, τbemrtheta
 end

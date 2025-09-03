@@ -38,7 +38,7 @@ function elastico1d(ne = 15, tipo = 2; nt = false)
         3 1 0 1 0
         4 0 0 1 0
     ]
-
+    ν
 
     E = 1
     v = 0.3
@@ -947,54 +947,64 @@ end
 
 
 function cilindro(ne = 1, tipo = 2) #CILINDRO
-
-    a = 50e-3
-    b = 100e-3
-
+    Ra = 50
+    Rb = 100
+    P = 100
     PONTOS = [
-        1 a 0
-        2 b 0
-        3 0 b
-        4 0 a
+        1 Ra 0
+        2 Rb 0
+        3 0 Rb
+        4 0 Ra
     ]
-
+    # Segmentos que definem a geometria
+    # SEGMENTOS = [N° do segmento, N° do ponto inicial, N° do ponto final
+    #                                                  Raio, tipo do elemento]
+    # Raio do segmento: > 0 -> O centro é a esquerda do segmento (do ponto
+    #                          inicial para o ponto final)
+    #                   < 0 -> O centro é a direita do segmento (do ponto
+    #                          inicial para o ponto final)
+    #                   = 0 -> O segmento é uma linha reta
     SEGMENTOS = [
         1 1 2 0
-        2 2 3 b
+        2 2 3 Rb
         3 3 4 0
-        4 4 1 -a
+        4 4 1 -Ra
     ]
-
+    # Matriz para definição da malha
+    # MALHA = [número do segmento, número de elementos no segmento]
     MALHA = [
         1 ne tipo
         2 ne tipo
         3 ne tipo
         4 ne tipo
     ]
-    p = -100
     # Condições de contorno nos segmentos
     # CCSeg = [N° do segmento, tipo da CDCx, valor da CDCx, tipo da CDCy, valor da CDCy]
     # tipo da CDC = 0 => deslocamento é conhecido
     # tipo da CDC = 1 => força é conhecida
+    # CCSeg = [1 1 0 1 0
+    #     2 1 1 1 0
+    #     3 1 0 0 0
+    #     4 0 0 1 0]
     CCSeg = [
         1 1 0 0 0
         2 1 0 1 0
         3 0 0 1 0
-        4 1 p 1 p
-    ] # 4 2 -100 0 0
+        4 1 -P 1 -P
+    ]
 
-    E = 200
-    v = 0.32
-
+    # Condutividade Térmica do material
+    E = 200000
+    v = 0.0
+    # Malha de pontos internos
     return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E = E, nu = v)
 end
 
-function corrigeCDC_cilindro(dad::elastico, nelem, tipo)
-
-    # dad elastico_aniso_cilindro
+function corrige_CDC_cilindro(dad::elastico)
     p = -100
-    raio = 50e-3 # raio = SEGMENTOS[4,2]
+    raio = 50 # raio = SEGMENTOS[4,2]
     # num_lin = length(SEGMENTOS[:,1])
+    nelem = round(Int, length(dad.ELEM) / 4)
     for i = 3*nelem+1:length(dad.ELEM)
         indices = dad.ELEM[i].indices
         # cols    = [2*indices.-1 2*indices]'[:]
@@ -1002,9 +1012,29 @@ function corrigeCDC_cilindro(dad::elastico, nelem, tipo)
         dad.ELEM[i].valorCDC = ((dad.NOS[indices, :])' .* p) ./ raio
     end
 end
+
+function ana_cilindro(dad::elastico)
+    P = -100
+    Ra = 50
+    Rb = 100
+
+    x = dad.NOS[:, 1]
+    y = dad.NOS[:, 2]
+
+    r = sqrt.(x .^ 2 + y .^ 2)
+    E = dad.E[1]
+    v = dad.ν[1]
+
+
+    u_analitico =
+        ((1 + v) * P * Ra^2) / ((Rb^2 - Ra^2) * E) .* ((1 - 2 * v) .* r .+ Rb^2 ./ r)
+    σr_analitico = (P * Ra^2) / (Rb^2 - Ra^2) * (1.0 .- Rb^2 ./ r .^ 2)
+    σh_analitico = (P * Ra^2) / (Rb^2 - Ra^2) * (1.0 .+ Rb^2 ./ r .^ 2)
+    u_analitico, σr_analitico, σh_analitico
+end
+
 function placa_furo(ne = 15, tipo = 2, L = 500)
     R = 50
-    # L = 500
     P = 1
     PONTOS = [
         1 R 0
@@ -1054,13 +1084,162 @@ function placa_furo(ne = 15, tipo = 2, L = 500)
     ]
 
     # Condutividade Térmica do material
-    E = 100
+    E = 100000
     v = 0.25
     v_plano = v / (1 + v)
     E_plano = E * (1 - v_plano^2 / (1 + v_plano)^2)
 
-    E = E * (1 + 2 * v) / (1 + v)^2
-    v = v / (1 + v)
     # Malha de pontos internos
     return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E = E_plano, nu = v_plano)
+end
+function corrige_CDC_placa_furo(dad, L = 500)
+    P = 1
+    R = 50
+    sx, sy, txy = ana_placa_furo(dad)
+    for elem in dad.ELEM
+        if dad.NOS[elem.indices[1], 1] == L
+            elem.valorCDC[:,] = [sx; txy]
+
+        elseif dad.NOS[elem.indices[1], 2] == L
+            elem.valorCDC[:,] = [txy; sy]
+        end
+    end
+end
+
+function ana_placa_furo(dad)
+    x = dad.NOS[:, 1]
+    y = dad.NOS[:, 2]
+    P = 1
+    R = 50
+
+    r = sqrt.(x .^ 2 + y .^ 2)
+    θ = atan.(y ./ x)
+    σr =
+        (P / 2) * (1 .- R^2 ./ r .^ 2) .+
+        (P / 2) * (1 .+ 3 * R^4 ./ r .^ 4 .- 4 * R^2 ./ r .^ 2) .* cos.(2 * θ)
+    σt = (P / 2) * (1 .+ R^2 ./ r .^ 2) .- (P / 2) * (1 .+ 3 * R^4 ./ r .^ 4) .* cos.(2 * θ)
+    τrt = -P / 2 * (1 .- 3 * R^4 ./ r .^ 4 .+ 2 * R^2 ./ r .^ 2) .* sin.(2 * θ)
+    σx, σy, τ = transforma_tensao(-θ, [σr σt τrt])
+    σx, σy, τ
+end
+
+function viga(ne = 15, tipo = 2)
+    D = 12
+    L = 48
+    P = 1000
+    PONTOS = [
+        1 0 -D/2
+        2 L -D/2
+        3 L D/2
+        4 0 D/2
+    ]
+    # Segmentos que definem a geometria
+    # SEGMENTOS = [N° do segmento, N° do ponto inicial, N° do ponto final
+    #                                                  Raio, tipo do elemento]
+    # Raio do segmento: > 0 -> O centro é a esquerda do segmento (do ponto
+    #                          inicial para o ponto final)
+    #                   < 0 -> O centro é a direita do segmento (do ponto
+    #                          inicial para o ponto final)
+    #                   = 0 -> O segmento é uma linha reta
+    SEGMENTOS = [
+        1 1 2 0
+        2 2 3 0
+        3 3 4 0
+        4 4 1 0
+    ]
+    # Matriz para definição da malha
+    # MALHA = [número do segmento, número de elementos no segmento]
+    MALHA = [
+        1 ne tipo
+        2 ne tipo
+        3 ne tipo
+        4 ne tipo
+    ]
+    # Condições de contorno nos segmentos
+    # CCSeg = [N° do segmento, tipo da CDCx, valor da CDCx, tipo da CDCy, valor da CDCy]
+    # tipo da CDC = 0 => deslocamento é conhecido
+    # tipo da CDC = 1 => força é conhecida
+    # CCSeg = [1 1 0 1 0
+    #     2 1 1 1 0
+    #     3 1 0 0 0
+    #     4 0 0 1 0]
+    CCSeg = [
+        1 1 0 1 0
+        2 1 0 1 P
+        3 1 0 1 0
+        4 0 0 0 0
+    ]
+
+    # Condutividade Térmica do material
+    E = 300000
+    v = 0.3
+
+    E = E * (1 + 2v) / (1 + v)^2
+    v = v / (1 + v)
+    # Malha de pontos internos
+    return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E = E, nu = v)
+end
+
+function corrige_CDC_viga(dad::elastico)
+    ne = round(Int, length(dad.ELEM) / 4)
+    D = 12
+    L = 48
+    P = 1000
+    I = L * D^3 / 12
+    E = 300000
+    v = 0.3
+    carga = (y) -> -P / (2 * I) * (D^2 / 4 - y^2)
+    ux = (y) -> (P .* y) ./ (6 * E * I) * ((2 + v) .* (y .^ 2 .- (D^2) / (4)))
+    uy = (y) -> -P / (6 * E * I) * (3 * v * y .^ 2 .* L)
+    for i in dad.ELEM
+        for j in range(1, length(i.indices))
+            x = dad.NOS[i.indices[j], 1]
+            y = dad.NOS[i.indices[j], 2]
+            if x ≈ L
+                i.valorCDC[:, j] = [0; carga(y)]
+                # @show i.indices[j], "d"
+            elseif x ≈ 0
+                i.valorCDC[:, j] = [ux(y); uy(y)]
+                # @show i.indices[j], "e"
+            end
+        end
+    end
+
+end
+
+function ana_viga(dad::elastico)
+    z = dad.NOS[:, 1]
+    y = dad.NOS[:, 2]
+
+    E = 300000
+    v = 0.3
+    D = 12
+    L = 48
+    P = -1000
+    I = L * D^3 / 12
+    ux =
+        .-(P .* y) ./ (6 * E * I) .*
+        ((6 * L .- 3 .* z) .* z .+ (2 + v) .* (y .^ 2 .- (D^2) / (4)))
+    uy =
+        P / (6 * E * I) * (
+            3 * v * y .^ 2 .* (L .- z) .+ (4 + 5 * v) .* (D^2 .* z) ./ 4 .+
+            (3 * L .- z) .* z .^ 2
+        )
+
+    σx = .-P * (L .- z) .* y / I
+    τxy = P / (2 * I) * (D^2 / 4 .- y .^ 2)
+    z = dad.pontos_internos[:, 1]
+    y = dad.pontos_internos[:, 2]
+    ux_i =
+        .-(P .* y) ./ (6 * E * I) .*
+        ((6 * L .- 3 .* z) .* z .+ (2 + v) .* (y .^ 2 .- (D^2) / (4)))
+    uy_i =
+        P / (6 * E * I) * (
+            3 * v * y .^ 2 .* (L .- z) .+ (4 + 5 * v) .* (D^2 .* z) ./ 4 .+
+            (3 * L .- z) .* z .^ 2
+        )
+
+    σx_i = .-P * (L .- z) .* y / I
+    τxy_i = P / (2 * I) * (D^2 / 4 .- y .^ 2)
+    ux, uy, σx, τxy, ux_i, uy_i, σx_i, τxy_i
 end

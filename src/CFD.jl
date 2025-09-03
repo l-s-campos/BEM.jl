@@ -1625,8 +1625,8 @@ end
 function passo_não_linear(
     x,
     dad,
-    H,
-    G,
+    A,
+    b,
     M,
     dNx,
     dNy;
@@ -1635,22 +1635,24 @@ function passo_não_linear(
     erro_vel_min = 1e-6,
     maxiter = 1000,
 )
+    x = zeros(2 * nc(dad) + 2 * ni(dad))
+
     iter = 0
     erro_vel = 1
     nolinear = zeros(typeof(x[1]), 2 * (ni(dad) + nc(dad)))
 
     interno = nc(dad)+1:nc(dad)+ni(dad)
     contorno = 1:nc(dad)
+    n = ni(dad) + nc(dad)
+
     u = zeros(nc(dad) + ni(dad), 2)
     u[contorno, :], t = separa(dad, x)
     u[interno, 1] = x[2*nc(dad)+1:2:end]
     u[interno, 2] = x[2*nc(dad)+2:2:end]
 
-    A, b = BEM.aplicaCDC(H, Re * G, dad)
     u_before = deepcopy(u)
-
     prog = BEM.ProgressThresh(erro_vel_min; desc = "Re: $Re; erro_vel =")
-
+    # @infiltrate
     while erro_vel > erro_vel_min && iter < maxiter
 
         dudx = dNx * u[:, 1]
@@ -1662,6 +1664,67 @@ function passo_não_linear(
         nolinear[1:2:2*n] = u[:, 1] .* dudx + u[:, 2] .* dudy
         nolinear[2:2:2*n] = u[:, 1] .* dvdx + u[:, 2] .* dvdy
 
+        x = A \ (b - Re * M * nolinear)
+        # x, f = gmres(A, b - Re * M * nolinear, x, rtol = 1e-7, atol = 1e-7, itmax = 100)
+        u[contorno, :] = u[contorno, :] * (1 - relaxation) + relaxation * separa(dad, x)[1]
+        t = t * (1 - relaxation) + relaxation * separa(dad, x)[2]
+
+        u[interno, 1] = u[interno, 1] * (1 - relaxation) + relaxation * x[2*nc(dad)+1:2:end]
+        u[interno, 2] = u[interno, 2] * (1 - relaxation) + relaxation * x[2*nc(dad)+2:2:end]
+
+        erro_vel = nrmse(u_before, u)
+
+        BEM.update!(prog, erro_vel)
+
+        # println("Re: $Re; Iteração: $iter; erro_vel = $erro_vel")
+        # @show norm(x)
+        u_before = deepcopy(u)
+        iter = iter + 1
+    end
+    x
+end
+
+function passo_não_linear_Hmat(
+    x,
+    dad,
+    A,
+    b,
+    M,
+    dNx,
+    dNy;
+    Re = 1,
+    relaxation = 0.01,
+    erro_vel_min = 1e-6,
+    maxiter = 1000,
+)
+    x = zeros(2 * nc(dad) + 2 * ni(dad))
+
+    iter = 0
+    erro_vel = 1
+    nolinear = zeros(typeof(x[1]), 2 * (ni(dad) + nc(dad)))
+
+    interno = nc(dad)+1:nc(dad)+ni(dad)
+    contorno = 1:nc(dad)
+    n = ni(dad) + nc(dad)
+
+    u = zeros(nc(dad) + ni(dad), 2)
+    u[contorno, :], t = separa(dad, x)
+    u[interno, 1] = x[2*nc(dad)+1:2:end]
+    u[interno, 2] = x[2*nc(dad)+2:2:end]
+
+    u_before = deepcopy(u)
+    prog = BEM.ProgressThresh(erro_vel_min; desc = "Re: $Re; erro_vel =")
+    while erro_vel > erro_vel_min && iter < maxiter
+
+        dudx = dNx * u[:, 1]
+        dudy = dNy * u[:, 1]
+
+        dvdx = dNx * u[:, 2]
+        dvdy = dNy * u[:, 2]
+
+        nolinear[1:2:2*n] = u[:, 1] .* dudx + u[:, 2] .* dudy
+        nolinear[2:2:2*n] = u[:, 1] .* dvdx + u[:, 2] .* dvdy
+        # x, f = gmres(A, b - Re * M * nolinear, x)
         x = A \ (b - Re * M * nolinear)
 
 
@@ -1700,10 +1763,11 @@ function passo_não_linear2(
 )
     interno = nc(dad)+1:nc(dad)+ni(dad)
     contorno = 1:nc(dad)
+    n = ni(dad) + nc(dad)
+
     u = zeros(typeof(x[1]), nc(dad) + ni(dad), 2)
     nolinear = zeros(typeof(x[1]), 2 * (ni(dad) + nc(dad)))
     dnl = zeros(typeof(x[1]), 2 * (ni(dad) + nc(dad)), 2 * (ni(dad) + nc(dad)))
-    dnl2 = zeros(typeof(x[1]), 2 * (ni(dad) + nc(dad)))
 
     u[contorno, :], t = separa(dad, x)
     u[interno, 1] = x[2*nc(dad)+1:2:end]
@@ -1730,14 +1794,101 @@ function passo_não_linear2(
                 continue
             end
             dnl[2i-1, 2i-1] = dudx[i]
-            dnl[2i-1, 2i] = dvdx[i]
-            dnl[2i, 2i-1] = dudy[i]
+            dnl[2i-1, 2i] = dudy[i]
+            dnl[2i, 2i-1] = dvdx[i]
             dnl[2i, 2i] = dvdy[i]
         end
 
         Residuo = A * x - (b - Re * M * nolinear)
-        jacobiano = A - Re * M * dnl
+        jacobiano = A + Re * M * dnl
         x = x - jacobiano \ Residuo
+
+        u[contorno, :] = u[contorno, :] * (1 - relaxation) + relaxation * separa(dad, x)[1]
+        t = t * (1 - relaxation) + relaxation * separa(dad, x)[2]
+
+        u[interno, 1] = u[interno, 1] * (1 - relaxation) + relaxation * x[2*nc(dad)+1:2:end]
+        u[interno, 2] = u[interno, 2] * (1 - relaxation) + relaxation * x[2*nc(dad)+2:2:end]
+
+        erro_vel = nrmse(u_before, u)
+
+        BEM.update!(prog, erro_vel)
+
+        # println("Re: $Re; Iteração: $iter; erro_vel = $erro_vel")
+        # @show norm(x)
+        u_before = deepcopy(u)
+        iter = iter + 1
+    end
+    x
+end
+
+
+# Broyden
+
+function passo_não_linear3(
+    x,
+    dad,
+    H,
+    G,
+    M,
+    dNx,
+    dNy;
+    Re = 1,
+    relaxation = 1,
+    erro_vel_min = 1e-6,
+    maxiter = 1000,
+)
+    interno = nc(dad)+1:nc(dad)+ni(dad)
+    contorno = 1:nc(dad)
+    u = zeros(typeof(x[1]), nc(dad) + ni(dad), 2)
+    nolinear = zeros(typeof(x[1]), 2 * (ni(dad) + nc(dad)))
+
+    u[contorno, :], t = separa(dad, x)
+    u[interno, 1] = x[2*nc(dad)+1:2:end]
+    u[interno, 2] = x[2*nc(dad)+2:2:end]
+
+    A, b = BEM.aplicaCDC(H, Re * G, dad)
+    u_before = deepcopy(u)
+
+    iter = 0
+    erro_vel = 1
+    prog = BEM.ProgressThresh(erro_vel_min; desc = "Re: $Re; erro_vel =")
+
+    Residuo_1 = zeros(size(nolinear, 1))
+    x_1 = zeros(size(nolinear, 1))
+    jacobiano_1 = zeros(size(M))
+
+    while erro_vel > erro_vel_min && iter < maxiter
+
+        dudx = dNx * u[:, 1]
+        dudy = dNy * u[:, 1]
+
+        dvdx = dNx * u[:, 2]
+        dvdy = dNy * u[:, 2]
+
+        nolinear[1:2:2*n] = u[:, 1] .* dudx + u[:, 2] .* dudy
+        nolinear[2:2:2*n] = u[:, 1] .* dvdx + u[:, 2] .* dvdy
+
+
+        if iter == 0
+            x = (A \ (b - Re * M * nolinear))
+            Residuo = A * x - (b - Re * M * nolinear)
+
+            Residuo_1 = Residuo
+            jacobiano_1 = A
+        else
+            Residuo = A * x - (b - Re * M * nolinear)
+            jacobiano =
+                jacobiano_1 +
+                ((Residuo - Residuo_1) - jacobiano_1 * (x - x_1)) * (x - x_1)' /
+                (norm((x - x_1))^2)
+
+            x_1 = x
+            x = x - jacobiano \ Residuo
+
+            Residuo_1 = Residuo
+            jacobiano_1 = jacobiano
+        end
+
 
 
         u[contorno, :] = u[contorno, :] * (1 - relaxation) + relaxation * separa(dad, x)[1]
@@ -1758,4 +1909,74 @@ function passo_não_linear2(
     # Residuo = x - A \ (b - Re * M * nolinear)
     # jacobiano = I - A \ (Re * M * dnl)
     x
+end
+
+function ResiduoCFD(x, par)
+    @views begin
+        dad, A, b, M, dNx, dNy, Re, u, t, nolinear, dudx, dudy, dvdx, dvdy = par
+        u = get_tmp(u, x)
+        nolinear = get_tmp(nolinear, x)
+        t = get_tmp(t, x)
+        dudx = get_tmp(dudx, x)
+        dudy = get_tmp(dudy, x)
+        dvdx = get_tmp(dvdx, x)
+        dvdy = get_tmp(dvdy, x)
+
+        BEM.separa!(dad, x, u, t)
+        mul!(dudx, dNx, u[:, 1])
+        mul!(dudy, dNy, u[:, 1])
+        # dudx = dNx * @view u[:, 1]
+        # dudy = dNy * @view u[:, 1]
+
+        # dvdx = dNx * @view u[:, 2]
+        # dvdy = dNy * @view u[:, 2]
+        mul!(dvdx, dNx, u[:, 2])
+        mul!(dvdy, dNy, u[:, 2])
+        nolinear[1:2:end] .= u[:, 1] .* dudx
+        nolinear[1:2:end] .+= u[:, 2] .* dudy
+        # nolinear[1:2:end] = u[:, 1] .* dudx + u[:, 2] .* dudy
+        # nolinear[2:2:end] = u[:, 1] .* dvdx + u[:, 2] .* dvdy
+        nolinear[2:2:end] .= u[:, 1] .* dvdx
+        nolinear[2:2:end] .+= u[:, 2] .* dvdy
+    end
+
+    Residuo = x - A \ (b - Re * M * nolinear)
+
+end
+
+function ResiduoCFD!(Residuo, x, par)
+    @views begin
+        dad, A, b, M, dNx, dNy, Re, u, t, nolinear, dudx, dudy, dvdx, dvdy = par
+        u = get_tmp(u, x)
+        nolinear = get_tmp(nolinear, x)
+        t = get_tmp(t, x)
+        dudx = get_tmp(dudx, x)
+        dudy = get_tmp(dudy, x)
+        dvdx = get_tmp(dvdx, x)
+        dvdy = get_tmp(dvdy, x)
+
+        BEM.separa!(dad, x, u, t)
+        mul!(dudx, dNx, u[:, 1])
+        mul!(dudy, dNy, u[:, 1])
+        # dudx = dNx * @view u[:, 1]
+        # dudy = dNy * @view u[:, 1]
+
+        # dvdx = dNx * @view u[:, 2]
+        # dvdy = dNy * @view u[:, 2]
+        mul!(dvdx, dNx, u[:, 2])
+        mul!(dvdy, dNy, u[:, 2])
+        nolinear[1:2:end] .= u[:, 1] .* dudx
+        nolinear[1:2:end] .+= u[:, 2] .* dudy
+        # nolinear[1:2:end] = u[:, 1] .* dudx + u[:, 2] .* dudy
+        # nolinear[2:2:end] = u[:, 1] .* dvdx + u[:, 2] .* dvdy
+        nolinear[2:2:end] .= u[:, 1] .* dvdx
+        nolinear[2:2:end] .+= u[:, 2] .* dvdy
+    end
+    Residuo .= A * x - (b - Re * M * nolinear)
+
+    # mul!(aux, M, nolinear, Re, 1.0)
+    # mul!(Residuo, A, x)
+    # Residuo .-= b
+    # Residuo .+= aux
+    nothing
 end

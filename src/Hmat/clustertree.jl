@@ -158,10 +158,14 @@ function ClusterTree(
         [Point2D(dad.NOS[i, 1], dad.NOS[i, 2]) for i = 1:nc(dad)]
         [Point2D(dad.pontos_internos[i, 1], dad.pontos_internos[i, 2]) for i = 1:ni(dad)]
     ]
+
+    # for i = 1:length(tipoCDC)
+    #     if tipoCDC[i] == 1
+    #         elementsCDC[i] = elementsCDC[i] .+ dist
+    #     end
+    # end
     for i = 1:length(tipoCDC)
-        if tipoCDC[i] == 1
-            elementsCDC[i] = elementsCDC[i] .+ dist
-        end
+        elementsCDC[i] += dist * [1, 1] .* tipoCDC[i, :]
     end
 
     #    @infiltrate

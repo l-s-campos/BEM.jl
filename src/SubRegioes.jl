@@ -111,7 +111,9 @@ function compatibilidade(nc, equivale)
 end
 
 
-temsubregioes(dad) = haskey(dad.k, :subregioes)
+# temsubregioes(dad) = haskey(dad.k, :subregioes)
+temsubregioes(dad) = !isempty(dad.subregioes.regiao)
+
 
 function fix_interface!(H, dad)
     ni = size(dad.k.interface, 1)

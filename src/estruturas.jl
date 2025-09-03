@@ -2,29 +2,30 @@
 abstract type DadosBEM end
 abstract type escalar <: DadosBEM end
 abstract type vetorial <: DadosBEM end
-mutable struct subregioes
-    regiao::Array{Int64,1}
-    equivale::Array{Int64,2}
-    Hc::Array{Float64,2}
+@kwdef mutable struct subregioes
+    regiao::Array{Int64,1} = zeros(Int64, 0)
+    equivale::Array{Int64,2} = zeros(Int64, 0, 0)
+    Hc::Array{Float64,2} = zeros(Int64, 0, 0)
 end
-mutable struct elemento
-    indices::Array{Int64,1}
+@kwdef mutable struct elemento
+    indices::Vector{Int64}
     tipoCDC::Int64
-    valorCDC::Array{Float64,1}
-    ξs::Array{Float64,1}
+    valorCDC::Vector{Float64}
+    ξs::Vector{Float64}
     comprimento::Float64
     regiao::Int64
 end
-mutable struct elementov
-    indices::Array{Int64,1}
-    tipoCDC::Array{Int64,1}
-    valorCDC::Array{Float64,2}
-    ξs::Array{Float64,1}
+@kwdef mutable struct elementov
+    indices::Vector{Int64}
+    tipoCDC::Vector{Int64}
+    valorCDC::Matrix{Float64}
+    ξs::Vector{Float64}
     comprimento::Float64
     regiao::Int64
 end
-mutable struct bezier
-    indices::Array{Int64,1}
+
+@kwdef mutable struct bezier
+    indices::Vector{Int64}
     C::Array{Float64,2}
     p::Int64
     limites::Array{Float64,2}
@@ -32,29 +33,32 @@ mutable struct bezier
     sing::Array{Int64,1}
     eets::Array{Float64,1}
 end
-mutable struct elastico <: vetorial
+@kwdef mutable struct elastico <: vetorial
     NOS::Array{Float64,2}
     pontos_internos::Array{Float64,2}
     ELEM::Array{elementov,1}
     normal::Array{Float64,2}
-    k::NamedTuple
+    E::Array{Float64,1}
+    ν::Array{Float64,1}
+    subregioes::subregioes = subregioes()
+    cantos::Array{Float64,2} = zeros(Int64, 0, 0)
 end
 
-mutable struct elastico_aniso <: vetorial
+@kwdef mutable struct elastico_aniso <: vetorial
     NOS::Array{Float64,2}
     pontos_internos::Array{Float64,2}
     ELEM::Array{elementov,1}
     normal::Array{Float64,2}
     k::NamedTuple
 end
-mutable struct potencial <: escalar
+@kwdef mutable struct potencial <: escalar
     NOS::Array{Float64,2}
     pontos_internos::Array{Float64,2}
     ELEM::Array{elemento,1}
     normal::Array{Float64,2}
     k::Float64
 end
-mutable struct helmholtz <: escalar
+@kwdef mutable struct helmholtz <: escalar
     NOS::Array{Float64,2}
     pontos_internos::Array{Float64,2}
     ELEM::Array{elemento,1}
@@ -62,7 +66,7 @@ mutable struct helmholtz <: escalar
     k::NamedTuple
 end
 
-mutable struct potencial_iga <: escalar
+@kwdef mutable struct potencial_iga <: escalar
     NOS::Array{Float64,2}
     pontos_controle::Array{Float64,2}
     pontos_internos::Array{Float64,2}
@@ -72,7 +76,7 @@ mutable struct potencial_iga <: escalar
     k::Float64
     E::SparseMatrixCSC{Float64,Int64}
 end
-mutable struct potencial_iga_3d <: escalar
+@kwdef mutable struct potencial_iga_3d <: escalar
     NOS::Array{Float64,2}
     pontos_controle::Array{Float64,2}
     pontos_internos::Array{Float64,2}
@@ -83,7 +87,7 @@ mutable struct potencial_iga_3d <: escalar
     E::SparseMatrixCSC{Float64,Int64}
 end
 
-mutable struct elastico_iga <: vetorial
+@kwdef mutable struct elastico_iga <: vetorial
     NOS::Array{Float64,2}
     pontos_controle::Array{Float64,2}
     pontos_internos::Array{Float64,2}
@@ -94,7 +98,7 @@ mutable struct elastico_iga <: vetorial
     E::SparseMatrixCSC{Float64,Int64}
 end
 
-mutable struct elastico_aniso_iga <: vetorial
+@kwdef mutable struct elastico_aniso_iga <: vetorial
     NOS::Array{Float64,2}
     pontos_controle::Array{Float64,2}
     pontos_internos::Array{Float64,2}
@@ -104,29 +108,14 @@ mutable struct elastico_aniso_iga <: vetorial
     k::NamedTuple
     E::SparseMatrixCSC{Float64,Int64}
 end
-mutable struct placa_fina <: vetorial
+@kwdef mutable struct placa_fina <: vetorial
     NOS::Array{Float64,2}
     pontos_internos::Array{Float64,2}
     ELEM::Array{elementov,1}
     normal::Array{Float64,2}
     k::NamedTuple
 end
-mutable struct placa_fina_isotropica <: vetorial
-    NOS::Array{Float64,2}
-    pontos_internos::Array{Float64,2}
-    ELEM::Array{elementov,1}
-    normal::Array{Float64,2}
-    k::NamedTuple
-end
-
-mutable struct placa_espessa <: vetorial
-    NOS::Array{Float64,2}
-    pontos_internos::Array{Float64,2}
-    ELEM::Array{elementov,1}
-    normal::Array{Float64,2}
-    k::NamedTuple
-end
-mutable struct placa_espessa_isotropica <: vetorial
+@kwdef mutable struct placa_fina_isotropica <: vetorial
     NOS::Array{Float64,2}
     pontos_internos::Array{Float64,2}
     ELEM::Array{elementov,1}
@@ -134,20 +123,35 @@ mutable struct placa_espessa_isotropica <: vetorial
     k::NamedTuple
 end
 
-mutable struct casca <: vetorial
+@kwdef mutable struct placa_espessa <: vetorial
+    NOS::Array{Float64,2}
+    pontos_internos::Array{Float64,2}
+    ELEM::Array{elementov,1}
+    normal::Array{Float64,2}
+    k::NamedTuple
+end
+@kwdef mutable struct placa_espessa_isotropica <: vetorial
+    NOS::Array{Float64,2}
+    pontos_internos::Array{Float64,2}
+    ELEM::Array{elementov,1}
+    normal::Array{Float64,2}
+    k::NamedTuple
+end
+
+@kwdef mutable struct casca <: vetorial
     dadplaca::placa_fina_isotropica
     dadpe::elastico
     R11::Float64
     R22::Float64
 end
-mutable struct casca_aniso <: vetorial
+@kwdef mutable struct casca_aniso <: vetorial
     dadplaca::placa_fina
     dadpe::elastico_aniso
     R11::Float64
     R22::Float64
 end
 
-mutable struct hmat
+@kwdef mutable struct hmat
     A::Matrix{Matrix{Float64}}
     block::Matrix{Int64}
     Tree1::Vector{Vector{Int64}}
@@ -169,11 +173,11 @@ size(e::elementov) = size(e.indices, 1)
 KH=kernelH(dad,BEM.calc_normais(dad))
 
 """
-mutable struct kernelH <: AbstractMatrix{Float64}
+@kwdef mutable struct kernelH <: AbstractMatrix{Float64}
     dad::DadosBEM
     integralelem::Vector{Float64}
 end
-mutable struct kernelG <: AbstractMatrix{Float64}
+@kwdef mutable struct kernelG <: AbstractMatrix{Float64}
     dad::DadosBEM
     integralelem::Vector{Float64}
 end
@@ -233,6 +237,76 @@ Base.size(K::kernelH) = nc(K.dad), nc(K.dad)
 Base.size(K::kernelG) = nc(K.dad), nc(K.dad)
 
 
+@kwdef mutable struct kernelHv <: AbstractMatrix{Float64}
+    dad::DadosBEM
+    integralelem::Vector{Float64}
+    Hp::SparseMatrixCSC
+end
+@kwdef mutable struct kernelGv <: AbstractMatrix{Float64}
+    dad::DadosBEM
+    integralelem::Vector{Float64}
+    Gp::SparseMatrixCSC
+end
+function Base.getindex(K::kernelHv, i::Int, j::Int)
+    if i > nc(K.dad)
+        xi = K.dad.pontos_internos[i-nc(K.dad), 1]
+        yi = K.dad.pontos_internos[i-nc(K.dad), 2]
+    else
+        xi = K.dad.NOS[i, 1]
+        yi = K.dad.NOS[i, 2]
+    end
+
+    if i == j
+        return [0.0 0.0; 0.0 0.0]
+    end
+    if K.Hp[2i-1:2i, 2j:2j] == [0 0; 0 0]
+        if j > nc(K.dad)
+            xj = K.dad.pontos_internos[j-nc(K.dad), 1]
+            yj = K.dad.pontos_internos[j-nc(K.dad), 2]
+        else
+            xj = K.dad.NOS[j, 1]
+            yj = K.dad.NOS[j, 2]
+        end
+        if j > nc(K.dad)
+            return [0.0 0.0; 0.0 0.0]
+        end
+        Qast, Tast = calsolfund([xj - xi, yj - yi], K.dad.normal[j, :], K.dad)
+        return Qast * K.integralelem[j]
+    else
+        return K.Hp[2i-1:2i, 2j:2j]
+    end
+
+end
+function Base.getindex(K::kernelGv, i::Int, j::Int)
+
+    if i > nc(K.dad)
+        xi = K.dad.pontos_internos[i-nc(K.dad), 1]
+        yi = K.dad.pontos_internos[i-nc(K.dad), 2]
+    else
+        xi = K.dad.NOS[i, 1]
+        yi = K.dad.NOS[i, 2]
+    end
+    if K.Gp[2i-1:2i, 2j:2j] == [0 0; 0 0]
+        if j > nc(K.dad)
+            xj = K.dad.pontos_internos[j-nc(K.dad), 1]
+            yj = K.dad.pontos_internos[j-nc(K.dad), 2]
+        else
+            xj = K.dad.NOS[j, 1]
+            yj = K.dad.NOS[j, 2]
+        end
+        if j > nc(K.dad)
+            return [0.0 0.0; 0.0 0.0]
+        end
+        Qast, Tast = calsolfund([xj - xi, yj - yi], [0, 0], K.dad)
+        return Tast * K.integralelem[j]
+    else
+        return K.Gp[2i-1:2i, 2j:2j]
+    end
+end
+Base.size(K::kernelHv) = nc(K.dad), nc(K.dad)
+Base.size(K::kernelGv) = nc(K.dad), nc(K.dad)
+
+
 export potencial,
     helmholtz,
     potencial_iga,
@@ -247,4 +321,5 @@ export potencial,
     casca,
     casca_aniso,
     placa_espessa,
-    placa_espessa_isotropica
+    placa_espessa_isotropica,
+    Point2D
