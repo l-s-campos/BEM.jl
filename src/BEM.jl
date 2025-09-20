@@ -1,15 +1,26 @@
 module BEM
-using DrWatson
-using LinearAlgebra, Statistics, FastGaussQuadrature, SparseArrays, StaticArrays, Krylov
-using TimerOutputs#, FFTW,ForwardDiff, Optim,Printf
-using CairoMakie, DelaunayTriangulation#, WriteVTK,Distances
-export lines, lines!, scatter, scatter!, tricontourf
-using Infiltrator, ParallelKMeans, LowRankApprox
-using PolynomialRoots, SpecialFunctions
-using Krylov, NonlinearSolve
+using Reexport
+@reexport using DrWatson
+@reexport using LinearAlgebra
+@reexport using Statistics
+@reexport using FastGaussQuadrature
+@reexport using SparseArrays
+@reexport using StaticArrays
+@reexport using Krylov
+@reexport using TimerOutputs#, FFTW,ForwardDiff, Optim,Printf
+@reexport using CairoMakie
+@reexport using DelaunayTriangulation#, WriteVTK,Distances
+# export lines, lines!, scatter, scatter!, tricontourf
+@reexport using Infiltrator
+@reexport using ParallelKMeans
+@reexport using LowRankApprox
+@reexport using PolynomialRoots
+@reexport using SpecialFunctions
+@reexport using Krylov
+@reexport using NonlinearSolve
 using ProgressMeter
 using Distributed
-using AbstractTrees, Printf
+using Printf
 include("estruturas.jl")
 
 include("./Hmat/HMatrices.jl")

@@ -115,9 +115,11 @@ function _aca_partial(K, irange, jrange, atol, rmax, rtol, istart, buffer_ = not
     r = 0 # current rank
     while er > max(atol, rtol * est_norm) && r < rmax && sum(I) > 0 || r < 5
         # remove index i from allowed row
-        # @show i
         if i === nothing
             break
+        end
+        if i ==-1
+            break 
         end
         I[i] = false
         # pre-allocate row and column

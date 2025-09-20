@@ -94,10 +94,6 @@ glob2loc(clt::ClusterTree) = clt.glob2loc
 isleaf(clt::ClusterTree) = isempty(clt.children)
 isroot(clt::ClusterTree) = clt.parent == clt
 
-# for compatibility with AbstractTrees
-AbstractTrees.children(t::ClusterTree) = isleaf(t) ? () : t.children
-AbstractTrees.childrentype(::Type{T}) where {T<:ClusterTree} = Vector{T}
-
 diameter(node::ClusterTree) = diameter(container(node))
 radius(node::ClusterTree) = radius(container(node))
 
@@ -224,22 +220,20 @@ function corrige_yclt!(current_node, elements, dist)
     end
 end
 
-
-
 function Base.show(io::IO, tree::ClusterTree{N,T}) where {N,T}
     return print(io, "ClusterTree with $(length(tree.index_range)) points.")
 end
 
 function Base.summary(clt::ClusterTree)
     @printf "Cluster tree with %i elements" length(clt)
-    nodes = collect(AbstractTrees.PreOrderDFS(clt))
-    @printf "\n\t number of nodes: %i" length(nodes)
-    leaves = collect(AbstractTrees.Leaves(clt))
-    @printf "\n\t number of leaves: %i" length(leaves)
-    points_per_leaf = map(length, leaves)
+    nodes_ = nodes(clt)
+    @printf "\n\t number of nodes: %i" length(nodes_)
+    leaves_ = leaves(clt)
+    @printf "\n\t number of leaves: %i" length(leaves_)
+    points_per_leaf = map(length, leaves_)
     @printf "\n\t min number of elements per leaf: %i" minimum(points_per_leaf)
     @printf "\n\t max number of elements per leaf: %i" maximum(points_per_leaf)
-    depth_per_leaf = map(depth, leaves)
+    depth_per_leaf = map(depth, leaves_)
     @printf "\n\t min depth of leaves: %i" minimum(depth_per_leaf)
     @printf "\n\t max depth of leaves: %i" maximum(depth_per_leaf)
 end

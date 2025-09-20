@@ -3,9 +3,8 @@
 # Pkg.activate(pwd())
 # Pkg.instantiate()
 using DataFrames, CSV
-using DrWatson
-# @quickactivate "BEM"
 include(scriptsdir("includes.jl"))
+@quickactivate "BEM"
 nelem = 20  #Numero de elementos
 order = 2
 NPX = 10 #pontos internos na direção x
@@ -36,7 +35,7 @@ res = DataFrame(
     em2 = Float64[],
     em3 = Float64[],
 )
-for p = 1:5, i = 1:7, j = 2:3
+for p = 1:1, i = 3:6, j = 2:2
     nelem = 4 * 2^i  #Numero de elementos
     order = j
     # p = 1
@@ -50,8 +49,8 @@ for p = 1:5, i = 1:7, j = 2:3
 
     # function compara_potencial(dad, npg)
     reset_timer!()
-    tHeG = @timed H, G = calc_HeG(dad, npg)  #importante
-    tHeGd = @timed Hd, Gd = BEM.calc_HeGd(dad, 3)  #importante
+    tHeG = @timed H, G = calc_HeG(dad, npg,interno=true)  #importante
+    tHeGd = @timed Hd, Gd = BEM.calc_HeGd(dad, 3,interno=true)  #importante
     tHeGHd = @timed HH, HG = BEM.calc_HeG_Hd(dad, atol = 1e-6)
 
     A, b = aplicaCDC(H, G, dad) # Calcula a matriz A e o vetor b
@@ -76,7 +75,7 @@ for p = 1:5, i = 1:7, j = 2:3
     tid = @timed Tid = BEM.calc_Tid(dad, Td, qd, 3)
 
     t =
-        [tHeG.time + ti.time tHeGd.time + tid.time tHeGHd.time tsolve.time tsolved.time tsolveHd.time]
+        [tHeG.time  tHeGd.time  tHeGHd.time tsolve.time tsolved.time tsolveHd.time]
     # t, T, Td, q, qd = compara_potencial(dad, npg)
     Tana = ana[p](dad.NOS)
     e1 = norm(T - Tana) / norm(Tana)
@@ -119,12 +118,12 @@ for p = 1:5, i = 1:7, j = 2:3
         ],
     )
 end
-for i in prob, order = 2:5
-    CSV.write(
-        string(i, "_", order, ".csv"),
-        filter(row -> (row.prob == string(i)) && (row.order == order), res),
-    )
-end
+# for i in prob, order = 2:5
+#     CSV.write(
+#         string(i, "_", order, ".csv"),
+#         filter(row -> (row.prob == string(i)) && (row.order == order), res),
+#     )
+# end
 # p = lines(dad.NOS[:, 1], T)
 # lines!(dad.NOS[:, 1], Td)
 # lines!(dad.NOS[:, 1], Tana)

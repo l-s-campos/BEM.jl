@@ -1,8 +1,6 @@
 using BEM
-using Revise, Infiltrator
-using TimerOutputs
-using FileIO, LinearAlgebra, Statistics
-using SparseArrays, NonlinearSolve
+using Revise
+using FileIO
 
 includet(datadir("dadpotencial.jl"))
 includet(datadir("dadelastico.jl"))

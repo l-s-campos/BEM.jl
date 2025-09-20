@@ -1,4 +1,4 @@
-function calc_HeGd(dad::potencial, npg = 3)
+function calc_HeGd(dad::potencial, npg = 3; interno = false)
     nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
     n = size(dad.NOS, 1)
     intelems = zeros(n)
@@ -31,11 +31,34 @@ function calc_HeGd(dad::potencial, npg = 3)
             G[i, j] = Tast * intelems[j]
         end
     end
+if interno
+        ni = size(dad.pontos_internos, 1)
+        Hi = zeros(ni, n)
+        Gi = zeros(ni, n)
+        for i = 1:ni
+            pf = dad.pontos_internos[i, :]   # Coordenada (x,y)  dos pontos fonte
+                    for j = 1:n
+            if i == j
+                continue
+            end
+            pc = dad.NOS[j, :]
+            # r = sqrt((xi - xj)^2 + (yi - yj)^2)
+
+            Qast, Tast = calsolfund(pc-pf, normal_fonte[j, :], dad)
+                # @infiltrate
+            Hi[i, j] = Qast * intelems[j]
+            Gi[i, j] = Tast * intelems[j]
+            end
+        end
+        H = [H zeros(n, ni); Hi -I]
+        G = [G; Gi]
+      end
+
     for i = 1:n                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
         # H[i, i] = -0.5
         H[i, i] = -sum(H[i, :])
     end
-    somaH = H * (dad.NOS[:, 1] + dad.NOS[:, 2])
+    somaH = H * [dad.NOS[:, 1] + dad.NOS[:, 2];dad.pontos_internos[:, 1] + dad.pontos_internos[:, 2]]
     somaG = G * (normal_fonte[:, 1] + normal_fonte[:, 2]) * dad.k
     for i = 1:n                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
         G[i, i] = (-somaH[i] - somaG[i]) / (normal_fonte[i, 1] + normal_fonte[i, 2])
@@ -84,9 +107,9 @@ function corrige_diagonais!(
     piv = pivot(Hmat)
     diag = Hmat * ones(size(Hmat, 2))
 
-    for block in AbstractTrees.PreOrderDFS(Hmat)
+    for block in nodes(Hmat)
         hasdata(block) || continue
-        # !block.admissible || continue
+        !block.admissible || continue
         irange = rowrange(block) .- piv[1] .+ 1
         jrange = colrange(block) .- piv[2] .+ 1
 
@@ -111,7 +134,7 @@ function corrige_diagonais!(
     diagG[end-ni(dad)+1:end] .= 0
     piv = pivot(Gmat)
     # @infiltrate
-    for block in AbstractTrees.PreOrderDFS(Gmat)
+    for block in nodes(Gmat)
         hasdata(block) || continue
         !block.admissible || continue
         irange = rowrange(block) .- piv[1] .+ 1
@@ -137,8 +160,8 @@ function aplicaCDC(HH::HMatrix, HG::HMatrix, dad::Union{helmholtz,potencial})
 
     aux = Array
     piv = pivot(HH)
-    nodesH = collect(AbstractTrees.PreOrderDFS(HH))
-    nodesG = collect(AbstractTrees.PreOrderDFS(HG))
+    nodesH = nodes(HH)
+    nodesG = nodes(HG)
     # @infiltrate
     for block = 1:length(nodesH)
         # @show block, nodesH[block].admissible
