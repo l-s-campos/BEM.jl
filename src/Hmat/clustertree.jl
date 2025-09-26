@@ -140,7 +140,7 @@ function ClusterTree(
     return root
 end
 function ClusterTree(
-    dad::DadosBEM,
+    dad::potencial,
     splitter = CardinalitySplitter();
     threads = false,
     dist = 1e6,
@@ -163,25 +163,40 @@ function ClusterTree(
     for i = 1:length(tipoCDC)
         elementsCDC[i] += dist * [1, 1] .* tipoCDC[i, :]
     end
+    yclt = ClusterTree(elementsCDC, splitter)
+    corrige_yclt!(yclt, elements, dist)
+    # @infiltrate
+    # return ClusterTree(elements, splitter), ClusterTree(elements, splitter)
+    return ClusterTree(elements, splitter), yclt
+end
 
-    #    @infiltrate
-    #     bbox = bounding_box(elements)
-    #     n = length(elements)
-    #     irange = 1:n
-    #     loc2glob = collect(irange)
-    #     glob2loc = collect(irange) # used as buffer during the construction
-    #     children = nothing
-    #     parent = nothing
-    #     #build the root, then recurse
-    #     root = ClusterTree(elements, bbox, irange, loc2glob, glob2loc, children, parent)
-    #     # binary_split_CDC!(root, dad)
-    #     # @infiltrate
-    #     _build_cluster_tree!(root, splitter, threads)
-    #     # inverse the loc2glob permutation
-    #     glob2loc .= invperm(loc2glob)
-    #     # finally, permute the elements so as to use the local indexing
-    #     copy!(elements, elements[loc2glob]) # faster than permute!
-    #     return ClusterTree(elements, splitter),root
+function ClusterTree(
+    dad::elastico,
+    splitter = CardinalitySplitter();
+    threads = false,
+    dist = 1e6,
+)
+    elements = repeat([
+        [Point2D(dad.NOS[i, 1], dad.NOS[i, 2]) for i = 1:nc(dad)]
+        [Point2D(dad.pontos_internos[i, 1], dad.pontos_internos[i, 2]) for i = 1:ni(dad)]
+    ], inner = 2)
+    tipoCDC = BEM.tipoCDC(dad)
+    elementsCDC = repeat([
+        [Point2D(dad.NOS[i, 1], dad.NOS[i, 2]) for i = 1:nc(dad)]
+        [Point2D(dad.pontos_internos[i, 1], dad.pontos_internos[i, 2]) for i = 1:ni(dad)]
+    ], inner = 2)
+
+    # for i = 1:length(tipoCDC)
+    #     if tipoCDC[i] == 1
+    #         elementsCDC[i] = elementsCDC[i] .+ dist
+    #     end
+    # end
+    # for i = 1:nc(dad)
+    #     elementsCDC[2i-1] .+= dist *  tipoCDC[2i-1]
+    #     elementsCDC[2i] .+= dist *  tipoCDC[2i]
+    # end
+    elementsCDC[1:2:end] .+= dist *  tipoCDC[1:2:end]
+    elementsCDC[2:2:end] .-= dist *  tipoCDC[2:2:end]
     yclt = ClusterTree(elementsCDC, splitter)
     corrige_yclt!(yclt, elements, dist)
     # @infiltrate

@@ -42,16 +42,17 @@ elements = [
     [Point2D(dad.pontos_internos[i, 1], dad.pontos_internos[i, 2]) for i = 1:ni(dad)]
 ];
 # elements = [elements elements]'[:]
-struct elastMatrix <: AbstractMatrix{Float64}
+struct elastMatrix <: AbstractMatrix{SMatrix{2,2,Float64,4}}
     A::Matrix{Float64}
 end
 function Base.getindex(K::elastMatrix, i::Int, j::Int)
-    return K.A[i, j]
-    # return K.A[2i-1:2i, 2j-1:2j]
+    # return K.A[i, j];
+     return SMatrix{2,2,Float64,4}(K.A[2i-1:2i, 2j-1:2j])
 end
-Base.size(K::elastMatrix) = size(K.A)
+Base.size(K::elastMatrix) = round.(Int,size(K.A)./2)
 
-Xclt = Yclt = ClusterTree(repeat(elements, inner = 2), BEM.PrincipalComponentSplitter())
+# Xclt = Yclt = ClusterTree(repeat(elements, inner = 2), BEM.PrincipalComponentSplitter())
+Xclt = Yclt = ClusterTree(elements, BEM.PrincipalComponentSplitter())
 adm = StrongAdmissibilityStd()
 comp = PartialACA(atol = 1e-6, rank = 20, rtol = 1e-6)
 # comp = TSVD(atol = 1e-6, rank = 20, rtol = 1e-6)

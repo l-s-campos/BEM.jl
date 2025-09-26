@@ -57,8 +57,8 @@ for p = 1:1, i = 3:6, j = 2:2
     Ad, bd = aplicaCDC(Hd, Gd, dad) # Calcula a matriz A e o vetor b
     bH = aplicaCDC(HH, HG, dad)
 
-    tsolve = @timed x = A \ b
-    tsolved = @timed xd = Ad \ bd
+    # tsolve = @timed x = A \ b
+    # tsolved = @timed xd = Ad \ bd
 
     tsolve = @timed x, f = gmres(A, b, rtol = 1e-5, itmax = 100) #GMRES nas matrizes
     tsolved = @timed xd, f = gmres(Ad, bd, rtol = 1e-5, itmax = 100) #GMRES nas matrizes

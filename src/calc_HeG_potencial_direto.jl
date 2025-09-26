@@ -74,9 +74,9 @@ function calc_HeG_Hd(dad::potencial; npg = 3, atol = 1e-4)
 
     for elem_j in dad.ELEM  #Laço dos elementos
         x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
-        intelem = integraelemd(x, qsi, w, elem_j)
+        intelems[elem_j.indices] =  integraelemd(x, qsi, w, elem_j)
         # @infiltrate
-        intelems[elem_j.indices] = intelem
+        # intelem
     end
 
     # X = [[Point2D(dad.NOS[i, 1], dad.NOS[i, 2]) for i in 1:nc(dad)]; [Point2D(dad.pontos_internos[i, 1], dad.pontos_internos[i, 2]) for i in 1:ni(dad)]]
@@ -181,6 +181,24 @@ function aplicaCDC(HH::HMatrix, HG::HMatrix, dad::Union{helmholtz,potencial})
     HG * valorCDC
     # @infiltrate
 end
+# function converte_hmat_tens(H::HMatrix)
+
+#     for block in nodes(H)
+#         # @show block, nodesH[block].admissible
+#         hasdata(block) || continue
+#         if !block.admissible
+#              block.data=reduce(vcat, [reduce(hcat, row) for row in eachrow(block.data)])
+#         else
+#              block.data.A=reduce(vcat, [reduce(hcat, row) for row in eachrow(block.data.A)])
+#              block.data.B=reduce(vcat, [reduce(hcat, row) for row in eachrow(block.data.B)])
+
+#             end
+#     end
+#     # @infiltrate
+# end
+# function reduz_matdemat(A)
+#     reduce(vcat, [reduce(hcat, row) for row in eachrow(A)])
+# end
 
 function calc_Tid(dad::potencial, T, q, npg = 3)
     nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
@@ -232,7 +250,7 @@ function integraelemd(x, eta, w, elem)
     end
     h
 end
-function Monta_M_Hd(dad::potencial, npg; atol = 1e-4)
+function Monta_M_Hd(dad::potencial, npg; tiporadial = "tps",atol = 1e-4)
     n_nos = size(dad.NOS, 1)
     nelem = size(dad.ELEM, 1)
     n_noi = size(dad.pontos_internos, 1) #Number of internal nodes
@@ -253,12 +271,12 @@ function Monta_M_Hd(dad::potencial, npg; atol = 1e-4)
     KF = BEM.kernelF(dad)
 
     HF = assemble_hmat(KF, Xclt, Yclt; adm, comp)
-    M, M1 = calcMs(dad, npg)
+    M, M1 = calcMs(dad, npg,tiporadial)
     # @show size(M)
     # @show length(M)
     # @infiltrate
     # S = HF \ M
-    S = gmres(HF, M)
+    S,aux = gmres(HF, M)
     KD = BEM.kernelD(dad, S)
     HD = assemble_hmat(KD, Xclt, Yclt; adm, comp)
     corrige_diagonal_M!(HD, M1)
@@ -325,6 +343,9 @@ function Base.getindex(K::kernelD, i::Int, j::Int)
     r = sqrt((xi - xj)^2 + (yi - yj)^2)
     -log(r) / (2 * π * K.dad.k) * K.S[j]
 end
+Base.size(K::kernelF) = nc(K.dad)+ni(K.dad), nc(K.dad)+ni(K.dad)
+Base.size(K::kernelD) = nc(K.dad)+ni(K.dad), nc(K.dad)+ni(K.dad)
+
 function corrige_diagonal_M!(Hmat::HMatrix, M1::Vector{Float64})
     piv = pivot(Hmat)
     diag = Hmat * ones(size(Hmat, 2)) - M1

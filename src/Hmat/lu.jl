@@ -68,14 +68,14 @@ function _lu!(M::HMatrix, compressor, threads, bufs = nothing)
         @assert !hasdata(M)
         chdM = children(M)
         m, n = size(chdM)
-        for i = 1:m
+        for i in 1:m
             _lu!(chdM[i, i], compressor, threads, bufs)
-            for j = (i+1):n
+            for j in (i+1):n
                 ldiv!(UnitLowerTriangular(chdM[i, i]), chdM[i, j], compressor, bufs)
                 rdiv!(chdM[j, i], UpperTriangular(chdM[i, i]), compressor, bufs)
             end
-            for j = (i+1):m
-                for k = (i+1):n
+            for j in (i+1):m
+                for k in (i+1):n
                     hmul!(chdM[j, k], chdM[j, i], chdM[i, k], -1, 1, compressor, bufs)
                 end
             end

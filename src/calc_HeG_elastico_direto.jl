@@ -1,6 +1,9 @@
-function calc_HeGd(dad::elastico, npg = 3)
-    nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
-    n = size(dad.NOS, 1)
+function calc_HeGd(dad::elastico, npg = 3; interno = false)
+    if interno
+        n = size(dad.NOS, 1) + size(dad.pontos_internos, 1)
+    else
+        n = size(dad.NOS, 1)
+    end
     intelems = zeros(n)
     H = zeros(2n, 2n)
     G = zeros(2n, 2n)
@@ -17,7 +20,11 @@ function calc_HeGd(dad::elastico, npg = 3)
     for i = 1:n
         # xi = dad.NOS[i, 1]
         # yi = dad.NOS[i, 2]
-        pf = dad.NOS[i, :]
+        if i > size(dad.NOS, 1)
+            pf = dad.pontos_internos[i-nc(dad), :]
+        else
+            pf = dad.NOS[i, :]
+        end
         for elem_j in dad.ELEM  #Laço dos elementos
             xj = dad.NOS[elem_j.indices[1], 1]
             yj = dad.NOS[elem_j.indices[1], 2]
@@ -63,6 +70,9 @@ function calc_HeGd(dad::elastico, npg = 3)
 
         end
     end
+
+
+
     for i = 1:n                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
         H[2i-1:2i, 2i-1:2i] .= 0
         H[2i-1:2i, 2i-1:2i] =
@@ -74,16 +84,22 @@ function calc_HeGd(dad::elastico, npg = 3)
     # corrige_diagonais2!(dad::elastico, H, G)
     H, G
 end
-function calc_HeG_pre(dad::elastico, npg = 20)
-    n = size(dad.NOS, 1)
+function calc_HeG_pre(dad::elastico, npg = 20; interno = false)
+    if interno
+        n = size(dad.NOS, 1) + size(dad.pontos_internos, 1)
+    else
+        n = size(dad.NOS, 1)
+    end
     H = spzeros(2n, 2n)
     G = spzeros(2n, 2n)
-    qsi, w = BEM.gausslegendre(20)    # Quadratura de gauss
+    qsi, w = BEM.gausslegendre(npg)    # Quadratura de gauss
 
     @showprogress "Montando H e G" for i = 1:n
-        # xi = dad.NOS[i, 1]
-        # yi = dad.NOS[i, 2]
-        pf = dad.NOS[i, :]
+        if i > size(dad.NOS, 1)
+            pf = dad.pontos_internos[i-nc(dad), :]
+        else
+            pf = dad.NOS[i, :]
+        end
         for elem_j in dad.ELEM  #Laço dos elementos
             xj = dad.NOS[elem_j.indices[1], 1]
             yj = dad.NOS[elem_j.indices[1], 2]
@@ -94,7 +110,11 @@ function calc_HeG_pre(dad::elastico, npg = 20)
                 if sum(nosing) == 1
                     no_pf = findfirst(nosing)
                     eet = elem_j.ξs[no_pf]
-                    b = 0.0
+                    
+                    eta2, w2 = novelquad(1, eet, 1*npg)
+                    # eta, Jt = sinhtrans(eta2, eet, 0.0)
+                    h, g = integraelem(pf, x, eta2, w2, elem_j, dad)
+
                 else
                     Δelem = x[end, :] - x[1, :]     # Δx e Δy entre o primeiro e ultimo nó geometrico
                     eet =
@@ -103,11 +123,11 @@ function calc_HeG_pre(dad::elastico, npg = 20)
                     N_geo = calc_fforma(eet, elem_j, false)
                     ps = N_geo' * x
                     b = norm(ps' - pf) / norm(Δelem)
+                    eta, Jt = sinhtrans(qsi, eet, b)
+                    # eta,Jt=telles(qsi,eet)
+                    # @infiltrate
+                    h, g = integraelem(pf, x, eta, w .* Jt, elem_j, dad)
                 end
-                eta, Jt = sinhtrans(qsi, eet, b)
-                # eta,Jt=telles(qsi,eet)
-                # @infiltrate
-                h, g = integraelem(pf, x, eta, w .* Jt, elem_j, dad)
                 # h, g = integraelem(pf, x, qsi, w , elem_j, dad)
                 # nosing = elem_j.indices .== i
 
@@ -120,94 +140,23 @@ function calc_HeG_pre(dad::elastico, npg = 20)
 
         end
     end
+ for i = 1:nc(dad)                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
+        H[2i-1:2i, 2i-1:2i] +=
+            [.5 0.0; 0.0 .5]
+    end
+ for i = 1:ni(dad)                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
+        H[2*nc(dad)+2i-1:2*nc(dad)+2i, 2*nc(dad)+2i-1:2*nc(dad)+2i] +=
+            [1.0 0.0; 0.0 1.0]
+    end
+
+
     H, G
-end
-function corrige_diagonais!(dad::elastico, H, G)
-    n = size(dad.NOS, 1)
-    for i = 1:n                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
-        H[2i-1:2i, 2i-1:2i] .= 0
-        G[2i-1:2i, 2i-1:2i] .= 0
-
-        H[2i-1, 2i-1] = -sum(H[2i-1, 1:2:end])
-        H[2i, 2i-1] = -sum(H[2i, 1:2:end])
-        H[2i, 2i] = -sum(H[2i, 2:2:end])
-        H[2i-1, 2i] = -sum(H[2i-1, 2:2:end])
-    end
-    us, ts = BEM.gera_ut(dad)
-    LD = H * us - G * ts
-    for i = 1:n                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
-        A = [
-            ts[2i-1, 1] ts[2i, 1] 0.0 0.0
-            0.0 0.0 ts[2i-1, 1] ts[2i, 1]
-            ts[2i-1, 2] ts[2i, 2] 0.0 0.0
-            0.0 0.0 ts[2i-1, 2] ts[2i, 2]
-        ]
-        # @infiltrate
-        # @show A
-        # @show [LD[2i-1, 1], LD[2i, 1], LD[2i-1, 2], LD[2i-1, 2]]
-        gs = A \ [LD[2i-1, 1], LD[2i, 1], LD[2i-1, 2], LD[2i, 2]]
-        G[2i-1, 2i-1] = gs[1]
-        G[2i-1, 2i] = gs[2]
-        G[2i, 2i-1] = gs[3]
-        G[2i, 2i] = gs[4]
-    end
-end
-function corrige_diagonais2!(dad::elastico, H, G)
-    qsi, w = BEM.gausslegendre(20)   # Quadratura de gauss
-    for elem_j in dad.ELEM  #Laço dos elementos
-        for i in elem_j.indices
-            pf = dad.NOS[i, :]
-            x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
-            Δelem = x[end, :] - x[1, :]     # Δx e Δy entre o primeiro e ultimo nó geometrico
-            eet =
-                (elem_j.ξs[end] - elem_j.ξs[1]) * dot(Δelem, pf .- x[1, :]) /
-                norm(Δelem)^2 + elem_j.ξs[1]
-            N_geo = BEM.calc_fforma(eet, elem_j, false)
-            ps = N_geo' * x
-            b = norm(ps' - pf) / norm(Δelem)
-            eta, Jt = BEM.sinhtrans(qsi, eet, b)
-            # eta,Jt=telles(qsi,eet)
-            h, g = BEM.integraelem(pf, x, eta, w .* Jt, elem_j, dad)
-
-            cols = [2elem_j.indices .- 1 2elem_j.indices]'[:]
-            H[2i-1:2i, cols] = h
-            G[2i-1:2i, cols] = g
-        end
-    end
-    for i = 1:nc(dad)                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
-        H[2i-1:2i, 2i-1:2i] .= 0
-        H[2i-1:2i, 2i-1:2i] =
-            -[sum(H[2i-1:2i, 1:2:end], dims = 2) sum(H[2i-1:2i, 2:2:end], dims = 2)]
-    end
-end
-function gera_ut(dad::elastico)
-    nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
-    n = size(dad.NOS, 1)
-    intelems = zeros(n)
-    u = zeros(2n, 2)
-    t = zeros(2n, 2)
-
-    m1 = maximum(dad.NOS)
-    m2 = minimum(dad.NOS)
-    dist = 1
-    xi = m2 - m1 * dist
-    yi = m2 - m1 * dist
-    for j = 1:n
-        xj = dad.NOS[j, 1]
-        yj = dad.NOS[j, 2]
-        uast, tast = calsolfund([xj, yj], [xi, yi], dad.normal[j, :], dad)
-
-        u[2j-1:2j, :] = uast'
-        t[2j-1:2j, :] = tast'
-    end
-    u, t
 end
 
 function calc_HeG_Hd(dad::elastico; npg = 3, atol = 1e-4)
     n = size(dad.NOS, 1)
     intelems = zeros(n)
     qsi, w = BEM.gausslegendre(npg)    # Quadratura de gauss
-    normal_fonte = BEM.calc_normais(dad)
 
     for elem_j in dad.ELEM  #Laço dos elementos
         x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
@@ -218,21 +167,25 @@ function calc_HeG_Hd(dad::elastico; npg = 3, atol = 1e-4)
 
     # X = [[Point2D(dad.NOS[i, 1], dad.NOS[i, 2]) for i in 1:nc(dad)]; [Point2D(dad.pontos_internos[i, 1], dad.pontos_internos[i, 2]) for i in 1:ni(dad)]]
     # # X = [Point2D(dad.NOS[i, 1], dad.NOS[i, 2]) for i in 1:nc(dad)]
-
+    Hpre,Gpre=calc_HeG_pre(dad,interno = true)
     splitter = BEM.PrincipalComponentSplitter(; nmax = 10)
     # Xclt = Yclt = ClusterTree(X, splitter)
-    Xclt, Yclt = ClusterTree(dad, splitter)
-
+    # Xclt, Yclt = ClusterTree(dad, splitter)
+#     elements = [
+#     [Point2D(dad.NOS[i, 1], dad.NOS[i, 2]) for i = 1:nc(dad)]
+#     [Point2D(dad.pontos_internos[i, 1], dad.pontos_internos[i, 2]) for i = 1:ni(dad)]
+# ];
+# Xclt = Yclt = ClusterTree(repeat(elements, inner = 2),splitter)
+ Xclt, Yclt = ClusterTree(dad, splitter)
     # @infiltrate
     adm = StrongAdmissibilityStd(eta = 3)
     comp = PartialACA(; atol)
 
-    KG = BEM.kernelGv(dad, intelems)
-    KH = BEM.kernelHv(dad, normal_fonte, intelems)
+    KG = BEM.kernelGv(dad, intelems,Gpre)
+    KH = BEM.kernelHv(dad, intelems,Hpre)
     HG = assemble_hmat(KG, Xclt, Yclt; adm, comp)
     HH = assemble_hmat(KH, Xclt, Yclt; adm, comp)
     # @infiltrate
-    corrige_diagonais!(HH)
     HH, HG
 end
 function corrige_diagonais!(Hmat::HMatrix)
@@ -261,33 +214,33 @@ function corrige_diagonais!(Hmat::HMatrix)
 end
 
 
-# function aplicaCDC(HH::HMatrix, HG::HMatrix, dad::DadosBEM)
-#     tipoCDC = BEM.tipoCDC(dad)
-#     valorCDC = [BEM.valorCDC(dad); zeros(ni(dad))]
+function aplicaCDC(HH::HMatrix, HG::HMatrix, dad::DadosBEM)
+    tipoCDC = BEM.tipoCDC(dad)
+    valorCDC = [BEM.valorCDC(dad); zeros(ni(dad))]
 
-#     aux = Array
-#     piv = pivot(HH)
-#     nodesH = collect(AbstractTrees.PreOrderDFS(HH))
-#     nodesG = collect(AbstractTrees.PreOrderDFS(HG))
-#     # @infiltrate
-#     for block = 1:length(nodesH)
-#         # @show block, nodesH[block].admissible
-#         hasdata(nodesH[block]) || continue
-#         # @show block
-#         irange = rowrange(nodesH[block]) .- piv[1] .+ 1
-#         jrange = colrange(nodesH[block]) .- piv[2] .+ 1
-#         jrangeg = colperm(HH)[jrange]
-#         # @show tipoCDC[jrangeg]
-#         tipoCDC[jrangeg[1]] == 0 || continue
+    aux = Array
+    piv = pivot(HH)
+    nodesH = nodes(HH)
+    nodesG = nodes(HG)
+    # @infiltrate
+    for block = 1:length(nodesH)
+        # @show block, nodesH[block].admissible
+        hasdata(nodesH[block]) || continue
+        # @show block
+        irange = rowrange(nodesH[block]) .- piv[1] .+ 1
+        jrange = colrange(nodesH[block]) .- piv[2] .+ 1
+        jrangeg = colperm(HH)[jrange]
+        # @show tipoCDC[jrangeg]
+        tipoCDC[jrangeg[1]] == 0 || continue
 
-#         aux = deepcopy(nodesH[block].data)
+        aux = deepcopy(nodesH[block].data)
 
-#         nodesH[block].data = -1 * nodesG[block].data
-#         nodesG[block].data = -1 * (aux)
-#     end
-#     HG * valorCDC
-#     # @infiltrate
-# end
+        nodesH[block].data = -1 * nodesG[block].data
+        nodesG[block].data = -1 * (aux)
+    end
+    HG * valorCDC
+    # @infiltrate
+end
 
 # function calc_Tid(dad::potencial, T, q, npg = 3)
 #     nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno

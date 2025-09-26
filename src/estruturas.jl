@@ -247,64 +247,62 @@ end
     integralelem::Vector{Float64}
     Gp::SparseMatrixCSC
 end
-function Base.getindex(K::kernelHv, i::Int, j::Int)
+function Base.getindex(K::kernelHv, ii::Int, jj::Int)
+   i= ceil(Int,ii/2)
+   j= ceil(Int,jj/2)
     if i > nc(K.dad)
-        xi = K.dad.pontos_internos[i-nc(K.dad), 1]
-        yi = K.dad.pontos_internos[i-nc(K.dad), 2]
+        xi = K.dad.pontos_internos[i-nc(K.dad), :]
     else
-        xi = K.dad.NOS[i, 1]
-        yi = K.dad.NOS[i, 2]
+        xi = K.dad.NOS[i, :]
+    end
+
+    if K.Hp[ii,jj] ==0.0
+        if j > nc(K.dad)
+            xj = K.dad.pontos_internos[j-nc(K.dad), :]
+        else
+            xj = K.dad.NOS[j, :]
+        end
+        if j > nc(K.dad)
+            return 0.0
+        end
+        uast, tast = calsolfund(xj,xi, K.dad.normal[j, :], K.dad)
+        # @show ii jj i j ii-2i+2 jj-2j+2
+        return tast[ii-2i+2,jj-2j+2] * K.integralelem[j]
+    else
+        return K.Hp[ii,jj]
+    end
+
+end
+function Base.getindex(K::kernelGv, ii::Int, jj::Int)
+   i= ceil(Int,ii/2)
+   j= ceil(Int,jj/2)
+    if i > nc(K.dad)
+        xi = K.dad.pontos_internos[i-nc(K.dad), :]
+    else
+        xi = K.dad.NOS[i, :]
     end
 
     if i == j
-        return [0.0 0.0; 0.0 0.0]
-    end
-    if K.Hp[2i-1:2i, 2j:2j] == [0 0; 0 0]
-        if j > nc(K.dad)
-            xj = K.dad.pontos_internos[j-nc(K.dad), 1]
-            yj = K.dad.pontos_internos[j-nc(K.dad), 2]
-        else
-            xj = K.dad.NOS[j, 1]
-            yj = K.dad.NOS[j, 2]
-        end
-        if j > nc(K.dad)
-            return [0.0 0.0; 0.0 0.0]
-        end
-        Qast, Tast = calsolfund([xj - xi, yj - yi], K.dad.normal[j, :], K.dad)
-        return Qast * K.integralelem[j]
-    else
-        return K.Hp[2i-1:2i, 2j:2j]
+        return 0.0
     end
 
-end
-function Base.getindex(K::kernelGv, i::Int, j::Int)
-
-    if i > nc(K.dad)
-        xi = K.dad.pontos_internos[i-nc(K.dad), 1]
-        yi = K.dad.pontos_internos[i-nc(K.dad), 2]
-    else
-        xi = K.dad.NOS[i, 1]
-        yi = K.dad.NOS[i, 2]
-    end
-    if K.Gp[2i-1:2i, 2j:2j] == [0 0; 0 0]
+    if K.Gp[ii,jj] ==0.0
         if j > nc(K.dad)
-            xj = K.dad.pontos_internos[j-nc(K.dad), 1]
-            yj = K.dad.pontos_internos[j-nc(K.dad), 2]
+            xj = K.dad.pontos_internos[j-nc(K.dad), :]
         else
-            xj = K.dad.NOS[j, 1]
-            yj = K.dad.NOS[j, 2]
+            xj = K.dad.NOS[j, :]
         end
         if j > nc(K.dad)
-            return [0.0 0.0; 0.0 0.0]
+            return 0.0
         end
-        Qast, Tast = calsolfund([xj - xi, yj - yi], [0, 0], K.dad)
-        return Tast * K.integralelem[j]
+        uast, tast = calsolfund(xj,xi, K.dad.normal[j, :], K.dad)
+        return uast[ii-2i+2,jj-2j+2] * K.integralelem[j]
     else
-        return K.Gp[2i-1:2i, 2j:2j]
+        return K.Gp[ii,jj]
     end
 end
-Base.size(K::kernelHv) = nc(K.dad), nc(K.dad)
-Base.size(K::kernelGv) = nc(K.dad), nc(K.dad)
+Base.size(K::kernelHv) = 2*nc(K.dad), 2*nc(K.dad)
+Base.size(K::kernelGv) = 2*nc(K.dad), 2*nc(K.dad)
 
 
 export potencial,
