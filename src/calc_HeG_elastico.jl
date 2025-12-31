@@ -922,7 +922,7 @@ function Monta_M_RIM(dad::Union{elastico,elastico_aniso}, npg1 = 10)
     nodes = [dad.NOS; dad.pontos_internos]
     M = zeros(2n_pontos, 2n_pontos)
     F = zeros(n_pontos, n_pontos)
-    normal_fonte = calc_normais(dad)
+    normal_fonte = dad.normal
 
     # Cálculo da matriz [F]
     @showprogress "Montando F" for i = 1:n_pontos
@@ -1204,7 +1204,7 @@ function Monta_dM_RIM(dad::Union{elastico,elastico_aniso}, npg1 = 10)
     nodes = [dad.NOS; dad.pontos_internos]
     M = zeros(3n_pontos, 2n_pontos)
     F = zeros(n_pontos, n_pontos)
-    normal_fonte = calc_normais(dad)
+    normal_fonte = dad.normal
 
     # Cálculo da matriz [F]
     @showprogress "Montando F" for i = 1:n_pontos
@@ -1269,7 +1269,7 @@ function Monta_dM_RIMd(dad::Union{elastico,elastico_aniso}, npg = 10)
     M1 = zeros(n_pontos)
     M2 = zeros(3n_pontos, 2)
 
-    normal_fonte = calc_normais(dad)
+    normal_fonte = dad.normal
     # Cálculo da matriz [F]
     @showprogress "Montando F e D" for i = 1:n_pontos
         if i <= n_nos

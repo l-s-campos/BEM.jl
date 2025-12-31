@@ -273,7 +273,7 @@ function _build_block_structure!(adm, current_node::HMatrix{R,T}) where {R,T}
     X = current_node.rowtree
     Y = current_node.coltree
     if (isleaf(X) || isleaf(Y))
-        current_node.admissible = false
+        current_node.admissible = falsea
     elseif adm(X, Y)
         current_node.admissible = true
     else
@@ -466,6 +466,21 @@ function compress!(H::HMatrix, comp)
     end
     return H
 end
+function blockdiag(H::HMatrix, comp)
+    Hd = deepcopy(H)
+    @assert isclean(H)
+    for leaf in leaves(Hd)
+        d = data(leaf)
+        if d isa RkMatrix
+            compress!(d * 0, comp)
+        end
+    end
+    return Hd
+end
+
+# Ad=BEM.blockdiag(HA, TSVD(atol = atol, rank = 1, rtol = rtol))
+# Md=BEM.blockdiag(HM, TSVD(atol = atol, rank = 1, rtol = rtol))
+# Preconditioner=Ad+Re*Md
 
 # ############################################################################################
 # # Recipes

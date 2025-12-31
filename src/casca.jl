@@ -188,7 +188,7 @@ function Monta_M_RIMd(Casca::casca, npg)
     M2 = zeros(2n_pontos, 2)
     # M2x = zeros(2n_pontos, 2)
     # M2y = zeros(2n_pontos, 2)
-    normal_fonte = calc_normais(dad)
+    normal_fonte = dad.normal
     for x in [:R0, :S0, :dRdx0, :dRdy0, :dSdx0, :dSdy0]
         @eval $x = zeros(2)
     end
@@ -337,7 +337,7 @@ function Monta_M_RIMd(Casca::casca, npg)
         q = zeros(4 * n_fis + n_cantos + 3n_internos)
         qsi, w = gausslegendre(npg)# Quadratura de gauss
         # qsi2, w2 = gausslegendre(2npg)# Quadratura de gauss
-        normal_fonte = calc_normais(dad)
+        normal_fonte = dad.normal
         pre = [zeros(2) for idx = 1:29]
 
 

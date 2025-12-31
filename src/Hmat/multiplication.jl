@@ -482,6 +482,41 @@ function _hgemv_recursive!(C::AbstractVector, A::HTypes, B::AbstractVector, offs
     return C
 end
 
+
+# """
+#     _hgemv_recursive!(C,A,B,offset)
+
+# Internal function used to compute `C[I] <-- C[I] + A*B[J]` where `I =
+# rowrange(A) - offset[1]` and `J = rowrange(B) - offset[2]`.
+
+# The `offset` argument is used on the caller side to signal if the original
+# hierarchical matrix had a `pivot` other than `(1,1)`.
+
+# hmat=HMatrix{T}(rowtree, coltree, adm)
+# """
+# function kernelvec!(C::AbstractVector, K::kernel, B::AbstractVector, A::hmat, bufs)
+#     if isleaf(A)
+#         irange = rowrange(A) .- offset[1]
+#         jrange = colrange(A) .- offset[2]
+#         if isadmissible(H)
+#             d = comp(K, A.rowtree, A.coltree, bufs)
+#         else
+#             irange = rowrange(A)
+#             jrange = colrange(A)
+#             T = eltype(A)
+#             out = Matrix{T}(undef, length(irange), length(jrange))
+#             getblock!(out, K, irange, jrange)
+#             d = out
+#         end
+#         mul!(view(C, irange), d, view(B, jrange), 1, 1)
+#     else
+#         for block in children(A)
+#             kernelvec!(C, K, B, A, bufs)
+#         end
+#     end
+#     return C
+# end
+
 function _hgemv_threads!(C::AbstractVector, B::AbstractVector, leaves, offset)
     acc = Threads.Atomic{Int}(1)
     lck = ReentrantLock()
@@ -523,6 +558,23 @@ function LinearAlgebra.rmul!(H::HMatrix, b::Number)
     end
     for child in children(H)
         rmul!(child, b)
+    end
+    return H
+end
+
+
+function Base.:+(
+    A::HMatrix{ClusterTree{2,Float64},Float64},
+    B::HMatrix{ClusterTree{2,Float64},Float64},
+)
+    H = deepcopy(A)
+    nodesH = nodes(H)
+    nodesB = nodes(B)
+
+    for block = 1:length(nodesH)
+        # @show block, nodesH[block].admissible
+        hasdata(nodesH[block]) || continue
+        nodesH[block].data = nodesH[block].data + nodesB[block].data
     end
     return H
 end

@@ -118,8 +118,8 @@ function _aca_partial(K, irange, jrange, atol, rmax, rtol, istart, buffer_ = not
         if i === nothing
             break
         end
-        if i ==-1
-            break 
+        if i == -1
+            break
         end
         I[i] = false
         # pre-allocate row and column
@@ -320,5 +320,31 @@ function compress!(M::Base.Matrix, tsvd::TSVD)
         B = @views (F.V[:, 1:r]) * Diagonal(F.S[1:r])
     end
     return RkMatrix(A, B)
+end
+
+
+Base.@kwdef struct two_sided_DD
+    atol::Float64 = 0
+    rank::Int = typemax(Int)
+    rtol::Float64 = atol > 0 || rank < typemax(Int) ? 0 : sqrt(eps(Float64))
+end
+
+function (tsvd::two_sided_DD)(K, rowtree::ClusterTree, coltree::ClusterTree, bufs = nothing)
+    irange = index_range(rowtree)
+    isel = rowtree.selected_indices
+    jrange = index_range(coltree)
+    jsel = coltree.selected_indices
+    Kx = K[irange, jsel]
+    Ks = K[isel, jsel]
+    Ky = K[isel, jrange]
+    return RkMatrix(Kx, (Ks \ Ky)')
+
+end
+
+
+Base.@kwdef struct one_sided_DD
+    atol::Float64 = 0
+    rank::Int = typemax(Int)
+    rtol::Float64 = atol > 0 || rank < typemax(Int) ? 0 : sqrt(eps(Float64))
 end
 

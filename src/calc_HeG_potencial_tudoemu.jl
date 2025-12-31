@@ -79,7 +79,7 @@ function aplicaCDC_u(Ht, Gt, dad)
     end
 
 
-    normal_fonte = calc_normais(dad)
+    normal_fonte = dad.normal
     troca = tipoCDC[:] .== 0
     F, Fx, Fy = BEM.montaFs(dad.NOS[troca, :], [dad.NOS; dad.pontos_internos])
 
@@ -108,7 +108,7 @@ function aplicaCDC_u(Ht, Gt, dad)
 end
 
 function aplicaCDC_alpha(Ht, Gt, dad)
-    normal_fonte = calc_normais(dad)
+    normal_fonte = dad.normal
     F, dFdx, dFdy, dFdxx, dFdyy, dFdxy =
         BEM.montaF([dad.NOS; dad.pontos_internos], [dad.NOS; dad.pontos_internos])
     dFdn = (
@@ -178,7 +178,7 @@ function corrige_autovalor_u(Gt, Ht, M, dad)
         end
     end
 
-    normal_fonte = calc_normais(dad)
+    normal_fonte = dad.normal
     F, Fx, Fy = BEM.montaFs(dad.NOS[qd, :], [dad.NOS; dad.pontos_internos])
 
     Gu = -dad.k * Gt[:, qd] * (Fx .* normal_fonte[qd, 1] + Fy .* normal_fonte[qd, 2])

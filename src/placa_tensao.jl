@@ -1592,7 +1592,7 @@ function calc_dwdt_cont(dad::placa_fina, forcas, desloc, npg = 8)
     q = zeros(2 * n_fis + n_cantos + n_internos)
     qsi, w = gausslegendre(npg)# Quadratura de gauss
     # qsi2, w2 = gausslegendre(2npg)# Quadratura de gauss
-    normal_fonte = calc_normais(dad)
+    normal_fonte = dad.normal
     pre = [zeros(2) for idx = 1:50]
 
     dwdt_cont = zeros(n_fis)
@@ -2903,7 +2903,7 @@ function calc_d2w_cont(dad, forcas, desloc, dwdt_cont)
     n_fis = size(dad.NOS, 1)
     d2wnt = zeros(n_fis, 3)
     dwdt = zeros(3)
-    normal_fonte = calc_normais(dad)
+    normal_fonte = dad.normal
 
     for j = 1:length(dad.ELEM)#Laço dos elementos
         elem_j = dad.ELEM[j]#Laço dos elementos
@@ -2971,7 +2971,7 @@ function compute_tens_cont(d2wnt, dad)
     MomentsXY = zeros(n_elem, 3, 3)
     Strain = zeros(3)
     z[1] = thickness[1]
-    normal_fonte = calc_normais(dad)
+    normal_fonte = dad.normal
 
     Qbar = Array{Float64}(undef, 3, 3)
     for lamina = 1:n_laminas

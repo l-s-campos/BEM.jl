@@ -42,6 +42,7 @@ throughout the package.
 use_global_index() = true
 
 include("utils.jl")
+include("smash.jl")
 include("hyperrectangle.jl")
 include("clustertree.jl")
 include("splitter.jl")
@@ -72,5 +73,6 @@ export ClusterTree,
     TSVD,
     # functions
     compression_ratio,
-    assemble_hmatrix
+    assemble_hmatrix,
+    preencheH
 

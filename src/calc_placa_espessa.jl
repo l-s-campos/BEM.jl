@@ -7,7 +7,7 @@ function calc_HeG(dad::Union{placa_espessa,placa_espessa_isotropica}, npg = 8)
     q = zeros(3 * n_fis + 3 * n_internos)
     qsi, w = gausslegendre(npg)# Quadratura de gauss
     # qsi2, w2 = gausslegendre(2npg)# Quadratura de gauss
-    normal_fonte = calc_normais(dad)
+    normal_fonte = dad.normal
 
     @showprogress "Montando H e G" for i = 1:n_fis+n_internos
         if i <= n_fis
@@ -298,7 +298,7 @@ function Monta_M_RIM(dad::Union{placa_espessa,placa_espessa_isotropica}, npg1 = 
     nodes = [dad.NOS; dad.pontos_internos]
     M = zeros(3n_pontos, 3n_pontos)
     F = zeros(n_pontos, n_pontos)
-    normal_fonte = calc_normais(dad)
+    normal_fonte = dad.normal
 
     # Cálculo da matriz [F]
     @showprogress "Montando F" for i = 1:n_pontos

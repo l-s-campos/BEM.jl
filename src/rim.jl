@@ -34,6 +34,30 @@ function interpola(r; tipo = "r3")
     end
 
 end
+
+
+function radial_func(tipo = "tps")
+    if tipo == "tps"
+        return r -> r^2 * log(r)
+    elseif tipo == "r3"
+        return r -> r^3
+    elseif tipo == "r"
+        return r -> r
+    end
+end
+
+function int_interpolaρdρ_func(tipo = "tps")
+    e = 5
+
+    if tipo == "tps"
+        return r -> (4 * r^4 * log(r) - r^4) / 16 # int r^3 * log(r)
+    elseif tipo == "r"
+        return r -> r^3 / 3
+    elseif tipo == "r3"
+        return r -> r^5 / 5
+    end
+end
+
 function int_interpolaρdρ(r; tipo = "r3")
     e = 5
 
@@ -124,7 +148,7 @@ function Monta_M_RIMd(dad::Union{placa_fina,placa_fina_isotropica}, npg)
     D = zeros(n_pontos + n_nos, n_pontos)
     M1 = zeros(n_pontos)
     M2 = zeros(n_pontos + n_nos)
-    normal_fonte = calc_normais(dad)
+    normal_fonte = dad.normal
     pre = [zeros(2) for idx = 1:6]
 
     # Cálculo da matriz [F]
@@ -237,7 +261,7 @@ function Monta_M_RIM(dad::Union{placa_fina,placa_fina_isotropica}, npg1 = 10, np
     nodes = [dad.NOS; dad.pontos_internos; dad.k.cantos[:, 2:3]]
     M = zeros(2n_nos + n_noi + n_canto, n_pontos)
     F = zeros(n_pontos, n_pontos)
-    normal_fonte = calc_normais(dad)
+    normal_fonte = dad.normal
 
     # Cálculo da matriz [F]
     @showprogress "Montando F" for i = 1:n_pontos
@@ -530,7 +554,7 @@ function Monta_M_RIMd_alt(dad, npg)
     D = zeros(n_pontos + n_nos, n_pontos)
     M1 = zeros(n_pontos)
     M2 = zeros(n_pontos + n_nos)
-    normal_fonte = calc_normais(dad)
+    normal_fonte = dad.normal
     for x in [:R0, :S0, :dRdx0, :dRdy0, :dSdx0, :dSdy0]
         @eval $x = zeros(2)
     end
@@ -720,7 +744,7 @@ function DRM(dad, Hg, Gg)
     # Inicialização das matrizes H e G
     WC = zeros(2 * n_nos + n_cantos + n_noi, n_pontos)
     VnC = zeros(2 * n_nos + n_cantos + n_noi, n_pontos)
-    normal_fonte = calc_normais(dad)
+    normal_fonte = dad.normal
 
     # loop sobre os pontos de reciprocidade dual
     # formam as colunas da matriz WC
@@ -963,7 +987,7 @@ function Monta_dM_RIM(dad::Union{placa_fina,placa_fina_isotropica}, npg1 = 10, n
     dMy = zeros(2n_nos + 2n_noi, n_pontos)
     # dMdtdm = zeros(2n_nos, n_pontos)
     F = zeros(n_pontos, n_pontos)
-    normal_fonte = calc_normais(dad)
+    normal_fonte = dad.normal
 
     # Cálculo da matriz [F]
     @showprogress "Montando F" for i = 1:n_pontos
@@ -1492,7 +1516,7 @@ function Monta_dM_RIMd(dad::Union{placa_fina,placa_fina_isotropica}, npg)
     dMy = zeros(2n_nos + 2n_noi)
     # dMdtdm = zeros(n_pontos + n_nos)
 
-    normal_fonte = calc_normais(dad)
+    normal_fonte = dad.normal
 
     pre = [zeros(2) for idx = 1:20]
 

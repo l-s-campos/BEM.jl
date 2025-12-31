@@ -118,7 +118,7 @@ function calc_HeG(dad::Union{placa_fina,placa_fina_isotropica}, npg = 8)
     q = zeros(2 * n_fis + n_cantos + n_internos)
     qsi, w = gausslegendre(npg)# Quadratura de gauss
     # qsi2, w2 = gausslegendre(2npg)# Quadratura de gauss
-    normal_fonte = calc_normais(dad)
+    normal_fonte = dad.normal
     pre = [zeros(2) for idx = 1:30]
 
 
@@ -2541,7 +2541,7 @@ function calc_HeGeIt(dad::Union{placa_fina,placa_fina_isotropica}, npg = 8)
     q = zeros(2 * n_fis + n_cantos + n_internos)
     qsi, w = gausslegendre(npg)# Quadratura de gauss
     # qsi2, w2 = gausslegendre(2npg)# Quadratura de gauss
-    normal_fonte = calc_normais(dad)
+    normal_fonte = dad.normal
     pre = [zeros(2) for idx = 1:30]
 
     @showprogress "Montando H e G" for i = 1:n_fis+n_cantos+n_internos

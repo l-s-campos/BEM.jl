@@ -27,6 +27,7 @@ function calc_HeG(dad::potencial, npg = 8; interno = false)
     G = zeros(n, n)
     qsi, w = gausslegendre(npg)    # Quadratura de gauss
     contafonte = 1
+    k = dad.k
 
     @showprogress "Montando H e G" for elem_i in dad.ELEM  #Laço dos pontos fontes
         for ind_elem in elem_i.indices
@@ -46,7 +47,7 @@ function calc_HeG(dad::potencial, npg = 8; interno = false)
                 # eta, wt = pontosintegra(dad.NOS, elem_j, ind_elem, qsi, w)
                 # @show norm(eta-eta1)
 
-                h, g = integraelem(pf, x, eta, w .* Jt, elem_j, dad)
+                h, g = integraelem(pf, x, eta, w .* Jt, elem_j, dad, k)
                 # h, g = integraelem(pf, x, qsi, w, elem_j, dad)
                 # @infiltrate contafonte == 2
                 H[contafonte, elem_j.indices] = h
@@ -57,9 +58,9 @@ function calc_HeG(dad::potencial, npg = 8; interno = false)
         end
     end
     for i = 1:n                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
-        # H[i, i] += -0.5
         # G[i, i] = 0
         H[i, i] = 0
+        # H[i, i] += -0.5
         H[i, i] = -sum(H[i, :])
     end
     # somaH = H * (dad.NOS[:, 1] + dad.NOS[:, 2])
@@ -85,7 +86,7 @@ function calc_HeG(dad::potencial, npg = 8; interno = false)
                 b = norm(ps' - pf) / norm(Δelem)
                 eta, Jt = sinhtrans(qsi, eet, b)
                 # eta,Jt=telles(qsi,eet)
-                h, g = integraelem(pf, x, eta, w .* Jt, elem_j, dad)
+                h, g = integraelem(pf, x, eta, w .* Jt, elem_j, dad, k)
                 cols = elem_j.indices
                 # @infiltrate
                 Hi[i, cols] = h
@@ -96,6 +97,69 @@ function calc_HeG(dad::potencial, npg = 8; interno = false)
         G = [G; Gi]
     end
     H, G
+end
+
+function calc_H(dad::potencial, npg = 8; interno = false)
+    nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
+    n = size(dad.NOS, 1)
+    H = zeros(n, n)
+    qsi, w = gausslegendre(npg)    # Quadratura de gauss
+    contafonte = 1
+    k = dad.k
+
+    @showprogress "Montando H e G" for elem_i in dad.ELEM  #Laço dos pontos fontes
+        for ind_elem in elem_i.indices
+            pf = dad.NOS[ind_elem, :]   # Coordenada (x,y)  dos pontos fonte
+            for elem_j in dad.ELEM  #Laço dos elementos
+                x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
+                Δelem = x[end, :] - x[1, :]     # Δx e Δy entre o primeiro e ultimo nó geometrico
+                eet =
+                    (elem_j.ξs[end] - elem_j.ξs[1]) * dot(Δelem, pf .- x[1, :]) /
+                    norm(Δelem)^2 + elem_j.ξs[1]
+                N_geo, ~ = calc_fforma(eet, elem_j)
+                ps = N_geo' * x
+                b = norm(ps' - pf)#/norm(Δelem)
+
+                eta, Jt = sinhtrans(qsi, eet, b)
+
+                h, g = integraelem(pf, x, eta, w .* Jt, elem_j, dad, k)
+
+                H[contafonte, elem_j.indices] = h
+
+
+            end
+            contafonte += 1
+        end
+    end
+    for i = 1:n                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
+        H[i, i] = 0
+        H[i, i] = -sum(H[i, :])
+    end
+    if interno
+        ni = size(dad.pontos_internos, 1)
+        Hi = zeros(ni, n)
+        for i = 1:ni
+            pf = dad.pontos_internos[i, :]   # Coordenada (x,y)  dos pontos fonte
+            for elem_j in dad.ELEM  #Laço dos elementos
+                x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
+                Δelem = x[end, :] - x[1, :]     # Δx e Δy entre o primeiro e ultimo nó geometrico
+                eet =
+                    (elem_j.ξs[end] - elem_j.ξs[1]) * dot(Δelem, pf .- x[1, :]) /
+                    norm(Δelem)^2 + elem_j.ξs[1]
+                N_geo = calc_fforma(eet, elem_j, false)
+                ps = N_geo' * x
+                b = norm(ps' - pf) / norm(Δelem)
+                eta, Jt = sinhtrans(qsi, eet, b)
+                # eta,Jt=telles(qsi,eet)
+                h, g = integraelem(pf, x, eta, w .* Jt, elem_j, dad, k)
+                cols = elem_j.indices
+                # @infiltrate
+                Hi[i, cols] = h
+            end
+        end
+        H = [H zeros(n, ni); Hi -I]
+    end
+    H
 end
 
 """
@@ -218,7 +282,7 @@ Função para integrar elementos.
 # Descrição
 Esta função realiza a integração dos elementos fornecidos utilizando os pontos de integração e pesos especificados.
 """
-function integraelem(pf, x, eta, w, elem, dad::Union{potencial,helmholtz})
+function integraelem(pf, x, eta, w, elem, dad::Union{potencial,helmholtz}, prop)
     h = zeros(Float64, size(elem))
     g = zeros(Float64, size(elem))
 
@@ -230,7 +294,7 @@ function integraelem(pf, x, eta, w, elem, dad::Union{potencial,helmholtz})
         dgamadqsi = norm(dxdqsi)  # dΓ/dξ = J(ξ) Jacobiano
         sx = dxdqsi[1] / dgamadqsi # vetor tangente dx/dΓ
         sy = dxdqsi[2] / dgamadqsi # vetor tangente dy/dΓ
-        Qast, Tast = calsolfund(r, [sy, -sx], dad)
+        Qast, Tast = calsolfund(r, [sy, -sx], dad, prop) #vetor normal
         # @infiltrate
         # @show pg,pf,r,[sy,-sx],Qast
         h += N * Qast * dgamadqsi * w[k]
@@ -354,7 +418,7 @@ function calc_Ti(dad::Union{potencial,helmholtz}, T, q, npg = 8)
     n = size(dad.pontos_internos, 1)
     Ti = zeros(n)
     qsi, w = gausslegendre(npg)    # Quadratura de gauss
-
+    k = dad.k
     for i = 1:n
         pf = dad.pontos_internos[i, :]   # Coordenada (x,y) dos pontos fonte
         for elem_j in dad.ELEM  #Laço dos elementos
@@ -367,7 +431,7 @@ function calc_Ti(dad::Union{potencial,helmholtz}, T, q, npg = 8)
             ps = N_geo' * x
             b = norm(ps' - pf) / norm(Δelem)
             eta, Jt = sinhtrans(qsi, eet, b)
-            h, g = integraelem(pf, x, eta, w .* Jt, elem_j, dad)
+            h, g = integraelem(pf, x, eta, w .* Jt, elem_j, dad, k)
             # h, g = integraelem(pf, x, qsi, w, elem_j, dad)
             Ti[i] += h' * T[elem_j.indices] - g' * q[elem_j.indices]
         end
@@ -510,11 +574,11 @@ Calcula a solução fundamental.
 # Retorno
 Retorna a solução fundamental calculada com base nos parâmetros fornecidos.
 """
-function calsolfund(r, n, prob::Union{potencial,potencial_iga})
+function calsolfund(r, n, prob::Union{potencial,potencial_iga}, k)
     R = norm(r)
     # @infiltrate
     Qast = dot(r, n) / R^2 / (2 * π)       # Equação 4.36
-    Tast = -log(R) / (2 * π * prob.k)
+    Tast = -log(R) / (2 * π * k)
     Qast, Tast
 end
 
@@ -552,6 +616,7 @@ function Monta_M_RIMd(dad::potencial, npg; tiporadial = "tps", aug = false)
     M1 = zeros(n_pontos)
     F, D = FeD(dad, nodes, tiporadial)
     M, M1 = calcMs(dad, npg, tiporadial)
+    #@infiltrate
     # lu!(F)
     # @show size(M)
     # @show length(M)
@@ -573,6 +638,10 @@ function Monta_M_RIMd(dad::potencial, npg; tiporadial = "tps", aug = false)
 
     else
         A = M' / F .* D
+
+        #S,aux = gmres(F, M, rtol = 1e-5, itmax = 100)
+        #A = S.*D
+
         for i = 1:n_pontos #Laço dos pontos radiais
             A[i, i] = 0
             A[i, i] = -sum(A[i, :])
@@ -583,6 +652,57 @@ function Monta_M_RIMd(dad::potencial, npg; tiporadial = "tps", aug = false)
 
     # M, M1, F, D
 end
+
+
+function Monta_M_RIMd_simetria(dad::potencial, npg; tiporadial = "tps", aug = false)
+    n_nos = size(dad.NOS, 1)
+    nelem = size(dad.ELEM, 1)
+    n_noi = size(dad.pontos_internos, 1) #Number of internal nodes
+
+    qsi, w = gausslegendre(npg)
+    n_pontos = n_nos + n_noi
+    nodes = [dad.NOS; dad.pontos_internos]
+    M = zeros(n_pontos)
+    M1 = zeros(n_pontos)
+    F, D = FeD(dad, nodes, tiporadial)
+    M, M1 = calcMs(dad, npg, tiporadial)
+    #@infiltrate
+    # lu!(F)
+    # @show size(M)
+    # @show length(M)
+    if aug
+        P, Pint = calcPs(dad, npg)
+        # In = Matrix{}(I, size(F))
+        W = F \ P / (P' / F * P)
+        # aux = (In - W * P') / F
+        Mf = M' / F
+        # @infiltrate
+        # A = (Mf - W * (P' * (Mf) - Pint')) .* D
+        A = (Mf - Mf * P * W' + Pint' * W') .* D
+        # @infiltrate
+        for i = 1:n_pontos #Laço dos pontos radiais
+            A[i, i] = 0
+            A[i, i] = -sum(A[i, :])
+        end
+        return A + diagm(0 => M1)
+
+    else
+        A = M' / F .* D
+
+        #S,aux = gmres(F, M, rtol = 1e-5, itmax = 100)
+        #A = S.*D
+
+        for i = 1:n_pontos #Laço dos pontos radiais
+            A[i, i] = 0
+            A[i, i] = -sum(A[i, :])
+        end
+        return A + diagm(0 => M1)
+    end
+
+
+    # M, M1, F, D
+end
+
 """
 A função `FeD` calcula duas matrizes, `F` e `D`, com base nas coordenadas dos nós fornecidos.
 
@@ -619,6 +739,32 @@ function FeD(dad, nodes, tiporadial)
     end
     F, D
 end
+
+
+function FeD_simetria(dad, nodes, tiporadial)
+    n = size(nodes, 1)
+    F = zeros(n, n)
+    D = zeros(n, n)
+
+    for i = 1:n
+        xi = nodes[i, 1]
+        yi = nodes[i, 2]
+        for j = i:n
+            if i == j
+                continue
+            end
+            xj = nodes[j, 1]
+            yj = nodes[j, 2]
+            r = sqrt((xi - xj)^2 + (yi - yj)^2)
+            F[i, j] = interpola(r, tipo = tiporadial)
+            D[i, j] = -log(r) / (2 * π * dad.k)
+
+            F[j, i] = F[i, j]
+            D[j, i] = D[i, j]
+        end
+    end
+    F, D
+end
 """
     calcMs(dad::potencial, npg)
 
@@ -642,11 +788,13 @@ function calcMs(dad::potencial, npg, tiporadial)
     M1 = zeros(n_pontos)
     qsi, w = gausslegendre(npg)
 
+    k = dad.k
+
     for i = 1:n_pontos #Laço dos pontos radiais
         pf = nodes[i, :]
         for elem_j in dad.ELEM  #Laço dos elementos
-            x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
-            m_el, m_el1 = calc_md(x, pf, dad.k, qsi, w, elem_j, tiporadial)
+            x = nodes[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
+            m_el, m_el1 = calc_md(x, pf, k, qsi, w, elem_j, tiporadial, npg)
             M[i] = M[i] + m_el
             M1[i] = M1[i] + m_el1
         end
@@ -673,8 +821,8 @@ Calcula o potencial e a sua derivada normal em um ponto fonte `pf` devido a um e
 # Descrição
 A função `calc_md` realiza a integração numérica utilizando a técnica dos pontos de Gauss para calcular o potencial e sua derivada normal em um ponto fonte `pf` devido a um elemento `elem`. A função utiliza as funções de forma `N` e suas derivadas `dN_geo` para interpolar os pontos de Gauss e calcular as distâncias e vetores normais necessários para a integração. O resultado é o potencial `m_el` e sua derivada normal `m_el1` no ponto fonte `pf`.
 """
-function calc_md(x, pf, k, qsi, w, elem, tiporadial)
-    npg = length(w)
+function calc_md(x, pf, k, qsi, w, elem, tiporadial, npg)
+    #npg = length(w)
     m_el, m_el1 = 0, 0
 
     for i = 1:npg
@@ -693,8 +841,8 @@ function calc_md(x, pf, k, qsi, w, elem, tiporadial)
         m = int_interpolaρdρ(R, tipo = tiporadial)
         m1 = -(2 * R^2 * log(R) - R^2) / 4 / (2 * π * k)
         # calcula_Fd(pr, pf, pg, [nx,ny], k, qsi2, w2);
-        m_el += dot([nx, ny], r) / norm(r)^2 * m * dgamadqsi * w[i]
-        m_el1 += dot([nx, ny], r) / norm(r)^2 * m1 * dgamadqsi * w[i]
+        m_el += dot([nx, ny], r) / R^2 * m * dgamadqsi * w[i]
+        m_el1 += dot([nx, ny], r) / R^2 * m1 * dgamadqsi * w[i]
     end
     return m_el, m_el1
 end

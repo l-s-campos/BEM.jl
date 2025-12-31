@@ -56,6 +56,7 @@ radius(r::HyperRectangle) = diameter(r) / 2
 Center of the smallest ball containing `Ω`.
 """
 center(r::HyperRectangle) = (low_corner(r) + high_corner(r)) / 2
+center(r::Float64) = r
 
 Base.in(point, h::HyperRectangle) = all(low_corner(h) .<= point .<= high_corner(h))
 

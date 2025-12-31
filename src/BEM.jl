@@ -14,15 +14,19 @@ using Reexport
 @reexport using Infiltrator
 @reexport using ParallelKMeans
 @reexport using LowRankApprox
+@reexport using LinearMaps
+@reexport using NearestNeighbors
 @reexport using PolynomialRoots
 @reexport using SpecialFunctions
 @reexport using Krylov
 @reexport using NonlinearSolve
+@reexport using JLD2
+using FMM2D
 using ProgressMeter
 using Distributed
 using Printf
 include("estruturas.jl")
-
+include("calc_halfspace.jl")
 include("./Hmat/HMatrices.jl")
 
 include("integra.jl")

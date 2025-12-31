@@ -144,3 +144,9 @@ end
 
 # scalar multiplication
 Base.:*(a::Number, R::RkMatrix) = (A = a * R.A; B = copy(R.B); RkMatrix(A, B))
+# sum of two RkMatrix
+Base.:+(R1::RkMatrix, R2::RkMatrix) = (A = [R1.A R2.A];
+B = [R1.B R2.B];
+compress!(RkMatrix(A, B), TSVD(atol = 1e-6, rtol = 1e-6)))
+
+

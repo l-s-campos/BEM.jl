@@ -4,4 +4,4 @@ CurrentModule = BEM
 
 # BEM
 
-Documentação do [BEM](https://github.com/l-s-campos/BEM.jl).
+Documentation [BEM](https://github.com/l-s-campos/BEM.jl) a 2D boundary element method solver. 

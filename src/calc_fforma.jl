@@ -327,3 +327,111 @@ function calc_fforma(t, elem_j::bezier, w)
     dRdxi = w .* Ce * (dBedxi[:, 1] / wb - dwbdxi * Be / (wb * wb)) # Eq. (66)
     return R, dRdxi
 end
+
+
+
+
+# Reference:
+# Barycentric Lagrange Interpolation.
+# Berrut, J.-P., & Trefethen, L. N. (2004).
+# SIAM Review, 46(3), 501–517. doi:10.1137/S36144502417716
+
+
+
+function bclag_interp_weight(x, j, n)
+    p = 1.0
+    for k = 1:j-1
+        p *= x[j] - x[k]
+    end
+    for k = j+1:n
+        p *= x[j] - x[k]
+    end
+    return 1 / p
+end
+
+"""
+    w = bclag_interp_weights(x)
+
+Compute weights for Barycentric Lagrange interpolation.
+"""
+function bclag_interp_weights(x::Vector)
+    n = length(x)
+    w = zeros(n)
+    for j = 1:n
+        w[j] = bclag_interp_weight(x, j, n)
+    end
+    return w
+end
+
+
+"""
+    M = bclag_interp_matrix(x, xx [, w])
+
+Compute the matrix `M` such that `ff = M*f` gives the barycentric Lagrange interpolation of `f` from points `x` to points `xx`.
+
+
+`w` is vector of weights, `w = bclag_interp_weights(x)` 
+"""
+function bclag_interp_matrix(x::Vector, xx::Vector, w::Vector = bclag_interp_weights(x))
+    n = length(x)
+    N = length(xx)
+    @assert length(w) == n
+    B, denom, exact = matrix_alloc(n, N)
+    compute_matrix!(B, denom, exact, x, xx, w)
+    return B
+end
+"""
+    M = bclag_interp_matrix(x, xx [, w])
+
+Compute the matrix `M` such that `ff = M*f` gives the barycentric Lagrange interpolation of `f` from points `x` to points `xx`.
+
+
+`w` is vector of weights, `w = bclag_interp_weights(x)` 
+"""
+function bclag_interp_matrix_deriv(
+    x::Vector,
+    xx::Vector,
+    w::Vector = bclag_interp_weights(x),
+)
+    n = length(x)
+    N = length(xx)
+    @assert length(w) == n
+    B, denom, exact = matrix_alloc(n, N)
+    compute_matrix!(B, denom, exact, x, xx, w)
+    return B, ForwardDiff.derivative(compute_matrix!(B, denom, exact, x, xx, w), xx)
+end
+
+
+function matrix_alloc(n, N)
+    B = Array{Float64}(undef, N, n)
+    denom = Array{Float64}(undef, N)
+    exact = Array{Int64}(undef, N)
+    return B, denom, exact
+end
+
+function compute_matrix!(B, denom, exact, x, xx, w)
+    # No allocations or size checks done here
+    N, n = size(B)
+    fill!(denom, 0.0)
+    fill!(exact, 0)
+    for j = 1:n
+        for k = 1:N
+            xdiff = xx[k] - x[j]
+            if xdiff != 0
+                temp = w[j] / xdiff
+                B[k, j] = temp
+                denom[k] += temp
+            else
+                exact[k] = j
+            end
+        end
+    end
+    B ./= denom
+    for jj = 1:N
+        if exact[jj] != 0
+            @. B[jj, :] = 0.0
+            B[jj+N*(exact[jj]-1)] = 1.0
+        end
+    end
+end
+

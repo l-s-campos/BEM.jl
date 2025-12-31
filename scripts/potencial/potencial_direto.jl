@@ -38,6 +38,9 @@ res = DataFrame(
 # res = zeros(0, 4)
 # testeinterno = [zeros(10) (1 .- (0.8 .^ (1:5:50)))]
 for p = 1:1, i = 1:5, j = 2:5
+    # p=1
+    # i=7
+    # j=2
     nelem = 4 * 2^i  #Numero de elementos
     order = j
     # p = 1
@@ -52,7 +55,7 @@ for p = 1:1, i = 1:5, j = 2:5
     # function compara_potencial(dad, npg)
     reset_timer!()
     tHeG = @timed H, G = calc_HeG(dad, npg)  #importante
-    tHeGd = @timed Hd, Gd = BEM.calc_HeGd(dad, 3)  #importante
+    tHeGd = @timed Hd, Gd = BEM.calc_HeGd(dad, 3, npg, interno = false)  #importante
     A, b = aplicaCDC(H, G, dad) # Calcula a matriz A e o vetor b
     Ad, bd = aplicaCDC(Hd, Gd, dad) # Calcula a matriz A e o vetor b
     tsolve = @timed x = A \ b
@@ -71,6 +74,7 @@ for p = 1:1, i = 1:5, j = 2:5
     e2 = norm(Td - Tana) / norm(Tana)
     em1 = sum(abs, T - Tana) / sum(abs, Tana)
     em2 = sum(abs, Td - Tana) / sum(abs, Tana)
+    e1, e2, em1, em2
 
     Tiana = ana[p](dad.pontos_internos)
     ei1 = norm(Ti - Tiana) / norm(Tiana)

@@ -116,7 +116,15 @@ function split!(cluster::ClusterTree, ::CardinalitySplitter)
     rec = container(cluster)
     _, imax = findmax(high_corner(rec) - low_corner(rec))
     l2g = loc2glob(cluster)
-    med = median(center(points[l2g[i]])[imax] for i in irange) # the median along largest axis `imax`
+    # sometimes the median can fail to split the data, for example
+    # median([0,0,0,1]) = 0, so no point will be sorted on the left as per the
+    # predicate x->x<med, causing an infinite recursion. This is rare, but can
+    # happen In such cases, we use the mean instead of the median.
+    med = median((points[l2g[i]])[imax] for i in irange) # the median along largest axis `imax`
+    npts = sum(i -> points[l2g[i]][imax] < med, irange)
+    if abs(npts - length(irange) / 2) > 1
+        med = mean((points[l2g[i]])[imax] for i in irange)
+    end
     predicate = (x) -> x[imax] < med
     left_node, right_node = binary_split!(cluster, predicate)
     cluster.children = [left_node, right_node]
@@ -169,52 +177,8 @@ function binary_split!(cluster::ClusterTree{N,T}, predicate::Function) where {N,
     left_indices = (irange.start):((irange.start)+npts_left-1)
     right_indices = (irange.start+npts_left):(irange.stop)
     # create children
-    clt1 = ClusterTree(els, left_rec, left_indices, l2g, cluster.glob2loc, nothing, cluster)
+    clt1 = ClusterTree(els, left_rec, left_indices, l2g, cluster.glob2loc, nothing, cluster, cluster.depth + 1)
     clt2 =
-        ClusterTree(els, right_rec, right_indices, l2g, cluster.glob2loc, nothing, cluster)
+        ClusterTree(els, right_rec, right_indices, l2g, cluster.glob2loc, nothing, cluster, cluster.depth + 1)
     return clt1, clt2
-end
-
-function binary_split_CDC!(cluster::ClusterTree, dad::DadosBEM)
-
-    tipoCDC = BEM.tipoCDC(dad)
-    rec = container(cluster)
-    els = root_elements(cluster)
-    irange = index_range(cluster)
-    n = length(irange)
-    buff = view(cluster.glob2loc, irange) # use as a temporary buffer
-    l2g = loc2glob(cluster)
-    npts_left = 0
-    npts_right = 0
-    xl_left = xl_right = high_corner(rec)
-    xu_left = xu_right = low_corner(rec)
-    # sort the points into left and right rectangle
-    for i in irange
-        pt = els[l2g[i]]
-        if tipoCDC[l2g[i]]
-            xl_left = min.(xl_left, pt)
-            xu_left = max.(xu_left, pt)
-            npts_left += 1
-            buff[npts_left] = l2g[i]
-        else
-            xl_right = min.(xl_right, pt)
-            xu_right = max.(xu_right, pt)
-            buff[n-npts_right] = l2g[i]
-            npts_right += 1
-        end
-    end
-    # bounding boxes
-    left_rec = HyperRectangle(xl_left, xu_left)
-    right_rec = HyperRectangle(xl_right, xu_right)
-    @assert npts_left + npts_right == length(irange) "elements lost during split"
-    # new ranges for children cluster
-    copy!(view(l2g, irange), buff)
-    left_indices = (irange.start):((irange.start)+npts_left-1)
-    right_indices = (irange.start+npts_left):(irange.stop)
-    # create children
-    clt1 = ClusterTree(els, left_rec, left_indices, l2g, cluster.glob2loc, nothing, cluster)
-    clt2 =
-        ClusterTree(els, right_rec, right_indices, l2g, cluster.glob2loc, nothing, cluster)
-    cluster.children = [clt1, clt2]
-    return cluster
 end

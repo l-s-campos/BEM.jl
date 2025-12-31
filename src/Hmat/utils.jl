@@ -166,3 +166,4 @@ function getcol(M, j)
     col = Vector{eltype(M)}(undef, n)
     return getcol!(col, M, j)
 end
+

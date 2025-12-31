@@ -152,7 +152,7 @@ function Monta_M_RIM(dad::placa_fina, npg1 = 10, npg2 = 10)
     nodes = [dad.NOS; dad.pontos_internos; dad.k.cantos[:, 2:3]]
     M = zeros(2n_nos + n_noi + n_canto, n_pontos)
     F = zeros(n_pontos, n_pontos)
-    normal_fonte = calc_normais(dad)
+    normal_fonte = dad.normal
 
     # Cálculo da matriz [F]
     @showprogress "Montando F" for i = 1:n_pontos

@@ -67,7 +67,7 @@ function termoelasticidade(dad, npg; θ = 1, carga = 0, metodo = "dibem")
     # qc, dqc = calc_forçacorpo(dad, carga, 10)
 
     # @infiltrate
-    normal_fonte = BEM.calc_normais(dad)
+    normal_fonte = dad.normal
 
     q1 = G * (normal_fonte .* theta[1:nc(dad)])'[:] * kchap
 

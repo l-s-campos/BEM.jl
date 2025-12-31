@@ -110,8 +110,8 @@ function calc_HeG_pre(dad::elastico, npg = 20; interno = false)
                 if sum(nosing) == 1
                     no_pf = findfirst(nosing)
                     eet = elem_j.ξs[no_pf]
-                    
-                    eta2, w2 = novelquad(1, eet, 1*npg)
+
+                    eta2, w2 = novelquad(1, eet, 1 * npg)
                     # eta, Jt = sinhtrans(eta2, eet, 0.0)
                     h, g = integraelem(pf, x, eta2, w2, elem_j, dad)
 
@@ -140,13 +140,11 @@ function calc_HeG_pre(dad::elastico, npg = 20; interno = false)
 
         end
     end
- for i = 1:nc(dad)                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
-        H[2i-1:2i, 2i-1:2i] +=
-            [.5 0.0; 0.0 .5]
+    for i = 1:nc(dad)                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
+        H[2i-1:2i, 2i-1:2i] += [0.5 0.0; 0.0 0.5]
     end
- for i = 1:ni(dad)                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
-        H[2*nc(dad)+2i-1:2*nc(dad)+2i, 2*nc(dad)+2i-1:2*nc(dad)+2i] +=
-            [1.0 0.0; 0.0 1.0]
+    for i = 1:ni(dad)                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
+        H[2*nc(dad)+2i-1:2*nc(dad)+2i, 2*nc(dad)+2i-1:2*nc(dad)+2i] += [1.0 0.0; 0.0 1.0]
     end
 
 
@@ -167,22 +165,22 @@ function calc_HeG_Hd(dad::elastico; npg = 3, atol = 1e-4)
 
     # X = [[Point2D(dad.NOS[i, 1], dad.NOS[i, 2]) for i in 1:nc(dad)]; [Point2D(dad.pontos_internos[i, 1], dad.pontos_internos[i, 2]) for i in 1:ni(dad)]]
     # # X = [Point2D(dad.NOS[i, 1], dad.NOS[i, 2]) for i in 1:nc(dad)]
-    Hpre,Gpre=calc_HeG_pre(dad,interno = true)
+    Hpre, Gpre = calc_HeG_pre(dad, interno = true)
     splitter = BEM.PrincipalComponentSplitter(; nmax = 10)
     # Xclt = Yclt = ClusterTree(X, splitter)
     # Xclt, Yclt = ClusterTree(dad, splitter)
-#     elements = [
-#     [Point2D(dad.NOS[i, 1], dad.NOS[i, 2]) for i = 1:nc(dad)]
-#     [Point2D(dad.pontos_internos[i, 1], dad.pontos_internos[i, 2]) for i = 1:ni(dad)]
-# ];
-# Xclt = Yclt = ClusterTree(repeat(elements, inner = 2),splitter)
- Xclt, Yclt = ClusterTree(dad, splitter)
+    #     elements = [
+    #     [Point2D(dad.NOS[i, 1], dad.NOS[i, 2]) for i = 1:nc(dad)]
+    #     [Point2D(dad.pontos_internos[i, 1], dad.pontos_internos[i, 2]) for i = 1:ni(dad)]
+    # ];
+    # Xclt = Yclt = ClusterTree(repeat(elements, inner = 2),splitter)
+    Xclt, Yclt = ClusterTree(dad, splitter)
     # @infiltrate
     adm = StrongAdmissibilityStd(eta = 3)
     comp = PartialACA(; atol)
 
-    KG = BEM.kernelGv(dad, intelems,Gpre)
-    KH = BEM.kernelHv(dad, intelems,Hpre)
+    KG = BEM.kernelGv(dad, intelems, Gpre)
+    KH = BEM.kernelHv(dad, intelems, Hpre)
     HG = assemble_hmat(KG, Xclt, Yclt; adm, comp)
     HH = assemble_hmat(KH, Xclt, Yclt; adm, comp)
     # @infiltrate
@@ -192,7 +190,7 @@ function corrige_diagonais!(Hmat::HMatrix)
     piv = pivot(Hmat)
     diag = Hmat * ones(size(Hmat, 2))
 
-    for block in AbstractTrees.PreOrderDFS(Hmat)
+    for block in nodes(Hmat)
         hasdata(block) || continue
         # !block.admissible || continue
         irange = rowrange(block) .- piv[1] .+ 1
