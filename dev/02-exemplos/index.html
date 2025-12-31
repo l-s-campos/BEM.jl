@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Examples · BEM.jl</title><meta name="title" content="Examples · BEM.jl"/><meta property="og:title" content="Examples · BEM.jl"/><meta property="twitter:title" content="Examples · BEM.jl"/><meta name="description" content="Documentation for BEM.jl."/><meta property="og:description" content="Documentation for BEM.jl."/><meta property="twitter:description" content="Documentation for BEM.jl."/><meta property="og:url" content="https://l-s-campos.github.io/BEM.jl/02-exemplos/"/><meta property="twitter:url" content="https://l-s-campos.github.io/BEM.jl/02-exemplos/"/><link rel="canonical" href="https://l-s-campos.github.io/BEM.jl/02-exemplos/"/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">BEM.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">BEM</a></li><li><a class="tocitem" href="../01-data/">Data</a></li><li class="is-active"><a class="tocitem" href>Examples</a><ul class="internal"><li><a class="tocitem" href="#Thermal"><span>Thermal</span></a></li><li><a class="tocitem" href="#Linear-Elasticity"><span>Linear Elasticity</span></a></li><li><a class="tocitem" href="#Thermal-Elasticity"><span>Thermal Elasticity</span></a></li></ul></li><li><a class="tocitem" href="../95-reference/">Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Examples</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Examples</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/l-s-campos/BEM.jl/blob/master/docs/src/02-exemplos.md#" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="examples"><a class="docs-heading-anchor" href="#examples">Examples</a><a id="examples-1"></a><a class="docs-heading-anchor-permalink" href="#examples" title="Permalink"></a></h1><h2 id="Thermal"><a class="docs-heading-anchor" href="#Thermal">Thermal</a><a id="Thermal-1"></a><a class="docs-heading-anchor-permalink" href="#Thermal" title="Permalink"></a></h2><p>This example demonstrates the application of the Boundary Element Method (BEM) to solve thermal conduction problems. It shows how to model steady-state heat transfer in a domain by discretizing only the boundary, reducing computational complexity compared to domain discretization methods.</p><h3 id="Initialization"><a class="docs-heading-anchor" href="#Initialization">Initialization</a><a id="Initialization-1"></a><a class="docs-heading-anchor-permalink" href="#Initialization" title="Permalink"></a></h3><p>Set up the environment and define problem parameters.</p><pre><code class="language-julia hljs">using DrWatson
+@quickactivate &quot;BEM&quot;
+include(scriptsdir(&quot;includes.jl&quot;))
+nelem = 20  # Number of elements
+order = 2   # Element order
+NPX = 10    # Internal points in x direction
+NPY = NPX   # Internal points in y direction
+npg = 20    # Number of Gauss points (even numbers only)</code></pre><h3 id="Data-Formatting"><a class="docs-heading-anchor" href="#Data-Formatting">Data Formatting</a><a id="Data-Formatting-1"></a><a class="docs-heading-anchor-permalink" href="#Data-Formatting" title="Permalink"></a></h3><p>Format the input data using the predefined geometry and boundary conditions.</p><pre><code class="language-julia hljs">println(&quot;1. Formatting the data&quot;)
+dad = format_dad(potencial1d(nelem, order), NPX, NPY)  # Data structure</code></pre><h3 id="Matrix-Assembly"><a class="docs-heading-anchor" href="#Matrix-Assembly">Matrix Assembly</a><a id="Matrix-Assembly-1"></a><a class="docs-heading-anchor-permalink" href="#Matrix-Assembly" title="Permalink"></a></h3><p>Compute the influence matrices H and G, then apply boundary conditions to form the system matrix A and vector b.</p><pre><code class="language-julia hljs">println(&quot;2. Assembling matrix A and vector b&quot;)
+H, G = calc_HeG(dad, npg)  # Compute H and G matrices
+A, b = aplicaCDC(H, G, dad)  # Apply boundary conditions</code></pre><h3 id="Solving-the-System"><a class="docs-heading-anchor" href="#Solving-the-System">Solving the System</a><a id="Solving-the-System-1"></a><a class="docs-heading-anchor-permalink" href="#Solving-the-System" title="Permalink"></a></h3><p>Solve the linear system and separate the results into temperature and flux.</p><pre><code class="language-julia hljs">println(&quot;3. Solving the linear system&quot;)
+x = A \ b
+println(&quot;4. Separating temperature and flux&quot;)
+T, q = separa(dad, x)</code></pre><h2 id="Linear-Elasticity"><a class="docs-heading-anchor" href="#Linear-Elasticity">Linear Elasticity</a><a id="Linear-Elasticity-1"></a><a class="docs-heading-anchor-permalink" href="#Linear-Elasticity" title="Permalink"></a></h2><p>This example illustrates the use of BEM for solving linear elasticity problems. It demonstrates how to compute displacements and stresses in elastic solids under various loading conditions, leveraging the boundary-only discretization to efficiently handle 2D or 3D elastic problems.</p><h3 id="Initialization-2"><a class="docs-heading-anchor" href="#Initialization-2">Initialization</a><a class="docs-heading-anchor-permalink" href="#Initialization-2" title="Permalink"></a></h3><p>Set up the environment for the elasticity analysis.</p><pre><code class="language-julia hljs">using DrWatson
+@quickactivate &quot;BEM&quot;
+include(scriptsdir(&quot;includes.jl&quot;))
+nelem = 10  # Number of elements
+NPX = 2     # Internal points in x direction
+NPY = 2     # Internal points in y direction
+npg = 20    # Number of Gauss points
+tipo = 3    # Element type</code></pre><h3 id="Data-Formatting-2"><a class="docs-heading-anchor" href="#Data-Formatting-2">Data Formatting</a><a class="docs-heading-anchor-permalink" href="#Data-Formatting-2" title="Permalink"></a></h3><p>Prepare the data for a beam problem.</p><pre><code class="language-julia hljs">println(&quot;1. Formatting the data&quot;)
+dad = format_dad(viga(nelem, tipo), NPX, NPY)  # Beam data</code></pre><h3 id="Matrix-Assembly-2"><a class="docs-heading-anchor" href="#Matrix-Assembly-2">Matrix Assembly</a><a class="docs-heading-anchor-permalink" href="#Matrix-Assembly-2" title="Permalink"></a></h3><p>Assemble the matrices for the elasticity problem.</p><pre><code class="language-julia hljs">println(&quot;2. Assembling matrix A and vector b&quot;)
+H, G = calc_HeG(dad, npg, interno = false)  # Compute matrices (boundary only)
+A, b = BEM.aplicaCDC(H, G, dad)  # Apply boundary conditions</code></pre><h3 id="Solving-the-System-2"><a class="docs-heading-anchor" href="#Solving-the-System-2">Solving the System</a><a class="docs-heading-anchor-permalink" href="#Solving-the-System-2" title="Permalink"></a></h3><p>Solve for displacements and tractions.</p><pre><code class="language-julia hljs">println(&quot;3. Solving the linear system&quot;)
+x = A \ b
+println(&quot;4. Separating displacements and tractions&quot;)
+u, t = separa(dad, x)</code></pre><h2 id="Thermal-Elasticity"><a class="docs-heading-anchor" href="#Thermal-Elasticity">Thermal Elasticity</a><a id="Thermal-Elasticity-1"></a><a class="docs-heading-anchor-permalink" href="#Thermal-Elasticity" title="Permalink"></a></h2><p>This example demonstrates coupled thermal-elasticity analysis, where temperature fields induce thermal stresses in elastic materials. It combines heat conduction and structural mechanics to solve problems involving thermal expansion and stress generation.</p><h3 id="Benchmark-Test-Function"><a class="docs-heading-anchor" href="#Benchmark-Test-Function">Benchmark Test Function</a><a id="Benchmark-Test-Function-1"></a><a class="docs-heading-anchor-permalink" href="#Benchmark-Test-Function" title="Permalink"></a></h3><p>The benchmark function <code>testagao</code> evaluates the accuracy and performance of the thermal-elasticity solver by comparing numerical results with analytical solutions for varying mesh densities.</p><pre><code class="language-julia hljs">function testagao(i, metodo)
+    nelem = i     # Number of elements
+    NPY = 2i      # Internal points in y-direction
+    NPX = 2NPY    # Internal points in x-direction
+    npg = 10      # Number of Gauss points
+
+    ## Data Formatting
+    dad = format_dad(telasticogao(nelem, 3), NPX, NPY)
+
+    # Define temperature distribution
+    c0 = 0
+    c1 = -60
+    c2 = 40
+    f(x, y) = c2 * y^2 + c1 * y + c0
+
+    # Extract material properties
+    EE = dad.k.E
+    v = dad.k.nu
+    k = dad.k.k
+
+    # Analytical displacement solution
+    uana(y) = (c1 / 2 * (y^2 - 0.5^2) + c2 / 3 * (y^3 + 0.5^3) + c0 * (y + 0.5)) * 1.3 / 0.7 * k
+
+    # Solve thermal-elasticity problem
+    tdad = @timed u, ss = termoelasticidade(dad, npg, θ = f, metodo = metodo)
+
+    # Post-process results
+    y = [dad.NOS[:, 2]; dad.pontos_internos[:, 2]]
+    ssa = -k / 0.7 * f.(0, y) * dad.k.E
+    ua = uana.(y)
+    eu = nrmse(ua, u[:, 2])
+    es = nrmse(ssa, ss[:, 1])
+
+    return [nc(dad) ni(dad) eu es tdad.time]
+end</code></pre><h3 id="Thermal-Elasticity-Solver-Function"><a class="docs-heading-anchor" href="#Thermal-Elasticity-Solver-Function">Thermal-Elasticity Solver Function</a><a id="Thermal-Elasticity-Solver-Function-1"></a><a class="docs-heading-anchor-permalink" href="#Thermal-Elasticity-Solver-Function" title="Permalink"></a></h3><p>The core function <code>termoelasticidade</code> implements the coupled thermal-elastic BEM formulation. It handles temperature-induced deformations and computes displacements and stresses.</p><pre><code class="language-julia hljs">function termoelasticidade(dad, npg; θ = 1, carga = 0, metodo = &quot;dibem&quot;)
+    # Compute influence matrices
+    H, G = calc_HeG(dad, npg, interno = true)
+    A, b = BEM.aplicaCDC(H, G, dad)
+
+    # Material properties
+    EE = dad.k.E
+    v = dad.k.nu
+    k = dad.k.k
+    kchap = EE * k / (1 - 2 * v)
+
+    # Process temperature input
+    np = nc(dad) + ni(dad)
+    if θ isa Number
+        theta = fill(θ, np)
+    elseif θ isa Vector
+        theta = θ
+    elseif θ isa Function
+        theta = [
+            θ.(dad.NOS[:, 1], dad.NOS[:, 2])
+            θ.(dad.pontos_internos[:, 1], dad.pontos_internos[:, 2])
+        ]
+    end
+
+    # Compute thermal loads
+    F, Fx, Fy = BEM.montaFs([dad.NOS; dad.pontos_internos], [dad.NOS; dad.pontos_internos])
+    dF = [zeros(size(Fx)); zeros(size(Fy))]
+    for i = 1:np
+        dF[2i-1, :] = Fx[i, :]
+        dF[2i, :] = Fy[i, :]
+    end
+
+    # Thermal expansion terms
+    if metodo == &quot;DIBEM&quot;
+        Mpe = BEM.Monta_M_RIMd(dad, npg)
+        dMpe = BEM.Monta_dM_RIMd(dad, npg)
+    else
+        Mpe = BEM.Monta_M_RIM(dad, npg)
+        dMpe = BEM.Monta_dM_RIM(dad, npg)
+    end
+    q2 = Mpe * kchap * dF * theta
+    dq2 = dMpe * kchap * dF * theta
+
+    # Body forces (if any)
+    if carga != 0
+        carga_nodal = zeros(2np)
+        for i = 1:nc(dad)
+            carga_nodal[2i-1:2i] = carga(dad.NOS[i, 1], dad.NOS[i, 2])
+        end
+        for i = nc(dad)+1:np
+            carga_nodal[2i-1:2i] = carga(dad.pontos_internos[i-nc(dad), 1], dad.pontos_internos[i-nc(dad), 2])
+        end
+        qc = Mpe * carga_nodal
+        dqc = dMpe * carga_nodal
+    else
+        qc = 0
+        dqc = 0
+    end
+
+    # Assemble thermal load vector
+    normal_fonte = dad.normal
+    q1 = G * (normal_fonte .* theta[1:nc(dad)])&#39;[:] * kchap
+
+    # Solve system
+    x = A \ (b + q1 .- q2 .+ qc)
+
+    # Separate results
+    u, t, uint = separa(dad, x)
+
+    # Compute stresses
+    S, D = calc_SeD(dad)
+    dq1 = D * (normal_fonte .* theta[1:nc(dad)])&#39;[:] * kchap
+    dq3 = [kchap * theta kchap * theta 0 * theta]
+    fatorcontorno = [fill(2, nc(dad)); ones(ni(dad))]
+    sigma = reshape(D * t&#39;[:] - S * u&#39;[:] + dq1 .- dq2 .+ dqc, 3, :)&#39; .* fatorcontorno - dq3
+
+    return [u; uint], sigma
+end</code></pre><p>This implementation supports different solution methods (RIM or DIBEM) and can handle various temperature distributions and mechanical loads.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../01-data/">« Data</a><a class="docs-footer-nextpage" href="../95-reference/">Reference »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Wednesday 31 December 2025 14:03">Wednesday 31 December 2025</span>. Using Julia version 1.12.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
