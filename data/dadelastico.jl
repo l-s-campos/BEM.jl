@@ -1,9 +1,9 @@
 function elastico1d(ne = 15, tipo = 2; nt = false)
     PONTOS = [
         1 0 0
-        2 1 0
-        3 1 1
-        4 0 1
+        2 4 0
+        3 4 2
+        4 0 2
     ]
     # Segmentos que definem a geometria
     # SEGMENTOS = [N° do segmento, N° do ponto inicial, N° do ponto final
@@ -23,9 +23,9 @@ function elastico1d(ne = 15, tipo = 2; nt = false)
     # MALHA = [número do segmento, número de elementos no segmento]
     MALHA = [
         1 ne tipo
-        2 2ne tipo
+        2 ne tipo
         3 ne tipo
-        4 2ne tipo
+        4 ne tipo
     ]
     # Condições de contorno nos segmentos
     # CCSeg = [N° do segmento, tipo da CDCx, valor da CDCx, tipo da CDCy, valor da CDCy]
@@ -35,13 +35,17 @@ function elastico1d(ne = 15, tipo = 2; nt = false)
     CCSeg = [
         1 1 0 0 0
         2 1 1 1 0
-        3 1 0 1 0
+        3 1 0 0 0
         4 0 0 1 0
     ]
-    ν
 
-    E = 1
-    v = 0.3
+
+    E = 1e5
+    v = 0.25
+
+    #plane stress
+    E = E * (1 + 2v) / (1 + v)^2
+    v = v / (1 + v)
     # Malha de pontos internos
     return elastico, PONTOS, SEGMENTOS, MALHA, CCSeg, (E = E, nu = v)
 end

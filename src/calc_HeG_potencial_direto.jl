@@ -373,6 +373,7 @@ function calc_HeG_Hd(dad::potencial; npg = 3, atol = 1e-6, nmax = 10, eta = 3)
 
     k = dad.k
 
+
     KG = BEM.kernelG(pontos, n, k, intelems)
     KH = BEM.kernelH(pontos, n, normal, intelems)
 

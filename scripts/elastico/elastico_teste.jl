@@ -9,7 +9,7 @@ npg = 20    #apenas números pares
 tipo = 3
 ## Formatação dos dados ________________________________________________
 println("1. Formatando os dados");
-dad = format_dad(viga(nelem, tipo), NPX, NPY) # dados
+dad = format_dad(elastico1d(nelem, tipo), NPX, NPY) # dados
 
 println("2. Montando a matriz A e o vetor b")
 H, G = calc_HeG(dad, npg, interno = false)  #importante

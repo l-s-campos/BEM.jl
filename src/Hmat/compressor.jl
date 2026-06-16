@@ -329,7 +329,7 @@ Base.@kwdef struct two_sided_DD
     rtol::Float64 = atol > 0 || rank < typemax(Int) ? 0 : sqrt(eps(Float64))
 end
 
-function (tsvd::two_sided_DD)(K, rowtree::ClusterTree, coltree::ClusterTree, bufs = nothing)
+function (two_sided_DD::two_sided_DD)(K, rowtree::ClusterTree, coltree::ClusterTree, bufs = nothing)
     irange = index_range(rowtree)
     isel = rowtree.selected_indices
     jrange = index_range(coltree)
@@ -338,7 +338,6 @@ function (tsvd::two_sided_DD)(K, rowtree::ClusterTree, coltree::ClusterTree, buf
     Ks = K[isel, jsel]
     Ky = K[isel, jrange]
     return RkMatrix(Kx, (Ks \ Ky)')
-
 end
 
 
@@ -348,3 +347,13 @@ Base.@kwdef struct one_sided_DD
     rtol::Float64 = atol > 0 || rank < typemax(Int) ? 0 : sqrt(eps(Float64))
 end
 
+function (one_sided_DD::one_sided_DD)(K, rowtree::ClusterTree, coltree::ClusterTree, bufs = nothing)
+    irange = index_range(rowtree)
+    isel = rowtree.selected_indices
+    jrange = index_range(coltree)
+    jsel = coltree.selected_indices
+    Kx = K[irange, jsel]
+    Ks = K[isel, jsel]
+    Ky = K[isel, jrange]
+    return RkMatrix(Kx, (Ks \ Ky)')
+end

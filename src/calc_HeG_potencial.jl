@@ -18,7 +18,6 @@ Ela itera sobre os pontos fontes e elementos, realiza a integração numérica u
 e preenche as matrizes H e G com os valores computados.
 
 # Exemplo
-```julia
 H, G = calc_HeG(dad, 8)"""
 function calc_HeG(dad::potencial, npg = 8; interno = false)
     nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
@@ -182,7 +181,6 @@ e preenche as matrizes H e G com os valores computados.
 
 
 # Exemplo
-```julia
 H, G = calc_HeG(dad, 8)"""
 function calc_HeG_hiper(dad::potencial, npg = 8)
     nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
@@ -510,6 +508,7 @@ function calc_Aeb(dad::Union{potencial,helmholtz}, npg = 8)
     A = zeros(n + ni, n)
     B = zeros(n + ni)
     qsi, w = gausslegendre(npg)    # Quadratura de gauss
+    k = dad.k
 
     for i = 1:n+ni  #Laço dos pontos fontes
         pf = [dad.NOS; dad.pontos_internos][i, :]   # Coordenada (x,y)  dos pontos fonte
@@ -523,7 +522,7 @@ function calc_Aeb(dad::Union{potencial,helmholtz}, npg = 8)
             ps = N_geo' * x
             b = norm(ps' - pf) / norm(Δelem)
             eta, Jt = sinhtrans(qsi, eet, b)
-            h, g = integraelem(pf, x, eta, w .* Jt, elem_j, dad)
+            h, g = integraelem(pf, x, eta, w .* Jt, elem_j, dad, k)
             h[elem_j.indices.==i] = h[elem_j.indices.==i] .- 0.5
             if elem_j.tipoCDC == 1
                 A[i, elem_j.indices] = h
@@ -616,6 +615,7 @@ function Monta_M_RIMd(dad::potencial, npg; tiporadial = "tps", aug = false)
     M1 = zeros(n_pontos)
     F, D = FeD(dad, nodes, tiporadial)
     M, M1 = calcMs(dad, npg, tiporadial)
+    @show F[1:5, 1:5], D[1:5, 1:5], M[1:5], M1[1:5]
     #@infiltrate
     # lu!(F)
     # @show size(M)

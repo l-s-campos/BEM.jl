@@ -5,11 +5,11 @@
 using DrWatson
 @quickactivate "BEM"
 include(scriptsdir("includes.jl"))
-nelem = 10  #Numero de elementos
-order = 3
-NPX = 10 #pontos internos na direção x
+nelem = 5  #Numero de elementos
+order = 2
+NPX = 5 #pontos internos na direção x
 NPY = NPX #pontos internos na direção y
-npg = 12    #apenas números pares
+npg = 100    #apenas números pares
 
 Δt = 0.01 #step de tempo
 tf = 5
@@ -22,13 +22,16 @@ dad = format_dad(difusao_placa(nelem, order), NPX, NPY) # dados
 # dad = format_dad(placacomfuro(nelem),NPX,NPY) # dados
 
 Ht, Gt = calc_HeG(dad, npg, interno = true)  #importante
-M = BEM.Monta_M_RIMd(dad, npg)# calc_HeG_potencial linha 310
+M = BEM.Monta_M_RIMd(dad, npg, tiporadial = "r3")# calc_HeG_potencial linha 310
+# A, b = BEM.aplicaCDC(Ht , Gt, dad)
 A, b = BEM.aplicaCDC(Ht - 11 * M / (6 * Δt), Gt, dad)
 T = zeros(length(A[:, 1]), Int(pontos_t) + 4)
 
 for i in range(4, length(T[1, :]) - 1)
-    x = A \ (b + M * (-18 * T[:, i] + 9 * T[:, i-1] - 2 * T[:, i-2]) / (6 * Δt))
-    T_aux, q = separa(dad, x) #format 479
+    x = A \ (b + M * (-18 * T[:, i] + 9 * T[:, i-1] - 2 * T[:, i-2]) / (6 * Δt))#Houbolt     
+    #x = A \ (b + M * (-18 * T[:, i] + 9 * T[:, i-1] - 2 * T[:, i-2]) / (6 * Δt))#trocar para euler    tbm mudar linha 26
+
+    T_aux, q = separa(dad, x)
     Ti = x[nc(dad)+1:end]
     T[:, i+1] = [T_aux; Ti]
 end
@@ -46,3 +49,5 @@ BEM.record(fig, "teste.mp4", 5:pontos_t) do t
 end
 
 
+#calcular o erro dos 2 metodos
+#testar para os problemas para diferentes passos de tempo

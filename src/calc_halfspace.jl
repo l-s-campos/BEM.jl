@@ -172,20 +172,25 @@ function contact_pressure_force(
     dad,
     K,
     W_aim;
+    p_con_ini = [],
     p_min = 0,
-    H = 5e8,
+    H = 1e12,
     err_tol = 1e-9,
     it_max = 100,
     h_ref = 1e-6,
+    h0 = dad.h0,
 )
     n = size(K, 1)
     areatotal = sum(dad.al)
     # Initialize pressure field (use Float64 for calculations)
-    p_con = fill(W_aim / areatotal, n) .* dad.al # [Pa] initial pressure field
-
+    if isempty(p_con_ini)
+        p_con = fill(W_aim / areatotal, n) .* dad.al # [Pa] initial pressure field
+    else
+        p_con = p_con_ini
+    end
     # Compute initial elastic deformation
     u = K * p_con # [m] elastic deformation 
-    g = -u + dad.h0 # [m] residual of the gap height distribution
+    g = -u + h0 # [m] residual of the gap height distribution
 
     # --- Initial Classification ---
 
@@ -279,7 +284,7 @@ function contact_pressure_force(
 
         # Compute elastic deformation to find new residual of the gap height distribution
         u = K * p_con # [m] elastic deformation
-        g = -u + dad.h0
+        g = -u + h0
         # g = -u + z
 
         # Set residual reference plane to zero in the elastic domain:
@@ -319,7 +324,7 @@ function contact_pressure_force(
         # @infiltrate i_it == 100
     end
     err = err[1:i_it] # Trim error history to actual number of iterations
-    # @show err
+    # @show err, i_it
 
     return p_con, g
 end
@@ -574,5 +579,93 @@ function Ponto_prox(dad, dist = 2)
     prox
 end
 
-export calc_K_2d, dadHS2D, dadHS3D, monta_hmat, montaFMM
+
+function desgaste_2D(
+    dad,
+    K,
+    W_aim;
+    p_min = 0,
+    H = 5e30,
+    err_tol = 1e-9,
+    it_max = 100,
+    h_ref = 1e-6,
+    k_ar1 = 1e-13,
+    k_ar2 = 0,
+    δ = 1e-5,
+    Δ = 1,
+    nsteps = 0,
+)
+    if nsteps == 0
+        nsteps = round(Int, Δ / δ)
+    end# nsteps = 600
+    wear1 = zeros(length(dad.x), nsteps)
+    wear2 = zeros(length(dad.x), nsteps)
+    w1 = zeros(length(dad.x))
+    w2 = zeros(length(dad.x))
+
+    # passo = 0
+
+    p_con = []
+    @showprogress "passos do desgaste" for i = 1:nsteps
+        p_con, g = contact_pressure_force(
+            dad,
+            K,
+            W_aim;
+            p_min = p_min,
+            H = H,
+            err_tol = err_tol,
+            it_max = it_max,
+            h_ref = h_ref,
+            h0 = dad.h0 + w1 + w2,
+            p_con_ini = p_con,
+        )
+
+        w1 .= p_con * δ * k_ar1 + wear1[:, i]
+        w2 .= p_con * δ * k_ar2 + wear2[:, i]
+
+        # w1 .= p_con / maximum(p_con) * k_ar1 / (k_ar1 + k_ar2) * .5e-7 + wear1[:, i]
+        # w2 .= p_con / maximum(p_con) * k_ar2 / (k_ar1 + k_ar2) * .5e-7 + wear2[:, i]
+
+        # @infiltrate
+        # @show maximum(w1)
+        # end
+        wear1[:, i:end] .= w1
+        wear2[:, i:end] .= w2
+        # wear1[i:end, i] = wear1[:, i] + wear1[:, i-1]
+        # wear2[i:end, i] = wear2[:, i] + wear2[:, i-1]
+    end
+    wear1, wear2
+
+end
+
+
+"""
+Applies a moving average filter to a 1D array `y` with a specified `window` size. The output is a smoothed version of the input array, where each element is replaced by the mean of its neighboring elements within the window. The function handles edge cases by adjusting the window size at the boundaries.
+# Arguments
+- `y`: A 1D array of numerical values to be smoothed.
+- `window`: An integer specifying the size of the moving average window. It should be a positive odd integer for symmetric smoothing.
+# Returns
+- A 1D array of the same length as `y`, containing the smoothed values.
+example
+x= 0:0.1:2π
+y = sin.(x) + 0.1 * randn(length(x))  # Noisy sine wave
+window = 10
+smoothed_y = smooth_moving_avg_1d(y, window)
+plot(x, y, label="Noisy Data")
+plot!(x, smoothed_y, label="Smoothed Data", linewidth=2)
+"""
+function smooth_moving_avg_1d(y, window)
+    n = length(y)
+    out = similar(y)
+    half = div(window, 2)
+    for i = 1:n
+        lo = max(1, i - half)
+        hi = min(n, i + half)
+        out[i] = mean(view(y, lo:hi))
+    end
+    return out
+end
+
+
+export calc_K_2d, dadHS2D, dadHS3D, monta_hmat, montaFMM, desgaste_2D
 export calc_K_3d, contact_pressure_force, contact_pressure_disp

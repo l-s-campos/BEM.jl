@@ -79,21 +79,21 @@ function testacil(i, metodo)
     re = 80
     ri = 30
 
-    EE = dadel.k.E
-    v = dadel.k.nu
-    ka = dadel.k.k
+    EE = dadel.E[1]
+    v = dadel.ν[1]
+    ka = 1.1e-5
     k = 60
 
     # c = 0
-    g(x, y) =
+    @. g(x, y) =
         1 / 2 * (Te * r(x, y)^2 - Ti * ri^2) +
         (Ti - Te) / (2 * log(ri / re)) *
         ((ri^2 - r(x, y)^2) / 2 + r(x, y)^2 * log(r(x, y) / re))
 
-    ua(x, y) =
+    @. ua(x, y) =
         ka * (1 + v) / (1 - v) / r(x, y) *
         (g(x, y) + ((1 - 2v) * r(x, y)^2 + ri^2) / (re^2 - ri^2) * g(0, re))
-    ta(x, y) = Te + (Ti - Te) / log(ri / re) * log(r(x, y) / re)
+    @. ta(x, y) = Te + (Ti - Te) / log(ri / re) * log(r(x, y) / re)
     function dta(x, y)
         r_xy = r(x, y)
 
@@ -110,13 +110,14 @@ function testacil(i, metodo)
 
 
     # ssa(x, y) = 2ka * EE * v / (1 - v) / (re^2 - ri^2) * g(0, re) - ka * EE * v / (1 - v) * ta(x, y)
-    ssa(x, y) =
+    @. ssa(x, y) =
         ka * EE * (Ti - Te) / (1 - v) / 2 / log(re / ri) *
         (v - 2 * ri^2 * v / (re^2 - ri^2) * log(re / ri) - 2 * log(re / r(x, y)))
     tdad = @timed u, ss = termoelasticidade(dadel, npg, θ = ta, metodo = metodo)#função
 
     x = [dadpot.NOS[:, 1]; dadpot.pontos_internos[:, 1]]
     y = [dadpot.NOS[:, 2]; dadpot.pontos_internos[:, 2]]
+
     tensa = ssa.(x, y)
     dispa = ua.(x, y)
     tempa = ta.(x, y)
@@ -227,9 +228,9 @@ end
 # cliparray(resrim)
 
 resdibem = [testacil(i, "DIBEM") for i = 1:6]
-resdibem = reduce(vcat, resdibem)
-resrim = [testacil(i, "RIM") for i = 1:3]
-resrim = reduce(vcat, resrim)
+# resdibem = reduce(vcat, resdibem)
+# resrim = [testacil(i, "RIM") for i = 1:3]
+# resrim = reduce(vcat, resrim)
 
 # lines(y, -k / 0.7 * f.(0, y) * dad.k.E)
 # lines!(y, ss[:, 1])

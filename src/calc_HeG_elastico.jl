@@ -407,6 +407,9 @@ function calsolfund(pg, pf, n, dad::Union{elastico,elastico_iga}, regiao = 1)
     # @infiltrate
 
     E, v = dad.E[regiao], dad.ν[regiao]
+    
+    #E,v = 3,0.5 #Re unitario
+
     r = pg - pf      # Distancia entre ponto de gauss e ponto fonte
     # @infiltrate
     GE = E / (2 * (1 + v))
@@ -842,7 +845,7 @@ function integradelem(pf, x, eta, w, elem, dad::Union{elastico,elastico_aniso})
     d, s
 end
 
-function caldsolfund(pg, pf, n, dad::Union{elastico,elastico_iga}, regiao = 0)
+function caldsolfund(pg, pf, n, dad::Union{elastico,elastico_iga}, regiao = 1)
     E, v = dad.E[regiao], dad.ν[regiao]
 
     R = pg - pf      # Distancia entre ponto de gauss e ponto fonte
@@ -922,7 +925,7 @@ function Monta_M_RIM(dad::Union{elastico,elastico_aniso}, npg1 = 10)
     nodes = [dad.NOS; dad.pontos_internos]
     M = zeros(2n_pontos, 2n_pontos)
     F = zeros(n_pontos, n_pontos)
-    normal_fonte = dad.normal
+    normal_fonte = calc_normais(dad)
 
     # Cálculo da matriz [F]
     @showprogress "Montando F" for i = 1:n_pontos
@@ -1006,6 +1009,72 @@ function calcula_F(pr, pf, pg, n, qsi, w, dad::Union{elastico,elastico_aniso}) #
         F = F + term * f * ro * drodqsi * w[i]# Integral de F_area
     end
     return F
+end
+
+
+function Monta_M_RIMd_SC(dad::Union{elastico,elastico_aniso}, npg)
+    n_nos = size(dad.NOS, 1)
+    n_noi = size(dad.pontos_internos, 1) #Number of internal nodes
+    
+    n_pontos = n_nos + n_noi
+    if isempty(dad.cantos)
+        nodes = [dad.NOS; dad.pontos_internos]
+    else
+        nodes = [dad.NOS; dad.pontos_internos; dad.k.cantos[:, 2:3]]
+    end
+
+    F = zeros(n_pontos, n_pontos)
+    D = zeros(2n_pontos, 2n_pontos)
+    M1 = zeros(n_pontos)
+    M2 = zeros(2n_pontos, 2)
+    
+    @showprogress "Montando F e D" for i = 1:n_pontos
+        if i <= n_nos
+            pf = dad.NOS[i, :] # Coordenada (x,y)dos pontos fonte
+            # nf = normal_fonte[i, :]
+            caso = "contorno"
+        elseif i <= n_nos + n_noi
+            pf = dad.pontos_internos[i-n_nos, :] # Coordenada (x,y)
+            caso = "interno"
+        end
+        for j = 1:n_pontos
+            
+            pr = nodes[j, :]
+            r = pr - pf
+            R = norm(r)
+            
+            F[i, j] = rbf(R)
+            if i == j
+                continue
+            end
+           
+            D[2i-1:2i, 2j-1:2j], ~ = calsolfund(pr, pf, [0, 0], dad)
+        
+        end
+        qsi, w = gausslegendre(npg)
+
+        for elem_j in dad.ELEM  #Laço dos elementos
+            x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
+            m_el, m_el1 = calc_md_SC(x, pf, qsi, w, elem_j, dad)
+            
+            M1[i] = M1[i] + m_el
+            M2[2i-1:2i, :] = M2[2i-1:2i, :] + m_el1
+        end
+    end
+ 
+
+    aux = M1' / F
+    aux2 = [aux; aux][:]'
+    A = aux2 .* D
+    
+    for i = 1:n_pontos#Laço dos pontos radiais
+        A[2i-1:2i, 2i-1:2i] .= 0
+        A[2i-1:2i, 2i-1:2i] =
+            -[sum(A[2i-1:2i, 1:2:end], dims = 2) sum(A[2i-1:2i, 2:2:end], dims = 2)] +
+            M2[2i-1:2i, :]
+     
+    end
+    A
 end
 
 function Monta_M_RIMd(dad::Union{elastico,elastico_aniso}, npg)
@@ -1143,6 +1212,34 @@ function calc_md(x, pf, qsi, w, elem, dad::Union{elastico,elastico_aniso})
     end
     return m_el, m_el1
 end
+
+function calc_md_SC(x, pf, qsi, w, elem, dad::Union{elastico,elastico_aniso})
+    npg = length(w)
+    m_el, m_el1 = 0, zeros(2, 2)
+    for i = 1:npg
+        N, dN_geo = calc_fforma(qsi[i], elem)
+        pg = N' * x    # Ponto de gauss interpolador
+        r = pg' - pf      # Distancia entre ponto de gauss e ponto fonte
+        dxdqsi = dN_geo' * x   # dx/dξ & dy/dξ
+        dgamadqsi = norm(dxdqsi)  # dΓ/dξ = J(ξ) Jacobiano
+        sx = dxdqsi[1] / dgamadqsi # vetor tangente dx/dΓ
+        sy = dxdqsi[2] / dgamadqsi # vetor tangente dy/dΓ
+
+        nx = sy # Componente x do vetor normal unit�rio
+        ny = -sx # Componente y do vetor normal unit�rio
+        # @infiltrate
+        R = norm(r)
+        m = int_interpolaρdρ_SC(R)
+        # m1 = calcula_F1(pf, pg, qsi, w, dad)
+        m1 = intradial_solfund(pg, pf, dad)
+        # calcula_Fd(pr, pf, pg, [nx,ny], k, qsi2, w2);
+        # @infiltrate
+        m_el += dot([nx, ny], r) / norm(r)^2 * m * dgamadqsi * w[i]
+        m_el1 += dot([nx, ny], r) / norm(r)^2 * m1 * dgamadqsi * w[i]
+
+    end
+    return m_el, m_el1
+end
 function intradial_solfund(pg, pf, dad::elastico, regiao = 1)
     E, v = dad.E[regiao], dad.ν[regiao]
 
@@ -1204,7 +1301,7 @@ function Monta_dM_RIM(dad::Union{elastico,elastico_aniso}, npg1 = 10)
     nodes = [dad.NOS; dad.pontos_internos]
     M = zeros(3n_pontos, 2n_pontos)
     F = zeros(n_pontos, n_pontos)
-    normal_fonte = dad.normal
+    normal_fonte = calc_normais(dad)
 
     # Cálculo da matriz [F]
     @showprogress "Montando F" for i = 1:n_pontos
@@ -1257,11 +1354,12 @@ function Monta_dM_RIMd(dad::Union{elastico,elastico_aniso}, npg = 10)
     # n_canto = size(dad.k.cantos, 1)
 
     n_pontos = n_nos + n_noi
-    if haskey(dad.k, :cantos)
-        nodes = [dad.NOS; dad.pontos_internos; dad.k.cantos[:, 2:3]]
-    else
-        nodes = [dad.NOS; dad.pontos_internos]
-    end
+    # if haskey(dad.k, :cantos)
+    #     nodes = [dad.NOS; dad.pontos_internos; dad.k.cantos[:, 2:3]]
+    # else
+    #     nodes = [dad.NOS; dad.pontos_internos]
+    # end
+    nodes = [dad.NOS; dad.pontos_internos]
 
     F = zeros(n_pontos, n_pontos)
     D = zeros(3n_pontos, 2n_pontos)
@@ -1269,7 +1367,7 @@ function Monta_dM_RIMd(dad::Union{elastico,elastico_aniso}, npg = 10)
     M1 = zeros(n_pontos)
     M2 = zeros(3n_pontos, 2)
 
-    normal_fonte = dad.normal
+    normal_fonte = calc_normais(dad)
     # Cálculo da matriz [F]
     @showprogress "Montando F e D" for i = 1:n_pontos
         if i <= n_nos
@@ -2384,8 +2482,245 @@ function integra_deriv_elem(pf, x, eta, w, elem, dad::Union{elastico,elastico_an
 end
 
 
+function calc_deriv_m(x, pf, pr, qsi1, w1, elem, dad::Union{elastico,elastico_aniso})
 
-function Monta_deriv_M_RIMd(dad::Union{elastico,elastico_aniso}, npg = 10)
+    npg = length(w1)
+    m_elx = zeros(2, 2)
+    m_ely = zeros(2, 2)
+
+    for i = 1:npg
+        N, dN = calc_fforma(qsi1[i], elem)
+        pg = N' * x # Ponto de gauss interpolador
+        dxdqsi = dN' * x # dx/dξ & dy/dξ
+        dgamadqsi = norm(dxdqsi) # dΓ/dξ = J(ξ) Jacobiano
+        ny = -dxdqsi[1] / dgamadqsi # vetor tangente dx/dΓ
+        nx = dxdqsi[2] / dgamadqsi # vetor tangente dy/dΓ
+        r = pg' - pf
+        mx,my = calcula_deriv_F(pr, pf, pg, [nx, ny], qsi1, w1, dad)
+        # @infiltrate
+        m_elx += dot([nx, ny], r) / norm(r)^2 * mx * dgamadqsi * w1[i]
+
+        m_ely += dot([nx, ny], r) / norm(r)^2 * my * dgamadqsi * w1[i]
+    end
+    return m_elx,m_ely
+end
+
+function calcula_deriv_F(pr, pf, pg, n, qsi, w, dad::Union{elastico,elastico_aniso}) #
+    npg = length(w)
+    R = (pg' - pf)
+    r = norm(R)
+    drodqsi = r / 2 # Jacobiano da transforma��o de vari�vel de r
+    #    para qsi (dr/dqsi)
+    Fx = zeros(2, 2) # Inicializa a integral de F_area
+    Fy = zeros(2, 2)
+    for i = 1:npg # Percorre os pontos de integra��o
+        xc = pf + R / 2 * (qsi[i] + 1) # ro=ro(qsi)
+        rline = norm(xc - pr)
+        ro = r / 2 * (qsi[i] + 1)
+        Ux, Uy = calc_deriv_solfund(xc, pf, n, dad)[[1, 3]]
+        # term = ones(2, 2)
+        f = interpola(rline)
+        # @infiltrate
+
+        Fx = Fx + Ux * f * ro * drodqsi * w[i]# Integral de F_area
+
+        Fy = Fy + Uy * f * ro * drodqsi * w[i]# Integral de F_area
+    end
+    return Fx,Fy
+end
+
+
+function Monta_deriv_M_RIM(dad::Union{elastico,elastico_aniso}, npg1 = 10)
+    n_nos = size(dad.NOS, 1)
+    nelem = size(dad.ELEM, 1)
+    n_noi = size(dad.pontos_internos, 1) #Number of internal nodes
+
+    qsi1, w1 = gausslegendre(npg1)
+    n_pontos = n_nos + n_noi
+    nodes = [dad.NOS; dad.pontos_internos]
+    
+    M1x = zeros(2n_pontos, 2)
+    M1y = zeros(2n_pontos, 2)
+
+    F = zeros(n_pontos, n_pontos)
+    normal_fonte = calc_normais(dad)
+
+    # Cálculo da matriz [F]
+    @showprogress "Montando F" for i = 1:n_pontos
+        xi = nodes[i, 1]
+        yi = nodes[i, 2]
+        for j = 1:n_pontos
+            xj = nodes[j, 1]
+            yj = nodes[j, 2]
+            r = sqrt((xi - xj)^2 + (yi - yj)^2)
+            F[i, j] = interpola(r)
+        end
+    end
+    @showprogress "Montando M" for i = 1:n_pontos
+        if i <= n_nos
+            pf = dad.NOS[i, :] # Coordenada (x,y)dos pontos fonte
+            nf = normal_fonte[i, :]
+            caso = "contorno"
+        elseif i <= n_nos + n_noi
+            pf = dad.pontos_internos[i-n_nos, :] # Coordenada (x,y)
+            nf = zeros(2)
+            caso = "interno"
+        end
+        pr = nodes[i, :]
+        for j = 1:n_pontos #Laço dos pontos fontes
+            pr = nodes[j, :]
+            for el = 1:nelem
+                elem_j = dad.ELEM[el]#Laço dos elementos
+                x = dad.NOS[elem_j.indices, :] # Coordenada (x,y) dos nós geométricos
+                m_elx, m_ely = calc_deriv_m(x, pf, pr, qsi1, w1, elem_j, dad)
+                
+                M1x[2i-1:2i, 2j-1:2j] += m_elx
+                M1y[2i-1:2i, 2j-1:2j] += m_ely
+            end
+        end
+    end
+    F2 = zeros(2n_pontos, 2n_pontos)
+    for i = 1:n_pontos
+        for j = 1:n_pontos
+            F2[2i-1, 2j-1] = F[i, j]
+            F2[2i, 2j] = F[i, j]
+        end
+    end
+    # @infiltrate
+    Mx = M1X / F2
+    My = M1X / F2
+
+    Mx,My
+end
+
+
+function Monta_deriv_M_RIMdd(dad::Union{elastico,elastico_aniso}, npg = 10; aug=true)
+    n_nos = size(dad.NOS, 1)
+    n_noi = size(dad.pontos_internos, 1) #Number of internal nodes
+    n_pontos = n_nos + n_noi
+    nodes = [dad.NOS; dad.pontos_internos]
+    qsi, w = gausslegendre(npg)
+    normal = dad.normal
+
+    F = zeros(n_pontos, n_pontos)
+    Dx = zeros(2n_pontos, 2n_pontos)
+    Dy = zeros(2n_pontos, 2n_pontos)
+
+    M1 = zeros(n_pontos)
+    M2x = zeros(2n_pontos, 2)
+    M2y = zeros(2n_pontos, 2)
+
+    intelems = zeros(n_nos)
+    for elem_j in dad.ELEM  #Laço dos elementos
+        x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
+        intelem = integraelemd(x, qsi, w, elem_j)
+        # @infiltrate
+        intelems[elem_j.indices] = intelem
+    end
+
+    # Cálculo da matriz [F]
+    @showprogress "Montando F e D" for i = 1:n_pontos
+        if i <= n_nos
+            pf = dad.NOS[i, :] # Coordenada (x,y)dos pontos fonte
+            nf = dad.normal[i, :]
+            caso = "contorno"
+        elseif i <= n_nos + n_noi
+            pf = dad.pontos_internos[i-n_nos, :] # Coordenada (x,y)
+            nf = zeros(2)
+            caso = "interno"
+        end
+        for j = 1:n_pontos
+            # @show i, j
+            pr = nodes[j, :]
+            r = pr - pf
+            R = norm(r)
+            # @infiltrate
+            F[i, j] = interpola(R)
+            if i == j
+                continue
+            end
+
+            # #calc M
+
+            if j <= n_nos
+                m1 = int_interpolaρdρ(R)
+                m2x,m2y = calc_deriv_solfund(pr, pf, [0, 0], dad)[[1, 3]]
+
+                m_el1 = dot(normal[j, :], r) / R^2 * m1 * intelems[j]
+                m_el2x = dot(normal[j, :], r) / R^2 * m2x * intelems[j]
+                m_el2y = dot(normal[j, :], r) / R^2 * m2y * intelems[j]
+
+                M1[i] = M1[i] + m_el1
+                M2x[2i-1:2i, :] = M2x[2i-1:2i, :] .+ m_el2x
+                M2y[2i-1:2i, :] = M2y[2i-1:2i, :] .+ m_el2y
+            end
+
+            #calc D
+
+            Ux, Uy = calc_deriv_solfund(pr, pf, [0, 0], dad)[[1, 3]]
+
+            Dx[2i-1:2i, 2j-1:2j] = Ux
+            Dy[2i-1:2i, 2j-1:2j] = Uy
+        end
+
+        # for elem_j in dad.ELEM  #Laço dos elementos
+        #     x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
+        #     # @infiltrate
+        #     m_el, m_el1x, m_el1y = calc_deriv_md(x, pf, qsi, w, elem_j, dad)
+        #     M1[i] = M1[i] + m_el
+        #     M2x[2i-1:2i, :] = M2x[2i-1:2i, :] + m_el1x
+        #     M2y[2i-1:2i, :] = M2y[2i-1:2i, :] + m_el1y
+        # end
+
+        # for elem_j in dad.ELEM  #Laço dos elementos
+
+        #     pr = dad.NOS[elem_j.indices, :]
+
+        #     m1 = int_interpolaρdρ(R)
+        #     m2x,m2y = calc_deriv_solfund(pr, pf, [0, 0], dad)[[1, 3]]
+
+        #     m_el1 = dot(normal[j, :], r) / R^2 * m1 * intelems[j]
+        #     m_el2x = dot(normal[j, :], r) / R^2 * m2x * intelems[j]
+        #     m_el2y = dot(normal[j, :], r) / R^2 * m2y * intelems[j]
+
+        #     M1[i] = M1[i] + m_el1
+        #     M2x[2i-1:2i, :] = M2x[2i-1:2i, :] + m_el2x
+        #     M2y[2i-1:2i, :] = M2y[2i-1:2i, :] + m_el2y
+        # end
+    end
+
+    if aug
+        P, Pint = calcPs(dad, npg)
+    
+        W = F \ P / (P' / F * P)
+
+        Mf = M1' / F
+
+        aux = (Mf - Mf * P * W' + Pint' * W')
+        aux = [aux; aux][:]'
+
+        Ax = aux .* Dx
+        Ay = aux .* Dy
+    else
+        aux = M1' / F
+        aux = [aux; aux][:]'
+        Ax = aux .* Dx
+        Ay = aux .* Dy
+    end
+
+    for i = 1:n_pontos #Laço dos pontos radiais
+        Ax[2i-1:2i, 2i-1:2i] =
+            -[sum(Ax[2i-1:2i, 1:2:end], dims = 2) sum(Ax[2i-1:2i, 2:2:end], dims = 2)] +
+            M2x[2i-1:2i, :]
+        Ay[2i-1:2i, 2i-1:2i] =
+            -[sum(Ay[2i-1:2i, 1:2:end], dims = 2) sum(Ay[2i-1:2i, 2:2:end], dims = 2)] +
+            M2y[2i-1:2i, :]
+    end
+
+    Ax, Ay
+end
+
+function Monta_deriv_M_RIMd(dad::Union{elastico,elastico_aniso}, npg = 10; aug=true)
     n_nos = size(dad.NOS, 1)
     n_noi = size(dad.pontos_internos, 1) #Number of internal nodes
     # n_canto = size(dad.k.cantos, 1)
@@ -2436,17 +2771,42 @@ function Monta_deriv_M_RIMd(dad::Union{elastico,elastico_aniso}, npg = 10)
         for elem_j in dad.ELEM  #Laço dos elementos
             x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
             # @infiltrate
+
+            # Δelem = x[end, :] - x[1, :]     # Δx e Δy entre o primeiro e ultimo nó geometrico
+            # eet =
+            #     (elem_j.ξs[end] - elem_j.ξs[1]) * dot(Δelem, pf .- x[1, :]) /
+            #     norm(Δelem)^2 + elem_j.ξs[1]
+            # N_geo = calc_fforma(eet, elem_j, false)
+            # ps = N_geo' * x
+            # b = norm(ps' - pf) / norm(Δelem)
+            # eta, Jt = sinhtrans(qsi, eet, b)
+            #eta,Jt=telles(qsi,eet)
+            
+            # m_el, m_el1x, m_el1y = calc_deriv_md(x, pf, eta, w.*Jt, elem_j, dad)
             m_el, m_el1x, m_el1y = calc_deriv_md(x, pf, qsi, w, elem_j, dad)
             M1[i] = M1[i] + m_el
             M2x[2i-1:2i, :] = M2x[2i-1:2i, :] + m_el1x
             M2y[2i-1:2i, :] = M2y[2i-1:2i, :] + m_el1y
         end
     end
+    if aug
+        P, Pint = calcPs(dad, npg)
+    
+        W = F \ P / (P' / F * P)
 
-    aux = M1' / F
-    aux = [aux; aux][:]'
-    Ax = aux .* Dx
-    Ay = aux .* Dy
+        Mf = M1' / F
+
+        aux = (Mf - Mf * P * W' + Pint' * W')
+        aux = [aux; aux][:]'
+
+        Ax = aux .* Dx
+        Ay = aux .* Dy
+    else
+        aux = M1' / F
+        aux = [aux; aux][:]'
+        Ax = aux .* Dx
+        Ay = aux .* Dy
+    end
 
     for i = 1:n_pontos #Laço dos pontos radiais
         Ax[2i-1:2i, 2i-1:2i] =
@@ -2490,6 +2850,7 @@ function calc_deriv_md(x, pf, qsi, w, elem, dad::elastico)
     end
     return m_el, m_el1x, m_el1y
 end
+
 
 function calcula_deriv_F(pf, pg, qsi, w, dad::elastico) #
     npg = length(w)

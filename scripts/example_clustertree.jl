@@ -29,7 +29,7 @@ function print_selected(node, level = 0)
         end
     end
 end
-print_selected(tree)
 
 println("Tree structure with selected points:")
+print_selected(tree)
 

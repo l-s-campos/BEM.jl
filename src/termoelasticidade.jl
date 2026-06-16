@@ -3,9 +3,9 @@ function termoelasticidade(dad, npg; θ = 1, carga = 0, metodo = "dibem")
 
     A, b = BEM.aplicaCDC(H, G, dad) # Calcula a matriz A e o vetor b
 
-    EE = dad.k.E
-    v = dad.k.nu
-    k = dad.k.k
+    EE = dad.E[1]
+    v = dad.ν[1]
+    k = 1.1e-5
 
     kchap = EE * k / (1 - 2 * v)
 
@@ -74,8 +74,8 @@ function termoelasticidade(dad, npg; θ = 1, carga = 0, metodo = "dibem")
     # x = A \ (b + q1)
     x = A \ (b + q1 .- q2 .+ qc)
 
-    u, t, uint = separa(dad, x) #importante
-
+    u, t = separa(dad, x) #importante
+    uint = [x[2nc(dad)+1:2:end] x[2nc(dad)+2:2:end]]
 
     S, D = calc_SeD(dad)
     dq1 = D * (normal_fonte .* theta[1:nc(dad)])'[:] * kchap

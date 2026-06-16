@@ -273,7 +273,7 @@ function _build_block_structure!(adm, current_node::HMatrix{R,T}) where {R,T}
     X = current_node.rowtree
     Y = current_node.coltree
     if (isleaf(X) || isleaf(Y))
-        current_node.admissible = falsea
+        current_node.admissible = false
     elseif adm(X, Y)
         current_node.admissible = true
     else
