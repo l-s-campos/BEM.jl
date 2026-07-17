@@ -1,71 +1,3 @@
-function calc_HeGt(dad::potencial, npg = 8)
-
-    nelem = size(dad.ELEM, 1)    # Quantidade de elementos discretizados no contorno
-    n = size(dad.NOS, 1)
-    H = zeros(n, n)
-    G = zeros(n, n)
-    qsi, w = gausslegendre(npg)    # Quadratura de gauss
-    contafonte = 1
-    for elem_i in dad.ELEM  #Laço dos pontos fontes
-        for ind_elem in elem_i.indices
-            pf = dad.NOS[ind_elem, :]   # Coordenada (x,y)  dos pontos fonte
-            for elem_j in dad.ELEM  #Laço dos elementos
-                x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
-                Δelem = x[end, :] - x[1, :]     # Δx e Δy entre o primeiro e ultimo nó geometrico
-                eet =
-                    (elem_j.ξs[end] - elem_j.ξs[1]) * dot(Δelem, pf .- x[1, :]) /
-                    norm(Δelem)^2 + elem_j.ξs[1]
-                N_geo, ~ = calc_fforma(eet, elem_j)
-                ps = N_geo' * x
-                b = norm(ps' - pf)#/norm(Δelem)
-                eta, Jt = sinhtrans(qsi, eet, b)
-                # @show eet,b
-                # eta, wt = pontosintegra(dad.NOS, elem_j, ind_elem, qsi, w)
-                # @show norm(eta-eta1)
-
-                # h, g = integraelem(pf, x, eta, wt, elem_j, dad)
-                h, g = integraelem(pf, x, eta, w .* Jt, elem_j, dad)
-                # @infiltrate contafonte == 2
-                H[contafonte, elem_j.indices] = h
-                G[contafonte, elem_j.indices] = g
-
-            end
-            contafonte += 1
-        end
-    end
-    for i = 1:n                              #i=1:size(dad.NOS,1) #Laço dos pontos fontes
-        H[i, i] = -0.5
-    end
-
-    ni = size(dad.pontos_internos, 1)
-    Hi = zeros(ni, n)
-    Gi = zeros(ni, n)
-    for i = 1:ni
-        pf = dad.pontos_internos[i, :]   # Coordenada (x,y)  dos pontos fonte
-        for elem_j in dad.ELEM  #Laço dos elementos
-            x = dad.NOS[elem_j.indices, :]   # Coordenada (x,y) dos nós geométricos
-            Δelem = x[end, :] - x[1, :]     # Δx e Δy entre o primeiro e ultimo nó geometrico
-            eet =
-                (elem_j.ξs[end] - elem_j.ξs[1]) * dot(Δelem, pf .- x[1, :]) /
-                norm(Δelem)^2 + elem_j.ξs[1]
-            N_geo = calc_fforma(eet, elem_j, false)
-            ps = N_geo' * x
-            b = norm(ps' - pf) / norm(Δelem)
-            eta, Jt = sinhtrans(qsi, eet, b)
-            # eta,Jt=telles(qsi,eet)
-            h, g = integraelem(pf, x, eta, w .* Jt, elem_j, dad)
-            cols = elem_j.indices
-            # @infiltrate
-            Hi[i, cols] = h
-            Gi[i, cols] = g
-        end
-    end
-
-    Ht = [H zeros(n, ni); Hi -I]
-    Gt = [G; Gi]
-    # @infiltrate
-    Ht, Gt
-end
 function aplicaCDC_u(Ht, Gt, dad)
     n = size(dad.NOS, 1)
     tipoCDC = zeros(Bool, n)
@@ -92,7 +24,6 @@ function aplicaCDC_u(Ht, Gt, dad)
     A = Ht - Gu
     b = Gt[:, (1:n)[tipoCDC]] * valoresconhecidos[tipoCDC]
     # b = (-H[:, troca] + Gu[:, troca]) * valoresconhecidos[troca] + Gt[:, tipoCDC] * valoresconhecidos[tipoCDC]
-
     for elem_i in dad.ELEM  # Laço dos pontos fontes
         ind_elem = elem_i.indices
         # @infiltrate
@@ -128,9 +59,9 @@ function aplicaCDC_alpha(Ht, Gt, dad)
         end
     end
     tipof = [tipoCDC; zeros(Bool, ni(dad))]
-    A = [Ga + Ha; [F[tipof, :]; -dad.k * dFdn[tipoCDC.==0, :]]]
+    A = [-Ga + Ha; [F[tipof, :]; -dad.k * dFdn[tipoCDC .== 0, :]]]
     b = zeros(2n + ni(dad))
-    b[ni(dad)+n+1:end, :] = [valoresconhecidos[tipoCDC]; valoresconhecidos[tipoCDC.==0]]
+    b[(ni(dad)+n+1):end, :] = [valoresconhecidos[tipoCDC]; valoresconhecidos[tipoCDC .== 0]]
     # @infiltrate
 
     a = A \ b

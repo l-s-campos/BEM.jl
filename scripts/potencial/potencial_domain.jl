@@ -31,33 +31,44 @@ T, q = separa(dad, x) #importante
 println("5. Calculando nos pontos internos")
 Ti = calc_Ti(dad, T, q, npg);
 
+T=[T; Ti]
+
 println("6. Gerando mapa de cor")
 # @show erro = norm([T - dad.NOS[:, 1]; Ti - dad.pontos_internos[:, 1]])
 # @show erro = norm(T - dad.NOS[:, 1])
 # @show erro = norm( Ti - dad.pontos_internos[:, 1])
 
-Ht, Gt = BEM.calc_HeGt(dad)
+Ht, Gt = calc_HeG(dad, npg, interno = true)  #importante
 
 Au, bu = BEM.aplicaCDC_u(Ht, Gt, dad)
-T, q = BEM.aplicaCDC_alpha(Ht, Gt, dad)
+# Ta, qa = BEM.aplicaCDC_alpha(Ht, Gt, dad)
 
 Tu = Au \ bu
 
 M = BEM.Monta_M_RIMd(dad, npg)
 w = BEM.corrige_autovalor(Gt, Ht, M, dad)
 wu = BEM.corrige_autovalor_u(Gt, Ht, M, dad)
-# fT = zeros(0)
-# for m = 1:5
-#     for n = 1:5
-#         fT = [fT; pi * sqrt(m^2 + n^2)]
-#     end
-# end
-# fT = sort(fT);
 
 
 
+fT = zeros(0)
+for m = 1:5
+    for n = 1:5
+        fT = [fT; pi * sqrt(m^2 + n^2)]
+    end
+end
+fT = sort(fT);
 
+([w[1:25] wu[1:25]] .- fT) ./ fT
+nme(w[1:25], fT)
+nme(wu[1:25], fT)
 
+ana=[dad.NOS[:, 1]; dad.pontos_internos[:, 1]]
+println("7. Comparando resultados")
+println("padrão:$(nme(T,ana)) u:$(nme(Tu,ana))")
+nme(T, ana)
+nme(Tu, ana)
+nme(Ta, ana)
 
 # @show length(T), order
 # @show sum(abs, T - dad.NOS[:, 1]) / length(T)

@@ -1,6 +1,6 @@
 
 
-function interpola(r; tipo = "r3")
+function interpola(r; tipo = "r")
     e = 5
     if tipo == "tps"
         if r == 0
@@ -58,7 +58,7 @@ function int_interpolaρdρ_func(tipo = "tps")
     end
 end
 
-function int_interpolaρdρ(r; tipo = "r3")
+function int_interpolaρdρ(r; tipo = "r")
     e = 5
 
     if tipo == "tps"
@@ -177,7 +177,7 @@ function Monta_M_RIMd(dad::Union{placa_fina,placa_fina_isotropica}, npg)
                 continue
             end
             if caso == "contorno"
-                D[2i-1:2i, j] = compute_domainterms(R, atan(r[2], r[1]), nf, dad, pre)
+                D[(2i-1):2i, j] = compute_domainterms(R, atan(r[2], r[1]), nf, dad, pre)
             else
                 D[i+n_nos, j] = compute_domainterms(R, atan(r[2], r[1]), nf, dad, pre)[1]
             end
@@ -192,7 +192,7 @@ function Monta_M_RIMd(dad::Union{placa_fina,placa_fina_isotropica}, npg)
                 # M1[2i-1] = M1[2i-1] + m_el
                 # M1[2i] = M1[2i] + m_el
                 M1[i] = M1[i] + m_el
-                M2[2i-1:2i] = M2[2i-1:2i] + m_el1
+                M2[(2i-1):2i] = M2[(2i-1):2i] + m_el1
             else
                 M1[i] = M1[i] + m_el
                 M2[i+n_nos] = M2[i+n_nos] + m_el1[1]
@@ -204,10 +204,10 @@ function Monta_M_RIMd(dad::Union{placa_fina,placa_fina_isotropica}, npg)
     # @infiltrate
     A = M1' / F .* D
     for i = 1:n_nos #Laço dos pontos radiais
-        A[2i-1:2i, i] .= 0
-        A[2i-1:2i, i] = -sum(A[2i-1:2i, :], dims = 2) + M2[2i-1:2i]
+        A[(2i-1):2i, i] .= 0
+        A[(2i-1):2i, i] = -sum(A[(2i-1):2i, :], dims = 2) + M2[(2i-1):2i]
     end
-    for i = n_nos+1:n_pontos#Laço dos pontos radiais
+    for i = (n_nos+1):n_pontos#Laço dos pontos radiais
         A[i+n_nos, i] = 0
         A[i+n_nos, i] = -sum(A[i+n_nos, :]) + M2[i+n_nos]
     end
@@ -215,7 +215,7 @@ function Monta_M_RIMd(dad::Union{placa_fina,placa_fina_isotropica}, npg)
     for i = 1:n_nos #Laço dos pontos radiais
         M[:, 2*i-1] = A[:, i]
     end
-    for i = n_nos+1:n_pontos#Laço dos pontos radiais
+    for i = (n_nos+1):n_pontos#Laço dos pontos radiais
         M[:, n_nos+i] = A[:, i]
     end
     M
@@ -301,7 +301,7 @@ function Monta_M_RIM(dad::Union{placa_fina,placa_fina_isotropica}, npg1 = 10, np
 
                 m_el = calc_m(x, pf, nf, pr, qsi1, w1, elem_j, dad, pre)
                 if caso == "contorno"
-                    M[2i-1:2i, j] += m_el
+                    M[(2i-1):2i, j] += m_el
                 else
                     M[n_nos+i, j] += m_el[1]
                 end
@@ -586,7 +586,8 @@ function Monta_M_RIMd_alt(dad, npg)
             F[i, j] = interpola(R)
 
             if caso == "contorno"
-                D[2i-1:2i, j] = compute_domainterms(R, atan(r[2], r[1]), nf, dad, pre) .* R
+                D[(2i-1):2i, j] =
+                    compute_domainterms(R, atan(r[2], r[1]), nf, dad, pre) .* R
             else
                 D[i+n_nos, j] =
                     compute_domainterms(R, atan(r[2], r[1]), nf, dad, pre)[1] .* R
@@ -619,7 +620,7 @@ function Monta_M_RIMd_alt(dad, npg)
     for i = 1:n_nos #Laço dos pontos radiais
         M[:, 2*i-1] = A[:, i]
     end
-    for i = n_nos+1:n_pontos#Laço dos pontos radiais
+    for i = (n_nos+1):n_pontos#Laço dos pontos radiais
         M[:, n_nos+i] = A[:, i]
     end
     M
@@ -890,8 +891,8 @@ function DRM(dad, Hg, Gg)
 
                 #Mnc
                 Mnc = mn
-                WC[2i-1:2i, j] = [wc dwcdn]'
-                VnC[2i-1:2i, j] = [Vnc Mnc]'
+                WC[(2i-1):2i, j] = [wc dwcdn]'
+                VnC[(2i-1):2i, j] = [Vnc Mnc]'
             elseif caso == "interno"
                 wci = c1 * r^4 + c2 * r^5 + c3 * r^6 + c4 * r^7
 
@@ -1026,15 +1027,15 @@ function Monta_dM_RIM(dad::Union{placa_fina,placa_fina_isotropica}, npg1 = 10, n
                 m_el, m_el3 = calc_dm(x, pf, nf, pr, qsi1, w1, elem_j, dad, pre)
                 # @infiltrate
                 if caso == "contorno"
-                    Mx[2i-1:2i, j] += m_el[:, 1]
-                    My[2i-1:2i, j] += m_el[:, 2]
+                    Mx[(2i-1):2i, j] += m_el[:, 1]
+                    My[(2i-1):2i, j] += m_el[:, 2]
 
-                    Mxx[2i-1:2i, j] += m_el3[:, 1]
-                    Myy[2i-1:2i, j] += m_el3[:, 2]
-                    Mxy[2i-1:2i, j] += m_el3[:, 3]
+                    Mxx[(2i-1):2i, j] += m_el3[:, 1]
+                    Myy[(2i-1):2i, j] += m_el3[:, 2]
+                    Mxy[(2i-1):2i, j] += m_el3[:, 3]
 
-                    dMx[2i-1:2i, j] += m_el[:, 3]
-                    dMy[2i-1:2i, j] += m_el[:, 4]
+                    dMx[(2i-1):2i, j] += m_el[:, 3]
+                    dMy[(2i-1):2i, j] += m_el[:, 4]
                     # dMdtdm[2i-1:2i, j] += m_el[:, 5]
                 elseif caso == "interno"
                     Mx[n_nos+i, j] += m_el[1, 1]
@@ -1044,8 +1045,8 @@ function Monta_dM_RIM(dad::Union{placa_fina,placa_fina_isotropica}, npg1 = 10, n
                     Myy[n_nos+i, j] += m_el3[1, 2]
                     Mxy[n_nos+i, j] += m_el3[1, 3]
 
-                    dMx[2i-1:2i, j] += m_el[:, 3]
-                    dMy[2i-1:2i, j] += m_el[:, 4]
+                    dMx[(2i-1):2i, j] += m_el[:, 3]
+                    dMy[(2i-1):2i, j] += m_el[:, 4]
                 elseif caso == "canto"
                     Mx[n_nos+i, j] += m_el[1, 1]
                     My[n_nos+i, j] += m_el[1, 2]
@@ -1097,9 +1098,9 @@ function Monta_dM_RIM(dad::Union{placa_fina,placa_fina_isotropica}, npg1 = 10, n
                 Mx[1:2:2n_nos, i] .* normal_fonte[:, 1] +
                 My[1:2:2n_nos, i] .* normal_fonte[:, 2]
             )
-            dM2dx2[1:n_noi, 2*i-1] = dMx[2*n_nos+1:2:2*(n_nos+n_noi)-1, i]
-            dM2dxdy[1:n_noi, 2*i-1] = dMx[2*n_nos+2:2:2*(n_nos+n_noi), i]
-            dM2dy2[1:n_noi, 2*i-1] = dMy[2*n_nos+2:2:2*(n_nos+n_noi), i]
+            dM2dx2[1:n_noi, 2*i-1] = dMx[(2*n_nos+1):2:(2*(n_nos+n_noi)-1), i]
+            dM2dxdy[1:n_noi, 2*i-1] = dMx[(2*n_nos+2):2:(2*(n_nos+n_noi)), i]
+            dM2dy2[1:n_noi, 2*i-1] = dMy[(2*n_nos+2):2:(2*(n_nos+n_noi)), i]
             # @infiltrate
         else
             # dM2dtdm[:, n_nos+i] = dMdtdm[1:linesdM2dtdm, i]
@@ -1111,9 +1112,9 @@ function Monta_dM_RIM(dad::Union{placa_fina,placa_fina_isotropica}, npg1 = 10, n
                 Mx[1:2:2n_nos, i] .* normal_fonte[:, 1] +
                 My[1:2:2n_nos, i] .* normal_fonte[:, 2]
             )
-            dM2dx2[1:n_noi, n_nos+i] = dMx[2*n_nos+1:2:2*(n_nos+n_noi)-1, i]
-            dM2dxdy[1:n_noi, n_nos+i] = dMx[2*n_nos+2:2:2*(n_nos+n_noi), i]
-            dM2dy2[1:n_noi, n_nos+i] = dMy[2*n_nos+2:2:2*(n_nos+n_noi), i]
+            dM2dx2[1:n_noi, n_nos+i] = dMx[(2*n_nos+1):2:(2*(n_nos+n_noi)-1), i]
+            dM2dxdy[1:n_noi, n_nos+i] = dMx[(2*n_nos+2):2:(2*(n_nos+n_noi)), i]
+            dM2dy2[1:n_noi, n_nos+i] = dMy[(2*n_nos+2):2:(2*(n_nos+n_noi)), i]
         end
     end
 
@@ -1553,15 +1554,15 @@ function Monta_dM_RIMd(dad::Union{placa_fina,placa_fina_isotropica}, npg)
             end
             d, d3 = compute_domain_d_terms(R, atan(r[2], r[1]), nf, nc, dad, pre)
             if caso == "contorno"
-                Dx[2i-1:2i, j] += d[:, 1]
-                Dy[2i-1:2i, j] += d[:, 2]
+                Dx[(2i-1):2i, j] += d[:, 1]
+                Dy[(2i-1):2i, j] += d[:, 2]
 
-                Dxx[2i-1:2i, j] += d3[:, 1]
-                Dyy[2i-1:2i, j] += d3[:, 2]
-                Dxy[2i-1:2i, j] += d3[:, 3]
+                Dxx[(2i-1):2i, j] += d3[:, 1]
+                Dyy[(2i-1):2i, j] += d3[:, 2]
+                Dxy[(2i-1):2i, j] += d3[:, 3]
 
-                dDx[2i-1:2i, j] += d[:, 3]
-                dDy[2i-1:2i, j] += d[:, 4]
+                dDx[(2i-1):2i, j] += d[:, 3]
+                dDy[(2i-1):2i, j] += d[:, 4]
                 # dDdtdm[2i-1:2i, j] += d[:, 5]
                 # dDdtdm[2i-1, j] += -(-d[1, 1] * nf[2] + d[1, 2] * nf[1])
                 # dDdtdm[2i, j] += -(d[1, 1] * nf[1] + d[1, 2] * nf[2])
@@ -1573,8 +1574,8 @@ function Monta_dM_RIMd(dad::Union{placa_fina,placa_fina_isotropica}, npg)
                 Dyy[n_nos+i, j] += d3[1, 2]
                 Dxy[n_nos+i, j] += d3[1, 3]
 
-                dDx[2i-1:2i, j] += d[:, 3]
-                dDy[2i-1:2i, j] += d[:, 4]
+                dDx[(2i-1):2i, j] += d[:, 3]
+                dDy[(2i-1):2i, j] += d[:, 4]
             elseif caso == "canto"
                 Dx[n_nos+i, j] += d[1, 1]
                 Dy[n_nos+i, j] += d[1, 2]
@@ -1591,14 +1592,14 @@ function Monta_dM_RIMd(dad::Union{placa_fina,placa_fina_isotropica}, npg)
             # @infiltrate
             if caso == "contorno"
                 M1[i] = M1[i] + m_el
-                Mx[2i-1:2i] += m_el1[:, 1]
-                My[2i-1:2i] += m_el1[:, 2]
-                dMx[2i-1:2i] += m_el1[:, 3]
-                dMy[2i-1:2i] += m_el1[:, 4]
+                Mx[(2i-1):2i] += m_el1[:, 1]
+                My[(2i-1):2i] += m_el1[:, 2]
+                dMx[(2i-1):2i] += m_el1[:, 3]
+                dMy[(2i-1):2i] += m_el1[:, 4]
 
-                Mxx[2i-1:2i] += m_el3[:, 1]
-                Myy[2i-1:2i] += m_el3[:, 2]
-                Mxy[2i-1:2i] += m_el3[:, 3]
+                Mxx[(2i-1):2i] += m_el3[:, 1]
+                Myy[(2i-1):2i] += m_el3[:, 2]
+                Mxy[(2i-1):2i] += m_el3[:, 3]
                 # dMdtdm[2i-1:2i] += m_el1[:, 5]
             elseif caso == "interno"
                 M1[i] = M1[i] + m_el
@@ -1606,8 +1607,8 @@ function Monta_dM_RIMd(dad::Union{placa_fina,placa_fina_isotropica}, npg)
                 My[n_nos+i] += m_el1[1, 2]
                 # dMx[n_nos+i] += m_el1[:, 3]
                 # dMy[n_nos+i] += m_el1[:, 4]
-                dMx[2i-1:2i] += m_el1[:, 3]
-                dMy[2i-1:2i] += m_el1[:, 4]
+                dMx[(2i-1):2i] += m_el1[:, 3]
+                dMy[(2i-1):2i] += m_el1[:, 4]
 
                 Mxx[n_nos+i] += m_el3[1, 1]
                 Myy[n_nos+i] += m_el3[1, 2]
@@ -1646,31 +1647,31 @@ function Monta_dM_RIMd(dad::Union{placa_fina,placa_fina_isotropica}, npg)
     dAy = aux .* dDy
     # dAdtdm = M1' / F .* dDdtdm
     for i = 1:n_nos #Laço dos pontos radiais
-        Ax[2i-1:2i, i] .= 0
-        Ax[2i-1:2i, i] = -sum(Ax[2i-1:2i, :], dims = 2) + Mx[2i-1:2i]
+        Ax[(2i-1):2i, i] .= 0
+        Ax[(2i-1):2i, i] = -sum(Ax[(2i-1):2i, :], dims = 2) + Mx[(2i-1):2i]
 
-        Ay[2i-1:2i, i] .= 0
-        Ay[2i-1:2i, i] = -sum(Ay[2i-1:2i, :], dims = 2) + My[2i-1:2i]
+        Ay[(2i-1):2i, i] .= 0
+        Ay[(2i-1):2i, i] = -sum(Ay[(2i-1):2i, :], dims = 2) + My[(2i-1):2i]
 
-        Axx[2i-1:2i, i] .= 0
-        Axx[2i-1:2i, i] = -sum(Axx[2i-1:2i, :], dims = 2) + Mxx[2i-1:2i]
+        Axx[(2i-1):2i, i] .= 0
+        Axx[(2i-1):2i, i] = -sum(Axx[(2i-1):2i, :], dims = 2) + Mxx[(2i-1):2i]
 
-        Ayy[2i-1:2i, i] .= 0
-        Ayy[2i-1:2i, i] = -sum(Ayy[2i-1:2i, :], dims = 2) + Myy[2i-1:2i]
+        Ayy[(2i-1):2i, i] .= 0
+        Ayy[(2i-1):2i, i] = -sum(Ayy[(2i-1):2i, :], dims = 2) + Myy[(2i-1):2i]
 
-        Axy[2i-1:2i, i] .= 0
-        Axy[2i-1:2i, i] = -sum(Axy[2i-1:2i, :], dims = 2) + Mxy[2i-1:2i]
+        Axy[(2i-1):2i, i] .= 0
+        Axy[(2i-1):2i, i] = -sum(Axy[(2i-1):2i, :], dims = 2) + Mxy[(2i-1):2i]
 
-        dAx[2i-1:2i, i] .= 0
-        dAx[2i-1:2i, i] = -sum(dAx[2i-1:2i, :], dims = 2) + dMx[2i-1:2i]
+        dAx[(2i-1):2i, i] .= 0
+        dAx[(2i-1):2i, i] = -sum(dAx[(2i-1):2i, :], dims = 2) + dMx[(2i-1):2i]
 
-        dAy[2i-1:2i, i] .= 0
-        dAy[2i-1:2i, i] = -sum(dAy[2i-1:2i, :], dims = 2) + dMy[2i-1:2i]
+        dAy[(2i-1):2i, i] .= 0
+        dAy[(2i-1):2i, i] = -sum(dAy[(2i-1):2i, :], dims = 2) + dMy[(2i-1):2i]
 
         # dAdtdm[2i-1:2i, i] .= 0
         # dAdtdm[2i-1:2i, i] = -sum(dAdtdm[2i-1:2i, :], dims=2) + dMdtdm[2i-1:2i]
     end
-    for i = n_nos+1:n_nos+n_noi#Laço dos pontos radiais
+    for i = (n_nos+1):(n_nos+n_noi)#Laço dos pontos radiais
         Ax[i+n_nos, i] = 0
         # @infiltrate
         Ax[i+n_nos, i] = -sum(Ax[i+n_nos, :]) + Mx[i+n_nos]
@@ -1689,16 +1690,16 @@ function Monta_dM_RIMd(dad::Union{placa_fina,placa_fina_isotropica}, npg)
         Axy[i+n_nos, i] = -sum(Axy[i+n_nos, :]) + Mxy[i+n_nos]
 
 
-        dAx[2i-1:2i, i] .= 0
-        dAx[2i-1:2i, i] = -sum(dAx[2i-1:2i, :], dims = 2) + dMx[2i-1:2i]
+        dAx[(2i-1):2i, i] .= 0
+        dAx[(2i-1):2i, i] = -sum(dAx[(2i-1):2i, :], dims = 2) + dMx[(2i-1):2i]
 
-        dAy[2i-1:2i, i] .= 0
-        dAy[2i-1:2i, i] = -sum(dAy[2i-1:2i, :], dims = 2) + dMy[2i-1:2i]
+        dAy[(2i-1):2i, i] .= 0
+        dAy[(2i-1):2i, i] = -sum(dAy[(2i-1):2i, :], dims = 2) + dMy[(2i-1):2i]
 
 
     end
 
-    for i = n_nos+n_noi+1:n_pontos#Laço dos pontos radiais
+    for i = (n_nos+n_noi+1):n_pontos#Laço dos pontos radiais
         Ax[i+n_nos, i] = 0
         # @infiltrate
         Ax[i+n_nos, i] = -sum(Ax[i+n_nos, :]) + Mx[i+n_nos]
@@ -1739,9 +1740,9 @@ function Monta_dM_RIMd(dad::Union{placa_fina,placa_fina_isotropica}, npg)
                 Ax[1:2:2n_nos, i] .* normal_fonte[:, 1] +
                 Ay[1:2:2n_nos, i] .* normal_fonte[:, 2]
             )
-            dM2dx2[1:n_noi, 2*i-1] = dAx[2*n_nos+1:2:2*(n_nos+n_noi)-1, i]
-            dM2dxdy[1:n_noi, 2*i-1] = dAx[2*n_nos+2:2:2*(n_nos+n_noi), i]
-            dM2dy2[1:n_noi, 2*i-1] = dAy[2*n_nos+2:2:2*(n_nos+n_noi), i]
+            dM2dx2[1:n_noi, 2*i-1] = dAx[(2*n_nos+1):2:(2*(n_nos+n_noi)-1), i]
+            dM2dxdy[1:n_noi, 2*i-1] = dAx[(2*n_nos+2):2:(2*(n_nos+n_noi)), i]
+            dM2dy2[1:n_noi, 2*i-1] = dAy[(2*n_nos+2):2:(2*(n_nos+n_noi)), i]
         else
             dM2dtdm[1:2:end, n_nos+i] = -(
                 Ax[1:2:2n_nos, i] .* -normal_fonte[:, 2] +
@@ -1751,9 +1752,9 @@ function Monta_dM_RIMd(dad::Union{placa_fina,placa_fina_isotropica}, npg)
                 Ax[1:2:2n_nos, i] .* normal_fonte[:, 1] +
                 Ay[1:2:2n_nos, i] .* normal_fonte[:, 2]
             )
-            dM2dx2[1:n_noi, n_nos+i] = dAx[2*n_nos+1:2:2*(n_nos+n_noi)-1, i]
-            dM2dxdy[1:n_noi, n_nos+i] = dAx[2*n_nos+2:2:2*(n_nos+n_noi), i]
-            dM2dy2[1:n_noi, n_nos+i] = dAy[2*n_nos+2:2:2*(n_nos+n_noi), i]
+            dM2dx2[1:n_noi, n_nos+i] = dAx[(2*n_nos+1):2:(2*(n_nos+n_noi)-1), i]
+            dM2dxdy[1:n_noi, n_nos+i] = dAx[(2*n_nos+2):2:(2*(n_nos+n_noi)), i]
+            dM2dy2[1:n_noi, n_nos+i] = dAy[(2*n_nos+2):2:(2*(n_nos+n_noi)), i]
         end
     end
     M2, dM2dx2, dM2dy2, dM2dxdy, dM2dtdm, M3
@@ -1856,13 +1857,13 @@ function criacelulas(dad)
     xi = dad.ELEM[1].ξs
     dive = length(xi)
     r = range(0, 1, div + 1)
-    xs = dad.NOS[1:div*dive, 1]
+    xs = dad.NOS[1:(div*dive), 1]
     npg = 2
     Y = ones(length(xs) + 2) * [0; xs; 1]'
     X = [0; xs; 1] * ones(length(xs) + 2)'
 
-    pgx = (X[1:end-1, 1:end-1] + X[2:end, 2:end]) / 2
-    pgy = (Y[1:end-1, 1:end-1] + Y[2:end, 2:end]) / 2
+    pgx = (X[1:(end-1), 1:(end-1)] + X[2:end, 2:end]) / 2
+    pgy = (Y[1:(end-1), 1:(end-1)] + Y[2:end, 2:end]) / 2
 
     pgs
 end
