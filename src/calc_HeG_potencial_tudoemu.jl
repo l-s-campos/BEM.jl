@@ -1,72 +1,58 @@
 function aplicaCDC_u(Ht, Gt, dad)
     n = size(dad.NOS, 1)
-    tipoCDC = zeros(Bool, n)
-    valoresconhecidos = zeros(n)
-    for elem_i in dad.ELEM  # Laço dos pontos fontes
-        ind_elem = elem_i.indices
-        if elem_i.tipoCDC[1] == 1
-            tipoCDC[ind_elem] .= 1
-            valoresconhecidos[ind_elem] = elem_i.valorCDC
-        end
-    end
-
+    tipo = tipoCDC(dad)
+    valoresconhecidos = valorCDC(dad)
 
     normal_fonte = dad.normal
-    troca = tipoCDC[:] .== 0
-    F, Fx, Fy = BEM.montaFs(dad.NOS[troca, :], [dad.NOS; dad.pontos_internos])
+    CDCuc = tipo[1:n] .== 0
+    F, Fx, Fy = BEM.montaFs(dad.NOS[CDCuc, :], [dad.NOS; dad.pontos_internos])
 
-    b = zeros(n)
     Gu =
         -dad.k *
-        Gt[:, troca] *
-        (Fx .* normal_fonte[troca, 1] + Fy .* normal_fonte[troca, 2])
+        Gt[:, CDCuc] *
+        (Fx .* normal_fonte[CDCuc, 1] + Fy .* normal_fonte[CDCuc, 2])
     # @infiltrate
     A = Ht - Gu
-    b = Gt[:, (1:n)[tipoCDC]] * valoresconhecidos[tipoCDC]
-    # b = (-H[:, troca] + Gu[:, troca]) * valoresconhecidos[troca] + Gt[:, tipoCDC] * valoresconhecidos[tipoCDC]
-    for elem_i in dad.ELEM  # Laço dos pontos fontes
-        ind_elem = elem_i.indices
-        # @infiltrate
-        if elem_i.tipoCDC == 0
-            for i in ind_elem
-                A[i, :] .= 0
-                A[i, i] = 1
-                b[i] = valoresconhecidos[i]
-            end
-        end
-    end
-    A, b
+    b = Gt[:, (1:n)[tipo[1:n]]] * valoresconhecidos[tipo[1:n]]
+
+    tipouc = tipo .== 0
+
+    Add = A[tipo, tipo]
+    Adc = A[tipo, tipouc]
+    bd = b[tipo]
+    ud=Add \ (bd-Adc*valoresconhecidos[tipo[1:n] .== 0])
+    T=similar(b)
+    q=similar(valoresconhecidos)
+    T[tipouc] = valoresconhecidos[tipo[1:n] .== 0]
+    T[tipo] = ud
+
+    q[tipouc[1:n]] =
+        -dad.k * (Fx .* normal_fonte[CDCuc, 1] + Fy .* normal_fonte[CDCuc, 2]) * T
+    q[tipo[1:n]] = valoresconhecidos[tipo[1:n]]
+    T, q
 end
 
 function aplicaCDC_alpha(Ht, Gt, dad)
-    normal_fonte = dad.normal
-    F, dFdx, dFdy, dFdxx, dFdyy, dFdxy =
-        BEM.montaF([dad.NOS; dad.pontos_internos], [dad.NOS; dad.pontos_internos])
-    dFdn = (
-        dFdx[1:nc(dad), :] .* normal_fonte[:, 1] + dFdy[1:nc(dad), :] .* normal_fonte[:, 2]
-    )
-    Ga = -dad.k * Gt * dFdn
-    Ha = Ht * F
-
     n = size(dad.NOS, 1)
-    tipoCDC = zeros(Bool, n)
-    valoresconhecidos = zeros(n)
-    for elem_i in dad.ELEM  # Laço dos pontos fontes
-        ind_elem = elem_i.indices
-        if elem_i.tipoCDC[1] == 1
-            tipoCDC[ind_elem] .= 1
-            valoresconhecidos[ind_elem] = elem_i.valorCDC
-        end
-    end
-    tipof = [tipoCDC; zeros(Bool, ni(dad))]
-    A = [-Ga + Ha; [F[tipof, :]; -dad.k * dFdn[tipoCDC .== 0, :]]]
-    b = zeros(2n + ni(dad))
-    b[(ni(dad)+n+1):end, :] = [valoresconhecidos[tipoCDC]; valoresconhecidos[tipoCDC .== 0]]
-    # @infiltrate
+    tipo = tipoCDC(dad)
+    valoresconhecidos = valorCDC(dad)
+
+    normal_fonte = dad.normal
+    CDCuc = tipo[1:n] .== 0
+    F, dFdx, dFdy, ~ =
+        BEM.montaF([dad.NOS; dad.pontos_internos], [dad.NOS; dad.pontos_internos])
+
+    dFdn = -(dFdx[:, 1:n]' .* normal_fonte[:, 1] + dFdy[:, 1:n]' .* normal_fonte[:, 2])
+
+    Ga = -dad.k * Gt[:, CDCuc] * dFdn[CDCuc, :]
+    Ha = Ht[:, tipo] * F[tipo, :]
+    A = Ha - Ga
+    b = Gt[:, .!CDCuc] * valoresconhecidos[.!CDCuc]-Ht[:, .!tipo] * valoresconhecidos[CDCuc]
+
 
     a = A \ b
     T = F * a
-    q = dFdn * a
+    q = -dad.k * dFdn * a
     T, q
 end
 

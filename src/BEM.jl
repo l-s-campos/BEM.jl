@@ -42,6 +42,8 @@ include("casca.jl")
 
 export calc_HeG,
     format_dad,
+    tipoCDC,
+    valorCDC,
     separa,
     aplicaCDC,
     calc_Ti,

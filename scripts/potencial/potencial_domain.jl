@@ -40,35 +40,46 @@ println("6. Gerando mapa de cor")
 
 Ht, Gt = calc_HeG(dad, npg, interno = true)  #importante
 
-Au, bu = BEM.aplicaCDC_u(Ht, Gt, dad)
-# Ta, qa = BEM.aplicaCDC_alpha(Ht, Gt, dad)
+Tu, qu = BEM.aplicaCDC_u(Ht, Gt, dad)
+Ta, qa = BEM.aplicaCDC_alpha(Ht, Gt, dad)
 
-Tu = Au \ bu
-
-M = BEM.Monta_M_RIMd(dad, npg)
-w = BEM.corrige_autovalor(Gt, Ht, M, dad)
-wu = BEM.corrige_autovalor_u(Gt, Ht, M, dad)
-
-
-
-fT = zeros(0)
-for m = 1:5
-    for n = 1:5
-        fT = [fT; pi * sqrt(m^2 + n^2)]
-    end
-end
-fT = sort(fT);
-
-([w[1:25] wu[1:25]] .- fT) ./ fT
-nme(w[1:25], fT)
-nme(wu[1:25], fT)
 
 ana=[dad.NOS[:, 1]; dad.pontos_internos[:, 1]]
-println("7. Comparando resultados")
-println("padrão:$(nme(T,ana)) u:$(nme(Tu,ana))")
-nme(T, ana)
-nme(Tu, ana)
-nme(Ta, ana)
+
+
+fig = Figure(size = (900, 500))
+ax = Axis(fig[1, 1], xlabel = "x", ylabel = "T")
+
+l1 = scatter!(ax, ana, ana, label = "Analytical")
+l2 = scatter!(ax, ana, T, label = "padrao")
+l3 = scatter!(ax, ana, Tu, label = "u")
+l4 = scatter!(ax, ana, Ta, label = "a")
+
+axislegend(ax, position = :rb)
+fig
+# Tu = Au \ bu
+
+# M = BEM.Monta_M_RIMd(dad, npg)
+# w = BEM.corrige_autovalor(Gt, Ht, M, dad)
+# wu = BEM.corrige_autovalor_u(Gt, Ht, M, dad)
+
+
+
+# fT = zeros(0)
+# for m = 1:5
+#     for n = 1:5
+#         fT = [fT; pi * sqrt(m^2 + n^2)]
+#     end
+# end
+# fT = sort(fT);
+
+# ([w[1:25] wu[1:25]] .- fT) ./ fT
+# nme(w[1:25], fT)
+# nme(wu[1:25], fT)
+
+# println("7. Comparando resultados")
+# println("padrão:$(nme(T,ana)) u:$(nme(Tu,ana))")
+
 
 # @show length(T), order
 # @show sum(abs, T - dad.NOS[:, 1]) / length(T)
